@@ -1,0 +1,8 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Uma cor de fundo global escura para manter o clima gamer */
+body {
+  background-color: #0a0a0a;
+}
