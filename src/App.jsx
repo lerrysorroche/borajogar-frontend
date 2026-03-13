@@ -664,7 +664,7 @@ function App() {
 
           {abaAtual === 'vitrine' && (
             <div className="animate-fade-in">
-              <div className="relative rounded-3xl p-8 md:p-12 mb-8 border border-zinc-800 overflow-hidden shadow-2xl flex items-center min-h-[320px]" style={{ backgroundImage: `url('https://pbs.twimg.com/media/Eg2NdzdWoAMmDqM.jpg')`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
+              <div className="relative rounded-3xl p-8 md:p-12 mb-8 border border-zinc-800 overflow-hidden shadow-2xl flex items-center min-h-[320px]" style={{ backgroundImage: `url('https://www.techspot.com/images2/news/bigimage/2022/04/2022-04-14-image-15-j_1100.webp')`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
                 <div className="absolute inset-0 bg-gradient-to-r from-zinc-950 via-zinc-950/80 to-transparent"></div>
                 <div className="relative z-10 w-full">
                   <span className="inline-block py-1 px-3 rounded-full bg-blue-500/20 border border-blue-500/30 text-blue-400 text-xs font-bold tracking-wider mb-4">CATÁLOGO ATUALIZADO</span>
