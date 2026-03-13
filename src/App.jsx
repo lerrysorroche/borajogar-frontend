@@ -509,6 +509,12 @@ function App() {
   const lidarComFiltroDisp = (disp) => { setFiltroDisponibilidade(disp); setPaginaAtual(1); }
   const lidarComBusca = (e) => { setTermoBusca(e.target.value); setPaginaAtual(1); }
 
+  // === NOVA INTELIGÊNCIA: OS 3 LANÇAMENTOS GLOBAIS ===
+  const idsLancamentos = [...jogos]
+    .sort((a, b) => b.id - a.id)
+    .slice(0, 3)
+    .map(j => j.id);
+
   const jogosFiltrados = jogos
     .filter(jogo => jogo.titulo.toLowerCase().includes(termoBusca.toLowerCase()))
     .filter(jogo => filtroPlataforma === 'TODAS' || jogo.plataforma === filtroPlataforma)
@@ -518,19 +524,25 @@ function App() {
       return true;
     })
     .sort((a, b) => {
+      const aLancamento = idsLancamentos.includes(a.id);
+      const bLancamento = idsLancamentos.includes(b.id);
+
+      // REGRA ZERO: Lançamentos sempre no topo absoluto
+      if (aLancamento && !bLancamento) return -1;
+      if (!aLancamento && bLancamento) return 1;
+
+      // REGRA 1: Disponibilidade
       const aDisponivel = a.estoque > 0;
       const bDisponivel = b.estoque > 0;
-      
-      // REGRA 1: Disponibilidade (Disponíveis sempre no topo)
       if (aDisponivel && !bDisponivel) return -1;
       if (!aDisponivel && bDisponivel) return 1;
       
-      // REGRA 2: Popularidade (Os mais alugados primeiro)
+      // REGRA 2: Popularidade
       if (b.popularidade !== a.popularidade) {
           return b.popularidade - a.popularidade;
       }
       
-      // REGRA 3: Desempate (Se tiverem a mesma popularidade, mostra o Lançamento mais recente)
+      // REGRA 3: Desempate normal
       return b.id - a.id;
     });
 
@@ -736,7 +748,10 @@ function App() {
               <div className="mb-6 text-sm text-zinc-400 font-medium">Mostrando <span className="text-white">{jogosFiltrados.length}</span> jogo(s) encontrado(s)</div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {jogosDaPagina.map(jogo => (
+                {jogosDaPagina.map(jogo => {
+                  const isLancamento = idsLancamentos.includes(jogo.id);
+                  
+                  return (
                   <div key={jogo.id} className="bg-zinc-900 rounded-2xl border border-zinc-800 flex flex-col shadow-xl hover:-translate-y-2 hover:border-blue-500/50 transition-all duration-300 group overflow-hidden">
                     <div className="h-48 w-full bg-zinc-800 relative overflow-hidden">
                       {jogo.url_imagem ? <img src={jogo.url_imagem} alt={jogo.titulo} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out" /> : <div className="w-full h-full flex items-center justify-center bg-zinc-800/80"><span className="text-5xl opacity-50">🎮</span></div>}
@@ -751,6 +766,15 @@ function App() {
                           ? <span className="bg-emerald-500/90 backdrop-blur-sm text-white text-[10px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1 shadow-lg border border-emerald-400/50"><span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>DISPONÍVEL</span>
                           : <span className="bg-rose-600/90 backdrop-blur-sm text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow-lg border border-rose-500/50">ALUGADO</span>}
                       </div>
+
+                      {/* AQUI ENTRA O NOVO BADGE NEON DE LANÇAMENTO */}
+                      {isLancamento && (
+                        <div className="absolute bottom-3 left-3 z-20">
+                          <span className="bg-fuchsia-600/90 text-white text-[10px] font-black px-3 py-1.5 rounded-lg border border-fuchsia-400 shadow-[0_0_15px_rgba(192,38,211,0.8)] flex items-center gap-1.5 tracking-widest uppercase backdrop-blur-md">
+                            <span className="animate-pulse">🔥</span> Lançamento
+                          </span>
+                        </div>
+                      )}
                     </div>
                     
                     <div className="p-5 md:p-6 flex flex-col flex-1">
@@ -784,7 +808,8 @@ function App() {
                       </div>
                     </div>
                   </div>
-                ))}
+                  );
+                })}
               </div>
 
               {totalPaginas > 1 && (
