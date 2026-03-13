@@ -473,6 +473,23 @@ function App() {
     }
   }
 
+  const revogarLocacao = (locacaoId) => {
+    if(window.confirm("🚨 ATENÇÃO: Tem certeza que deseja REVOGAR este aluguel imediatamente? A conta irá para a tela de Manutenção para você trocar a senha.")) {
+      fetch(`https://borajogar-api.onrender.com/admin/locacoes/${locacaoId}/revogar`, {
+        method: 'POST',
+        headers: getAuthHeaders()
+      }).then(async res => {
+        const data = await res.json();
+        if (res.ok) {
+          mostrarToast(data.mensagem, "sucesso");
+          carregarDados();
+        } else {
+          mostrarToast(data.detail, "erro");
+        }
+      }).catch(() => mostrarToast("Erro de conexão.", "erro"));
+    }
+  }
+
   const ajustarSaldoCliente = (idUsuario, nomeUsuario) => {
     const inputValor = window.prompt(`AJUSTE DE SALDO: ${nomeUsuario}\n\nPara ADICIONAR saldo, digite um número (Ex: 50)\nPara REMOVER saldo, coloque o sinal de menos (Ex: -20)`);
     if (!inputValor) return; 
@@ -1345,13 +1362,25 @@ function App() {
                   {locacoesAdminParaMostrar.length === 0 ? <p className="text-zinc-500 text-sm">Nenhuma locação.</p> : (
                     <div className="overflow-x-auto">
                       <table className="w-full text-left text-sm whitespace-nowrap">
-                        <thead><tr className="text-zinc-500 border-b border-zinc-800"><th className="pb-2">Cliente</th><th className="pb-2">Jogo</th><th className="pb-2">Expira</th></tr></thead>
+                        <thead>
+                          <tr className="text-zinc-500 border-b border-zinc-800">
+                            <th className="pb-2">Cliente</th>
+                            <th className="pb-2">Jogo</th>
+                            <th className="pb-2">Expira</th>
+                            <th className="pb-2 text-right">Ação</th>
+                          </tr>
+                        </thead>
                         <tbody>
                           {locacoesAdminParaMostrar.map(loc => (
                             <tr key={loc.id} className="border-b border-zinc-800/50 hover:bg-zinc-800/30">
                               <td className="py-2 text-zinc-300">{loc.cliente}</td>
                               <td className="py-2 font-semibold">{loc.jogo}</td>
                               <td className="py-2 text-rose-300">{new Date(loc.data_fim).toLocaleDateString()}</td>
+                              <td className="py-2 text-right">
+                                <button onClick={() => revogarLocacao(loc.id)} className="text-rose-400 hover:text-white text-[10px] uppercase tracking-wider bg-rose-900/30 hover:bg-rose-600 px-3 py-1.5 rounded-lg font-bold transition-colors border border-rose-500/30 shadow">
+                                  Revogar
+                                </button>
+                              </td>
                             </tr>
                           ))}
                         </tbody>
