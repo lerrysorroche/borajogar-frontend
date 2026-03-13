@@ -569,7 +569,7 @@ function App() {
       )}
 
       {!usuarioLogado ? (
-        <div className="flex justify-center items-center min-h-screen p-4" style={{ backgroundImage: `url('https://pbs.twimg.com/media/Eg2NdzdWoAMmDqM.jpg')`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
+        <div className="flex justify-center items-center min-h-screen p-4" style={{ backgroundImage: `url('https://cinesiageek.com.br/wp-content/uploads/2024/09/playstation5.jpeg')`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
           <div className="absolute inset-0 bg-zinc-950/80 backdrop-blur-sm"></div>
           <div className="relative z-10 bg-zinc-900 p-8 rounded-3xl border border-zinc-800 w-full max-w-sm shadow-2xl animate-fade-in">
             <h2 className="text-4xl font-black text-center text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400 mb-8 tracking-tighter">BORA JOGAR!</h2>
@@ -664,7 +664,7 @@ function App() {
 
           {abaAtual === 'vitrine' && (
             <div className="animate-fade-in">
-              <div className="relative rounded-3xl p-8 md:p-12 mb-8 border border-zinc-800 overflow-hidden shadow-2xl flex items-center min-h-[320px]" style={{ backgroundImage: `url('https://cinesiageek.com.br/wp-content/uploads/2024/09/playstation5.jpeg')`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
+              <div className="relative rounded-3xl p-8 md:p-12 mb-8 border border-zinc-800 overflow-hidden shadow-2xl flex items-center min-h-[320px]" style={{ backgroundImage: `url('https://pbs.twimg.com/media/Eg2NdzdWoAMmDqM.jpg')`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
                 <div className="absolute inset-0 bg-gradient-to-r from-zinc-950 via-zinc-950/80 to-transparent"></div>
                 <div className="relative z-10 w-full">
                   <span className="inline-block py-1 px-3 rounded-full bg-blue-500/20 border border-blue-500/30 text-blue-400 text-xs font-bold tracking-wider mb-4">CATÁLOGO ATUALIZADO</span>
