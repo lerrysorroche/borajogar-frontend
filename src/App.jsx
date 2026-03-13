@@ -26,6 +26,12 @@ function App() {
   const [cadTelefone, setCadTelefone] = useState('')
   const [cadCodigoConvite, setCadCodigoConvite] = useState('')
 
+  // === NOVOS ESTADOS: RECUPERAÇÃO E MUDANÇA DE SENHA ===
+  const [modoEsqueciSenha, setModoEsqueciSenha] = useState(false)
+  const [esqueciEmail, setEsqueciEmail] = useState('')
+  const [mudarSenhaAtual, setMudarSenhaAtual] = useState('')
+  const [mudarSenhaNova, setMudarSenhaNova] = useState('')
+
   const [jogos, setJogos] = useState([])
   const [meusAlugueis, setMeusAlugueis] = useState([])
   const [minhasReservas, setMinhasReservas] = useState([]) 
@@ -65,7 +71,6 @@ function App() {
   const [novoCupomTipo, setNovoCupomTipo] = useState('PORCENTAGEM')
   const [novoCupomValor, setNovoCupomValor] = useState('')
 
-  // === NOVO: ESTADO DO QR CODE GERADO PELO ASAAS ===
   const [pixPendente, setPixPendente] = useState(null)
 
   const [paginaAtual, setPaginaAtual] = useState(1)
@@ -99,7 +104,6 @@ function App() {
     }).then(async res => {
       const data = await res.json()
       if (res.ok) { 
-        // Recebemos a imagem e o Copia e Cola do Asaas!
         setPixPendente({
             payment_id: data.payment_id,
             qr_code: data.qr_code,
@@ -109,7 +113,6 @@ function App() {
     })
   }
 
-  // O "RADAR": Fica perguntando pro Python se o PIX foi pago
   useEffect(() => {
     let intervalId;
     if (pixPendente) {
@@ -119,17 +122,58 @@ function App() {
         .then(data => {
             if (data.status === 'PAGO') {
                 mostrarToast("✅ Pagamento Confirmado! Saldo liberado.", "sucesso");
-                setPixPendente(null); // Esconde a tela do QR Code
+                setPixPendente(null); 
                 setCupomRecarga('');
                 setValorRecarga('30');
-                carregarDados(); // Atualiza a tela com o dinheiro novo
+                carregarDados(); 
             }
         }).catch(() => console.log("Aguardando verificação..."));
-      }, 5000); // 5000ms = 5 segundos
+      }, 5000); 
     }
-    return () => clearInterval(intervalId); // Limpa o radar se a pessoa sair da tela
+    return () => clearInterval(intervalId); 
   }, [pixPendente])
 
+
+  // ============================================================================
+  // NOVAS FUNÇÕES: RECUPERAÇÃO E MUDANÇA DE SENHA
+  // ============================================================================
+
+  const solicitarRecuperacaoSenha = (e) => {
+    e.preventDefault();
+    if (!esqueciEmail) return;
+    mostrarToast("Enviando solicitação...", "aviso");
+    
+    fetch('https://borajogar-api.onrender.com/esqueci-senha', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: esqueciEmail })
+    }).then(async res => {
+      const data = await res.json();
+      if (res.ok) {
+        mostrarToast(data.mensagem, "sucesso");
+        setModoEsqueciSenha(false);
+        setEsqueciEmail('');
+      } else {
+        mostrarToast(data.detail || "Erro ao solicitar recuperação.", "erro");
+      }
+    }).catch(() => mostrarToast("Erro de conexão.", "erro"));
+  }
+
+  const alterarMinhaSenha = (e) => {
+    e.preventDefault();
+    fetch('https://borajogar-api.onrender.com/mudar-senha', {
+      method: 'POST', headers: getAuthHeaders(),
+      body: JSON.stringify({ utilizador_id: usuarioLogado.id, senha_atual: mudarSenhaAtual, nova_senha: mudarSenhaNova })
+    }).then(async res => {
+      const data = await res.json();
+      if (res.ok) {
+        mostrarToast(data.mensagem, "sucesso");
+        setMudarSenhaAtual('');
+        setMudarSenhaNova('');
+      } else {
+        mostrarToast(data.detail, "erro");
+      }
+    }).catch(() => mostrarToast("Erro de conexão.", "erro"));
+  }
 
   // ============================================================================
   // OUTRAS FUNÇÕES INTACTAS
@@ -530,14 +574,36 @@ function App() {
           <div className="relative z-10 bg-zinc-900 p-8 rounded-3xl border border-zinc-800 w-full max-w-sm shadow-2xl animate-fade-in">
             <h2 className="text-4xl font-black text-center text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400 mb-8 tracking-tighter">BORA JOGAR!</h2>
             
-            {modoLogin ? (
+            {modoEsqueciSenha ? (
+              <form onSubmit={solicitarRecuperacaoSenha} className="space-y-4 animate-fade-in">
+                <p className="text-zinc-400 text-sm text-center mb-4 leading-relaxed">
+                  Digite seu e-mail de cadastro. Se ele existir, enviaremos uma senha temporária em instantes.
+                </p>
+                <input type="email" placeholder="Seu E-mail" value={esqueciEmail} onChange={e => setEsqueciEmail(e.target.value)} className={inputClass} required />
+                <button type="submit" className="w-full py-3 mt-2 bg-amber-600 hover:bg-amber-500 text-white font-bold rounded-xl transition-all duration-300 shadow-lg shadow-amber-500/30">
+                  Recuperar Senha
+                </button>
+                <div className="pt-4 text-center border-t border-zinc-800 mt-6">
+                  <button type="button" onClick={() => setModoEsqueciSenha(false)} className="text-zinc-400 hover:text-white font-bold transition-colors text-sm">
+                    Voltar para o Login
+                  </button>
+                </div>
+              </form>
+            ) : modoLogin ? (
               <form onSubmit={entrarNoSistema} className="space-y-4 animate-fade-in">
                 <input type="email" placeholder="Seu E-mail" value={formEmail} onChange={e => setFormEmail(e.target.value)} className={inputClass} required />
                 <input type="password" placeholder="Sua Senha" value={formSenha} onChange={e => setFormSenha(e.target.value)} className={inputClass} required />
+                
+                <div className="flex justify-end">
+                  <button type="button" onClick={() => setModoEsqueciSenha(true)} className="text-xs text-zinc-400 hover:text-blue-400 transition-colors font-medium">
+                    Esqueceu a senha?
+                  </button>
+                </div>
+
                 <button type="submit" className="w-full py-3 mt-2 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl transition-all duration-300 shadow-lg shadow-blue-500/30">Entrar na Loja</button>
                 <div className="pt-4 text-center border-t border-zinc-800 mt-6">
                   <p className="text-zinc-400 text-sm">Ainda não tem conta? <br/>
-                    <button type="button" onClick={() => setModoLogin(false)} className="mt-2 text-emerald-400 hover:text-emerald-300 font-bold transition-colors">
+                    <button type="button" onClick={() => { setModoLogin(false); setModoEsqueciSenha(false); }} className="mt-2 text-emerald-400 hover:text-emerald-300 font-bold transition-colors">
                       CRIE UMA CONTA GRÁTIS
                     </button>
                   </p>
@@ -551,7 +617,13 @@ function App() {
                 <input type="password" placeholder="Crie uma Senha" value={cadSenha} onChange={e => setCadSenha(e.target.value)} className={inputClass} required />
                 <input type="text" placeholder="Código de um Amigo (Opcional)" value={cadCodigoConvite} onChange={e => setCadCodigoConvite(e.target.value.toUpperCase())} className={`${inputClass} border-purple-500/50 bg-purple-950/10 placeholder-purple-400/50 uppercase`} />
                 <button type="submit" className="w-full py-3 mt-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl transition-all duration-300 shadow-lg shadow-emerald-500/30">Finalizar Cadastro</button>
-                <div className="pt-4 text-center border-t border-zinc-800 mt-6"><p className="text-zinc-400 text-sm">Já possui uma conta? <br/><button type="button" onClick={() => setModoLogin(true)} className="mt-2 text-blue-400 hover:text-blue-300 font-bold transition-colors">Faça Login aqui</button></p></div>
+                <div className="pt-4 text-center border-t border-zinc-800 mt-6">
+                    <p className="text-zinc-400 text-sm">Já possui uma conta? <br/>
+                        <button type="button" onClick={() => { setModoLogin(true); setModoEsqueciSenha(false); }} className="mt-2 text-blue-400 hover:text-blue-300 font-bold transition-colors">
+                            Faça Login aqui
+                        </button>
+                    </p>
+                </div>
               </form>
             )}
           </div>
@@ -706,7 +778,7 @@ function App() {
               
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 
-                {/* === CAIXA DE RECARGA (AGORA GERA PIX DE VERDADE) === */}
+                {/* === CAIXA DE RECARGA === */}
                 <section className="bg-zinc-900 p-6 md:p-8 rounded-3xl border border-zinc-800 shadow-2xl flex flex-col h-full relative overflow-hidden">
                   <div className="absolute -right-8 -top-8 text-9xl opacity-5 pointer-events-none">💸</div>
                   <h3 className="text-lg font-bold text-emerald-400 mb-2 flex items-center gap-2">💰 Adicionar Saldo via PIX</h3>
@@ -770,6 +842,29 @@ function App() {
                   )}
                 </section>
               </div>
+
+              {/* === NOVA CAIXA DE MUDANÇA DE SENHA === */}
+              <section className="bg-zinc-900/80 p-6 md:p-8 rounded-3xl border border-zinc-800 shadow-2xl relative overflow-hidden group">
+                <div className="absolute -right-8 -top-8 text-9xl opacity-5 pointer-events-none">🔐</div>
+                <h3 className="text-lg font-bold text-white mb-2 flex items-center gap-2">🔐 Segurança da Conta</h3>
+                <p className="text-sm text-zinc-400 mb-6 max-w-2xl leading-relaxed">
+                  Mantenha sua conta segura alterando sua senha regularmente ou troque a senha temporária que enviamos por e-mail.
+                </p>
+                
+                <form onSubmit={alterarMinhaSenha} className="flex flex-col sm:flex-row gap-4 items-end max-w-3xl relative z-10">
+                  <div className="w-full">
+                    <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1 block">Senha Atual</label>
+                    <input type="password" placeholder="Sua senha atual" value={mudarSenhaAtual} onChange={e => setMudarSenhaAtual(e.target.value)} className="w-full px-4 py-3 bg-zinc-950 border border-zinc-700 text-white rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" required />
+                  </div>
+                  <div className="w-full">
+                    <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1 block">Nova Senha</label>
+                    <input type="password" placeholder="Sua nova senha" value={mudarSenhaNova} onChange={e => setMudarSenhaNova(e.target.value)} className="w-full px-4 py-3 bg-zinc-950 border border-zinc-700 text-white rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none" required />
+                  </div>
+                  <button type="submit" className="w-full sm:w-auto bg-zinc-800 hover:bg-zinc-700 text-white font-bold px-8 py-3 rounded-xl transition-colors border border-zinc-700 whitespace-nowrap shadow-lg">
+                    Atualizar Senha
+                  </button>
+                </form>
+              </section>
 
               {usuarioLogado && usuarioLogado.codigo_indicacao && (
                 <section className="bg-gradient-to-r from-purple-900/40 to-blue-900/40 p-6 md:p-8 rounded-3xl border border-purple-500/30 shadow-2xl relative overflow-hidden group">
@@ -1222,7 +1317,7 @@ function App() {
             </div>
           )}
 
-          {/* BOTÃO FLUTUANTE DO WHATSAPP (Sempre visível para logados) */}
+          {/* BOTÃO FLUTUANTE DO WHATSAPP */}
           {usuarioLogado && (
             <a
               href={`https://wa.me/${NUMERO_WHATSAPP_SUPORTE}?text=${encodeURIComponent("Olá! Estou no site BORA JOGAR! e preciso de ajuda com a minha conta.")}`}
