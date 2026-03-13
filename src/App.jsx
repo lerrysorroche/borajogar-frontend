@@ -520,8 +520,17 @@ function App() {
     .sort((a, b) => {
       const aDisponivel = a.estoque > 0;
       const bDisponivel = b.estoque > 0;
+      
+      // REGRA 1: Disponibilidade (Disponíveis sempre no topo)
       if (aDisponivel && !bDisponivel) return -1;
       if (!aDisponivel && bDisponivel) return 1;
+      
+      // REGRA 2: Popularidade (Os mais alugados primeiro)
+      if (b.popularidade !== a.popularidade) {
+          return b.popularidade - a.popularidade;
+      }
+      
+      // REGRA 3: Desempate (Se tiverem a mesma popularidade, mostra o Lançamento mais recente)
       return b.id - a.id;
     });
 
