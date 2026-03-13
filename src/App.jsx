@@ -55,6 +55,9 @@ function App() {
   const [novaContaEmail, setNovaContaEmail] = useState('')
   const [novaContaSenha, setNovaContaSenha] = useState('')
   const [novaContaMfaSecret, setNovaContaMfaSecret] = useState('') 
+
+  const [editandoPrecoId, setEditandoPrecoId] = useState(null)
+  const [novoPrecoEdicao, setNovoPrecoEdicao] = useState('')
   
   const [termoBusca, setTermoBusca] = useState('')
   const [buscaEstoque, setBuscaEstoque] = useState('')
@@ -397,6 +400,24 @@ function App() {
         setNovoJogoTitulo(''); setNovoJogoPreco(''); setNovoJogoDescricao(''); setNovoJogoImagem(''); setNovoJogoTempo(''); setNovoJogoNota('');
       } else { mostrarToast("Erro ao cadastrar.", "erro") }
     })
+  }
+
+  const salvarNovoPreco = (jogoId) => {
+    const precoReal = parseFloat(novoPrecoEdicao);
+    if (isNaN(precoReal) || precoReal <= 0) { mostrarToast("Digite um valor válido.", "erro"); return; }
+    
+    fetch(`https://borajogar-api.onrender.com/jogos/${jogoId}/preco`, {
+      method: 'PATCH', headers: getAuthHeaders(),
+      body: JSON.stringify({ preco_aluguel: precoReal })
+    }).then(async res => {
+      if (res.ok) {
+        mostrarToast("Preço atualizado!", "sucesso");
+        setEditandoPrecoId(null);
+        carregarDados();
+      } else {
+        const data = await res.json(); mostrarToast(data.detail, "erro");
+      }
+    }).catch(() => mostrarToast("Erro de conexão.", "erro"));
   }
 
   const cadastrarConta = (e) => {
@@ -1244,12 +1265,28 @@ function App() {
                   {jogosAdminParaMostrar.length === 0 ? <p className="text-zinc-500 text-sm">Vazio.</p> : (
                     <ul className="space-y-2 flex-1">
                       {jogosAdminParaMostrar.map(jogo => (
-                        <li key={jogo.id} className="flex justify-between items-center bg-zinc-800/50 p-3 rounded-lg border-l-2 border-rose-500">
-                          <div className="flex flex-col leading-tight gap-1">
-                            <span className="font-bold text-sm truncate w-40">{jogo.titulo}</span>
+                        <li key={jogo.id} className="flex flex-col md:flex-row justify-between items-start md:items-center bg-zinc-800/50 p-3 rounded-lg border-l-2 border-rose-500 gap-3">
+                          <div className="flex flex-col leading-tight gap-1 w-full md:w-auto">
+                            <span className="font-bold text-sm truncate max-w-[200px]">{jogo.titulo}</span>
+                            <span className="text-xs text-zinc-400">R$ {jogo.preco_aluguel.toFixed(2)}</span>
                             {jogo.estoque > 0 ? <span className="text-emerald-400 text-xs">✅ {jogo.estoque} Disponível</span> : <span className="text-rose-400 text-xs">❌ Alugado</span>}
                           </div>
-                          <button onClick={() => removerJogo(jogo.id)} className="text-rose-400 hover:text-white text-xs bg-rose-900/30 px-3 py-1.5 rounded-lg font-bold transition-colors">Excluir</button>
+                          
+                          <div className="flex gap-2 w-full md:w-auto justify-end">
+                            {editandoPrecoId === jogo.id ? (
+                              <div className="flex items-center gap-2">
+                                <span className="text-zinc-500 text-xs font-bold">R$</span>
+                                <input type="number" step="0.01" value={novoPrecoEdicao} onChange={e => setNovoPrecoEdicao(e.target.value)} className="w-20 px-2 py-1 bg-zinc-950 border border-zinc-700 rounded text-xs text-white focus:outline-none focus:border-emerald-500" placeholder="Novo" />
+                                <button onClick={() => salvarNovoPreco(jogo.id)} className="text-emerald-400 hover:text-white text-xs bg-emerald-900/30 hover:bg-emerald-600 px-3 py-1.5 rounded-lg font-bold transition-colors border border-emerald-500/30">Salvar</button>
+                                <button onClick={() => setEditandoPrecoId(null)} className="text-zinc-400 hover:text-white text-xs bg-zinc-800 hover:bg-zinc-700 px-3 py-1.5 rounded-lg font-bold transition-colors">X</button>
+                              </div>
+                            ) : (
+                              <>
+                                <button onClick={() => { setEditandoPrecoId(jogo.id); setNovoPrecoEdicao(jogo.preco_aluguel); }} className="text-blue-400 hover:text-white text-xs bg-blue-900/30 hover:bg-blue-600 px-3 py-1.5 rounded-lg font-bold transition-colors border border-blue-500/30">Editar</button>
+                                <button onClick={() => removerJogo(jogo.id)} className="text-rose-400 hover:text-white text-xs bg-rose-900/30 hover:bg-rose-600 px-3 py-1.5 rounded-lg font-bold transition-colors border border-rose-500/30">Excluir</button>
+                              </>
+                            )}
+                          </div>
                         </li>
                       ))}
                     </ul>
