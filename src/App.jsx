@@ -517,7 +517,14 @@ function App() {
 
   const jogosFiltrados = jogos
     .filter(jogo => jogo.titulo.toLowerCase().includes(termoBusca.toLowerCase()))
-    .filter(jogo => filtroPlataforma === 'TODAS' || jogo.plataforma === filtroPlataforma)
+    .filter(jogo => {
+      // NOVA INTELIGÊNCIA DE FILTRO CROSS-GEN
+      if (filtroPlataforma === 'TODAS') return true;
+      if (filtroPlataforma === 'PS5') return jogo.plataforma === 'PS5' || jogo.plataforma === 'PS4/PS5';
+      if (filtroPlataforma === 'PS4') return jogo.plataforma === 'PS4' || jogo.plataforma === 'PS4/PS5';
+      if (filtroPlataforma === 'PS4/PS5') return jogo.plataforma === 'PS4/PS5';
+      return jogo.plataforma === filtroPlataforma;
+    })
     .filter(jogo => {
       if (filtroDisponibilidade === 'TODOS') return true;
       if (filtroDisponibilidade === 'DISPONIVEL') return jogo.estoque > 0;
@@ -719,10 +726,11 @@ function App() {
                   </div>
 
                   <div className="flex flex-wrap gap-4 mt-6 max-w-xl">
-                    <div className="flex bg-zinc-900/80 rounded-xl p-1.5 backdrop-blur-md border border-zinc-700/50 shadow-lg">
-                      <button onClick={() => lidarComFiltroPlataforma('TODAS')} className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${filtroPlataforma === 'TODAS' ? 'bg-blue-600 text-white shadow' : 'text-zinc-400 hover:text-white hover:bg-zinc-800'}`}>Todas Plataformas</button>
-                      <button onClick={() => lidarComFiltroPlataforma('PS5')} className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${filtroPlataforma === 'PS5' ? 'bg-blue-600 text-white shadow' : 'text-zinc-400 hover:text-white hover:bg-zinc-800'}`}>PS5</button>
-                      <button onClick={() => lidarComFiltroPlataforma('PS4')} className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${filtroPlataforma === 'PS4' ? 'bg-blue-600 text-white shadow' : 'text-zinc-400 hover:text-white hover:bg-zinc-800'}`}>PS4</button>
+                    <div className="flex bg-zinc-900/80 rounded-xl p-1.5 backdrop-blur-md border border-zinc-700/50 shadow-lg overflow-x-auto scrollbar-hide">
+                      <button onClick={() => lidarComFiltroPlataforma('TODAS')} className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${filtroPlataforma === 'TODAS' ? 'bg-blue-600 text-white shadow' : 'text-zinc-400 hover:text-white hover:bg-zinc-800'}`}>Todas</button>
+                      <button onClick={() => lidarComFiltroPlataforma('PS5')} className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${filtroPlataforma === 'PS5' ? 'bg-blue-600 text-white shadow' : 'text-zinc-400 hover:text-white hover:bg-zinc-800'}`}>PS5</button>
+                      <button onClick={() => lidarComFiltroPlataforma('PS4')} className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${filtroPlataforma === 'PS4' ? 'bg-blue-600 text-white shadow' : 'text-zinc-400 hover:text-white hover:bg-zinc-800'}`}>PS4</button>
+                      <button onClick={() => lidarComFiltroPlataforma('PS4/PS5')} className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${filtroPlataforma === 'PS4/PS5' ? 'bg-blue-600 text-white shadow' : 'text-zinc-400 hover:text-white hover:bg-zinc-800'}`}>PS4 / PS5</button>
                     </div>
                     
                     <div className="flex bg-zinc-900/80 rounded-xl p-1.5 backdrop-blur-md border border-zinc-700/50 shadow-lg">
@@ -1272,7 +1280,7 @@ function App() {
                       <button type="button" onClick={buscarDadosDoJogo} className="bg-amber-500 hover:bg-amber-400 text-zinc-900 font-bold px-4 rounded-lg text-xs whitespace-nowrap transition-colors shadow-lg">✨ Buscar</button>
                     </div>
                     <input type="url" placeholder="URL da Capa" value={novoJogoImagem} onChange={e => setNovoJogoImagem(e.target.value)} className={adminInputClass} />
-                    <div className="flex gap-2"><select value={novoJogoPlataforma} onChange={e => setNovoJogoPlataforma(e.target.value)} className={adminInputClass}><option value="PS5">PS5</option><option value="PS4">PS4</option></select><input type="text" placeholder="Tempo (ex: 20h)" value={novoJogoTempo} onChange={e => setNovoJogoTempo(e.target.value)} className={adminInputClass} /><input type="number" step="0.1" placeholder="Nota" value={novoJogoNota} onChange={e => setNovoJogoNota(e.target.value)} className={adminInputClass} /></div>
+                    <div className="flex gap-2"><select value={novoJogoPlataforma} onChange={e => setNovoJogoPlataforma(e.target.value)} className={adminInputClass}><option value="PS5">PS5</option><option value="PS4">PS4</option><option value="PS4/PS5">PS4/PS5</option></select><input type="text" placeholder="Tempo (ex: 20h)" value={novoJogoTempo} onChange={e => setNovoJogoTempo(e.target.value)} className={adminInputClass} /><input type="number" step="0.1" placeholder="Nota" value={novoJogoNota} onChange={e => setNovoJogoNota(e.target.value)} className={adminInputClass} /></div>
                     <input type="number" step="0.01" placeholder="Preço (Ex: 35.00)" value={novoJogoPreco} onChange={e => setNovoJogoPreco(e.target.value)} className={adminInputClass} required />
                     <textarea placeholder="Descrição" value={novoJogoDescricao} onChange={e => setNovoJogoDescricao(e.target.value)} className={`${adminInputClass} resize-none h-16`} required />
                     <button type="submit" className="w-full mt-auto py-2.5 bg-blue-600 hover:bg-blue-500 font-bold rounded-lg text-sm transition-colors">Salvar no Catálogo</button>
