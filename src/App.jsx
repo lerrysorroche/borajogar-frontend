@@ -81,9 +81,15 @@ function App() {
   const [filtroDisponibilidade, setFiltroDisponibilidade] = useState('TODOS')
 
   const getAuthHeaders = () => {
-    const token = localStorage.getItem('token_locadora');
-    return { 'Content-Type': 'application/json', 'Authorization': token ? `Bearer ${token}` : '' };
-  }
+    return {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${localStorage.getItem('token')}`,
+      // AS DUAS LINHAS ABAIXO SÃO O ANTÍDOTO CONTRA O CACHE DO FIREFOX/CHROME:
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0'
+    };
+  };
 
   const mostrarToast = (mensagem, tipo = 'sucesso') => {
     setToast({ visivel: true, mensagem, tipo })
