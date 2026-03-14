@@ -81,11 +81,9 @@ function App() {
   const [filtroDisponibilidade, setFiltroDisponibilidade] = useState('TODOS')
 
   const getAuthHeaders = () => {
-    return {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${localStorage.getItem('token')}`
-    };
-  };
+    const token = localStorage.getItem('token_locadora');
+    return { 'Content-Type': 'application/json', 'Authorization': token ? `Bearer ${token}` : '' };
+  }
 
   const mostrarToast = (mensagem, tipo = 'sucesso') => {
     setToast({ visivel: true, mensagem, tipo })
