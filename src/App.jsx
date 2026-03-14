@@ -17,6 +17,7 @@ function App() {
   const [modoLogin, setModoLogin] = useState(true) 
   const [toast, setToast] = useState({ visivel: false, mensagem: '', tipo: 'sucesso' })
   const [modalConfirmacao, setModalConfirmacao] = useState({ visivel: false, tipo: '', jogoId: null, jogoTitulo: '', preco: 0 })
+  const [menuMobileAberto, setMenuMobileAberto] = useState(false)
 
   const [formEmail, setFormEmail] = useState('')
   const [formSenha, setFormSenha] = useState('')
@@ -706,6 +707,8 @@ function App() {
             <div className="flex items-center justify-between h-16">
               <div className="flex items-center gap-8">
                 <span className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400 tracking-tighter">BORA JOGAR!</span>
+                
+                {/* MENU DESKTOP (Invisível no Celular) */}
                 <div className="hidden md:flex space-x-2">
                   <button onClick={() => setAbaAtual('vitrine')} className={`${navBtnClass} ${abaAtual === 'vitrine' ? 'bg-blue-600 text-white shadow-md shadow-blue-600/20' : 'text-zinc-400 hover:text-white hover:bg-zinc-800'}`}>🎮 Loja</button>
                   <button onClick={() => setAbaAtual('dashboard')} className={`${navBtnClass} ${abaAtual === 'dashboard' ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/20' : 'text-zinc-400 hover:text-white hover:bg-zinc-800'}`}>🔑 Meus Acessos</button>
@@ -716,7 +719,11 @@ function App() {
                   )}
                 </div>
               </div>
+
+              {/* ÁREA DIREITA: SALDO, NOME E BOTÕES */}
               <div className="flex items-center gap-4">
+                
+                {/* INFO DESKTOP (Invisível no Celular) */}
                 <div className="hidden md:flex bg-zinc-950 border border-zinc-800 px-3 py-1.5 rounded-xl items-center gap-2 shadow-inner">
                   <span className="text-[10px] text-zinc-500 uppercase font-bold tracking-wider">Saldo</span>
                   <span className={`text-sm font-black ${usuarioLogado.saldo < 0 ? 'text-rose-500 animate-pulse' : 'text-emerald-400'}`}>
@@ -724,10 +731,51 @@ function App() {
                   </span>
                 </div>
                 <span className="hidden md:block text-sm text-zinc-400">Olá, <strong className="text-white">{usuarioLogado.nome}</strong></span>
-                <button onClick={sair} className="bg-zinc-800 hover:bg-rose-600 hover:text-white text-zinc-300 px-4 py-2 rounded-lg transition-colors text-sm font-bold">Sair</button>
+                <button onClick={sair} className="hidden md:block bg-zinc-800 hover:bg-rose-600 hover:text-white text-zinc-300 px-4 py-2 rounded-lg transition-colors text-sm font-bold">Sair</button>
+
+                {/* BOTÃO HAMBÚRGUER MOBILE (Visível apenas no Celular) */}
+                <button onClick={() => setMenuMobileAberto(!menuMobileAberto)} className="md:hidden text-zinc-300 hover:text-white p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                  <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    {menuMobileAberto ? (
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    ) : (
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                    )}
+                  </svg>
+                </button>
               </div>
             </div>
           </div>
+
+          {/* === MENU MOBILE EXPANDIDO === */}
+          {menuMobileAberto && (
+            <div className="md:hidden bg-zinc-900 border-b border-zinc-800 absolute w-full left-0 top-16 shadow-2xl animate-fade-in flex flex-col">
+              
+              {/* Info do Usuário no Mobile */}
+              <div className="flex items-center justify-between p-4 border-b border-zinc-800/50 bg-zinc-950/50">
+                <span className="text-sm text-zinc-400">Olá, <strong className="text-white truncate max-w-[120px] inline-block align-bottom">{usuarioLogado.nome}</strong></span>
+                <div className="flex items-center gap-2 bg-zinc-950 border border-zinc-800 px-3 py-1.5 rounded-lg shadow-inner">
+                  <span className="text-[10px] text-zinc-500 uppercase font-bold tracking-wider">Saldo</span>
+                  <span className={`text-sm font-black ${usuarioLogado.saldo < 0 ? 'text-rose-500 animate-pulse' : 'text-emerald-400'}`}>
+                    R$ {(usuarioLogado.saldo || 0).toFixed(2)}
+                  </span>
+                </div>
+              </div>
+
+              {/* Botões de Navegação Mobile */}
+              <div className="flex flex-col p-4 gap-3">
+                <button onClick={() => { setAbaAtual('vitrine'); setMenuMobileAberto(false); }} className={`p-3 rounded-xl text-left font-bold transition-all shadow-md ${abaAtual === 'vitrine' ? 'bg-blue-600 text-white shadow-blue-600/20' : 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700 hover:text-white'}`}>🎮 Loja</button>
+                <button onClick={() => { setAbaAtual('dashboard'); setMenuMobileAberto(false); }} className={`p-3 rounded-xl text-left font-bold transition-all shadow-md ${abaAtual === 'dashboard' ? 'bg-emerald-600 text-white shadow-emerald-600/20' : 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700 hover:text-white'}`}>🔑 Meus Acessos</button>
+                <button onClick={() => { setAbaAtual('faq'); setMenuMobileAberto(false); }} className={`p-3 rounded-xl text-left font-bold transition-all shadow-md ${abaAtual === 'faq' ? 'bg-purple-600 text-white shadow-purple-600/20' : 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700 hover:text-white'}`}>📖 Como Funciona</button>
+                
+                {usuarioLogado.is_admin && (
+                  <button onClick={() => { setAbaAtual('admin'); setMenuMobileAberto(false); }} className={`p-3 rounded-xl text-left font-bold transition-all shadow-md ${abaAtual === 'admin' ? 'bg-rose-600 text-white shadow-rose-600/20' : 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700 hover:text-white'}`}>⚙️ Painel Admin</button>
+                )}
+                
+                <button onClick={() => { sair(); setMenuMobileAberto(false); }} className="p-3 mt-4 rounded-xl text-center font-bold transition-all bg-rose-900/30 text-rose-400 border border-rose-500/30 hover:bg-rose-600 hover:text-white shadow-lg">Sair da Conta</button>
+              </div>
+            </div>
+          )}
         </nav>
 
         <main className="max-w-7xl mx-auto px-4 pb-10 pt-24 md:px-8 md:pt-24">
