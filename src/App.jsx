@@ -83,11 +83,7 @@ function App() {
   const getAuthHeaders = () => {
     return {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${localStorage.getItem('token')}`,
-      // AS DUAS LINHAS ABAIXO SÃO O ANTÍDOTO CONTRA O CACHE DO FIREFOX/CHROME:
-      'Cache-Control': 'no-cache, no-store, must-revalidate',
-      'Pragma': 'no-cache',
-      'Expires': '0'
+      'Authorization': `Bearer ${localStorage.getItem('token')}`
     };
   };
 
