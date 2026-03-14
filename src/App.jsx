@@ -579,8 +579,12 @@ function App() {
   const jogosEstoqueFiltrados = jogos.filter(jogo => jogo.titulo.toLowerCase().includes(buscaEstoque.toLowerCase()))
   const locacoesAtivasFiltradas = todasLocacoes.filter(loc => loc.status === 'ATIVA').filter(loc => loc.jogo.toLowerCase().includes(buscaLocacao.toLowerCase()) || loc.cliente.toLowerCase().includes(buscaLocacao.toLowerCase()))
   const locacoesAdminParaMostrar = locacoesAtivasFiltradas.slice(0, 5)
-  const clientesFiltrados = todosUsuarios.filter(u => u.nome.toLowerCase().includes(buscaCliente.toLowerCase()))
-  const clientesParaMostrar = clientesFiltrados.slice(0, 5)
+  // Filtra pelo nome e ORDENA do mais novo (maior ID) para o mais velho
+  const clientesFiltrados = todosUsuarios
+    .filter(u => u.nome.toLowerCase().includes(buscaCliente.toLowerCase()))
+    .sort((a, b) => b.id - a.id);
+  // Aumentamos o limite para mostrar os últimos 50 clientes na tela
+  const clientesParaMostrar = clientesFiltrados.slice(0, 100);
   const alugueisAtivos = meusAlugueis.filter(item => item.status === 'ATIVA')
   const historicoAlugueis = meusAlugueis.filter(item => item.status === 'EXPIRADA').slice(0, 5)
 
@@ -1395,7 +1399,7 @@ function App() {
                     <input type="text" placeholder="🔍 Buscar cliente..." value={buscaCliente} onChange={e => setBuscaCliente(e.target.value)} className="w-1/3 p-1.5 px-3 bg-zinc-800 border border-zinc-700 rounded-lg text-sm" />
                   </div>
                   {clientesParaMostrar.length === 0 ? <p className="text-zinc-500 text-sm">Vazio.</p> : (
-                    <ul className="space-y-3">
+                    <ul className="space-y-3 overflow-y-auto max-h-[400px] pr-2 scrollbar-thin scrollbar-thumb-zinc-700 scrollbar-track-transparent">
                       {clientesParaMostrar.map(u => (
                         <li key={u.id} className="flex justify-between items-center bg-zinc-800/50 p-3 rounded-lg border border-zinc-700/50">
                           <div className="flex flex-col gap-1">
