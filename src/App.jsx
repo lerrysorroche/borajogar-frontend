@@ -184,7 +184,7 @@ function App() {
   // ============================================================================
   
   const abrirConfirmacao = (tipo, jogoId, jogoTitulo, preco) => {
-    if (usuarioLogado.saldo < preco) { mostrarToast(`Saldo insuficiente!`, "erro"); return; }
+    if (usuarioLogado.saldo < preco) { mostrarToast(`Saldo insuficiente!\nColoque créditos em "Meus Acessos"!`, "erro"); return; }
     if (usuarioLogado.saldo < 0) { mostrarToast(`Você está negativado!`, "erro"); return; }
     setModalConfirmacao({ visivel: true, tipo, jogoId, jogoTitulo, preco });
   }
