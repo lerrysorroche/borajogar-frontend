@@ -605,7 +605,7 @@ function App() {
           'bg-amber-950/90 border-amber-500/50 text-amber-100'
         } backdrop-blur-md`}>
           <span className="text-xl">{toast.tipo === 'sucesso' ? '✅' : toast.tipo === 'erro' ? '❌' : '⚠️'}</span>
-          <p className="text-sm font-medium leading-tight">{toast.mensagem}</p>
+          <p className="text-sm font-medium leading-tight whitespace-pre-line">{toast.mensagem}</p>
         </div>
       )}
 
