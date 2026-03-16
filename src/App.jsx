@@ -27,7 +27,6 @@ function App() {
   const [cadTelefone, setCadTelefone] = useState('')
   const [cadCodigoConvite, setCadCodigoConvite] = useState('')
 
-  // === NOVOS ESTADOS: RECUPERAÇÃO E MUDANÇA DE SENHA ===
   const [modoEsqueciSenha, setModoEsqueciSenha] = useState(false)
   const [esqueciEmail, setEsqueciEmail] = useState('')
   const [mudarSenhaAtual, setMudarSenhaAtual] = useState('')
@@ -47,7 +46,7 @@ function App() {
   const [novoJogoTitulo, setNovoJogoTitulo] = useState('')
   const [novoJogoPlataforma, setNovoJogoPlataforma] = useState('PS5')
   const [novoJogoPreco, setNovoJogoPreco] = useState('')
-const [novoJogoPreco14, setNovoJogoPreco14] = useState('')
+  const [novoJogoPreco14, setNovoJogoPreco14] = useState('')
   const [novoJogoDescricao, setNovoJogoDescricao] = useState('')
   const [novoJogoImagem, setNovoJogoImagem] = useState('') 
   const [novoJogoTempo, setNovoJogoTempo] = useState('') 
@@ -92,10 +91,6 @@ const [novoJogoPreco14, setNovoJogoPreco14] = useState('')
     setTimeout(() => { setToast(prev => ({ ...prev, visivel: false })) }, 3500)
   }
 
-  // ============================================================================
-  // FLUXO DE PAGAMENTO AUTOMÁTICO PIX (FRONTEND)
-  // ============================================================================
-  
   const solicitarGeracaoPix = (e) => {
     e.preventDefault();
     const valorReal = parseFloat(valorRecarga);
@@ -138,11 +133,6 @@ const [novoJogoPreco14, setNovoJogoPreco14] = useState('')
     return () => clearInterval(intervalId); 
   }, [pixPendente])
 
-
-  // ============================================================================
-  // NOVAS FUNÇÕES: RECUPERAÇÃO E MUDANÇA DE SENHA
-  // ============================================================================
-
   const solicitarRecuperacaoSenha = (e) => {
     e.preventDefault();
     if (!esqueciEmail) return;
@@ -180,12 +170,7 @@ const [novoJogoPreco14, setNovoJogoPreco14] = useState('')
     }).catch(() => mostrarToast("Erro de conexão.", "erro"));
   }
 
-  // ============================================================================
-  // OUTRAS FUNÇÕES INTACTAS
-  // ============================================================================
-  
   const abrirConfirmacao = (tipo, jogoId, jogoTitulo, preco7, preco14) => {
-    // Nós só bloqueamos a abertura do modal se o cliente não tiver dinheiro nem pros 7 dias.
     if (usuarioLogado.saldo < preco7) { mostrarToast(`Saldo insuficiente!\nColoque créditos em "Meus Acessos"!`, "erro"); return; }
     if (usuarioLogado.saldo < 0) { mostrarToast(`Você está negativado!`, "erro"); return; }
     setModalConfirmacao({ visivel: true, tipo, jogoId, jogoTitulo, preco7, preco14, diasEscolhidos: 7 });
@@ -194,7 +179,6 @@ const [novoJogoPreco14, setNovoJogoPreco14] = useState('')
   const confirmarTransacao = () => {
     const precoFinal = modalConfirmacao.diasEscolhidos === 7 ? modalConfirmacao.preco7 : modalConfirmacao.preco14;
     
-    // Verificação dupla de segurança antes de cobrar
     if (usuarioLogado.saldo < precoFinal) {
         mostrarToast("Saldo insuficiente para esta opção de dias!", "erro");
         return;
@@ -209,7 +193,7 @@ const [novoJogoPreco14, setNovoJogoPreco14] = useState('')
   const executarAluguel = (jogoId, precoJogo, dias) => {
     fetch('https://borajogar-api.onrender.com/locacoes', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ utilizador_id: usuarioLogado.id, jogo_id: jogoId, dias_aluguel: dias }) // AGORA ENVIA OS DIAS DINAMICAMENTE
+      body: JSON.stringify({ utilizador_id: usuarioLogado.id, jogo_id: jogoId, dias_aluguel: dias }) 
     }).then(async res => {
       const data = await res.json()
       if (res.ok) { 
@@ -220,10 +204,11 @@ const [novoJogoPreco14, setNovoJogoPreco14] = useState('')
     })
   }
 
-  const executarReserva = (jogoId, precoJogo) => {
+  // CORREÇÃO: O parâmetro "dias" estava faltando aqui!
+  const executarReserva = (jogoId, precoJogo, dias) => {
     fetch('https://borajogar-api.onrender.com/reservas', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ utilizador_id: usuarioLogado.id, jogo_id: jogoId, dias_aluguel: dias }) // AGORA ENVIA OS DIAS DINAMICAMENTE
+      body: JSON.stringify({ utilizador_id: usuarioLogado.id, jogo_id: jogoId, dias_aluguel: dias }) 
     }).then(async res => {
       const data = await res.json()
       if (res.ok) { 
@@ -405,11 +390,11 @@ const [novoJogoPreco14, setNovoJogoPreco14] = useState('')
     e.preventDefault()
     fetch('https://borajogar-api.onrender.com/jogos', {
       method: 'POST', headers: getAuthHeaders(),
-      body: JSON.stringify({ titulo: novoJogoTitulo, plataforma: novoJogoPlataforma, preco_aluguel: parseFloat(novoJogoPreco), preco_aluguel_14: parseFloat(novoJogoPreco14), descricao: novoJogoDescricao, url_imagem: novoJogoImagem, tempo_jogo: novoJogoTempo, nota: parseFloat(novoJogoNota) || 0 })
+      body: JSON.stringify({ titulo: novoJogoTitulo, plataforma: novoJogoPlataforma, preco_aluguel: parseFloat(novoJogoPreco), preco_aluguel_14: parseFloat(novoJogoPreco14) || 0.0, descricao: novoJogoDescricao, url_imagem: novoJogoImagem, tempo_jogo: novoJogoTempo, nota: parseFloat(novoJogoNota) || 0 })
     }).then(res => {
       if (res.ok) { 
         mostrarToast("Jogo cadastrado!", "sucesso"); carregarDados(); 
-        setNovoJogoTitulo(''); setNovoJogoPreco(''); setNovoJogoDescricao(''); setNovoJogoImagem(''); setNovoJogoTempo(''); setNovoJogoNota('');
+        setNovoJogoTitulo(''); setNovoJogoPreco(''); setNovoJogoPreco14(''); setNovoJogoDescricao(''); setNovoJogoImagem(''); setNovoJogoTempo(''); setNovoJogoNota('');
       } else { mostrarToast("Erro ao cadastrar.", "erro") }
     })
   }
@@ -538,7 +523,6 @@ const [novoJogoPreco14, setNovoJogoPreco14] = useState('')
   const lidarComFiltroDisp = (disp) => { setFiltroDisponibilidade(disp); setPaginaAtual(1); }
   const lidarComBusca = (e) => { setTermoBusca(e.target.value); setPaginaAtual(1); }
 
-  // === NOVA INTELIGÊNCIA: OS 3 LANÇAMENTOS GLOBAIS ===
   const idsLancamentos = [...jogos]
     .sort((a, b) => b.id - a.id)
     .slice(0, 3)
@@ -547,7 +531,6 @@ const [novoJogoPreco14, setNovoJogoPreco14] = useState('')
   const jogosFiltrados = jogos
     .filter(jogo => jogo.titulo.toLowerCase().includes(termoBusca.toLowerCase()))
     .filter(jogo => {
-      // NOVA INTELIGÊNCIA DE FILTRO CROSS-GEN
       if (filtroPlataforma === 'TODAS') return true;
       if (filtroPlataforma === 'PS5') return jogo.plataforma === 'PS5' || jogo.plataforma === 'PS4/PS5';
       if (filtroPlataforma === 'PS4') return jogo.plataforma === 'PS4' || jogo.plataforma === 'PS4/PS5';
@@ -563,22 +546,18 @@ const [novoJogoPreco14, setNovoJogoPreco14] = useState('')
       const aLancamento = idsLancamentos.includes(a.id);
       const bLancamento = idsLancamentos.includes(b.id);
 
-      // REGRA ZERO: Lançamentos sempre no topo absoluto
       if (aLancamento && !bLancamento) return -1;
       if (!aLancamento && bLancamento) return 1;
 
-      // REGRA 1: Disponibilidade
       const aDisponivel = a.estoque > 0;
       const bDisponivel = b.estoque > 0;
       if (aDisponivel && !bDisponivel) return -1;
       if (!aDisponivel && bDisponivel) return 1;
       
-      // REGRA 2: Popularidade
       if (b.popularidade !== a.popularidade) {
           return b.popularidade - a.popularidade;
       }
       
-      // REGRA 3: Desempate normal
       return b.id - a.id;
     });
 
@@ -591,11 +570,10 @@ const [novoJogoPreco14, setNovoJogoPreco14] = useState('')
   const jogosEstoqueFiltrados = jogos.filter(jogo => jogo.titulo.toLowerCase().includes(buscaEstoque.toLowerCase()))
   const locacoesAtivasFiltradas = todasLocacoes.filter(loc => loc.status === 'ATIVA').filter(loc => loc.jogo.toLowerCase().includes(buscaLocacao.toLowerCase()) || loc.cliente.toLowerCase().includes(buscaLocacao.toLowerCase()))
   const locacoesAdminParaMostrar = locacoesAtivasFiltradas.slice(0, 5)
-  // Filtra pelo nome e ORDENA do mais novo (maior ID) para o mais velho
+  
   const clientesFiltrados = todosUsuarios
     .filter(u => u.nome.toLowerCase().includes(buscaCliente.toLowerCase()))
     .sort((a, b) => b.id - a.id);
-  // Aumentamos o limite para mostrar os últimos 50 clientes na tela
   const clientesParaMostrar = clientesFiltrados.slice(0, 100);
   const alugueisAtivos = meusAlugueis.filter(item => item.status === 'ATIVA')
   const historicoAlugueis = meusAlugueis.filter(item => item.status === 'EXPIRADA').slice(0, 5)
@@ -903,7 +881,10 @@ const [novoJogoPreco14, setNovoJogoPreco14] = useState('')
                         <div className="flex items-end justify-between mb-4">
                           <div>
                             <div className="text-xl font-black text-white">R$ {jogo.preco_aluguel.toFixed(2)}</div>
-                            <span className="text-[10px] text-zinc-500 font-normal">/ 7 dias</span>
+                            {/* CORREÇÃO DO TEXTO DA VITRINE: Mostra se tem opção de 14 dias */}
+                            <span className="text-[10px] text-zinc-500 font-normal">
+                                {jogo.preco_aluguel_14 > 0 ? '/ 7 ou 14 dias' : '/ 7 dias'}
+                            </span>
                           </div>
                         </div>
 
