@@ -1385,16 +1385,37 @@ const [novoJogoPreco14, setNovoJogoPreco14] = useState('')
                 <div className={adminCardClass}>
                   <h3 className="text-base font-bold text-blue-400 mb-4 flex items-center gap-2">🕹️ Novo Jogo</h3>
                   <form onSubmit={cadastrarJogo} className="space-y-3 flex-1 flex flex-col">
+  
+                    {/* 1. Título e Botão de Busca */}
+                    <div className="flex gap-2">
+                      <input type="text" placeholder="Título do jogo" value={novoJogoTitulo} onChange={e => setNovoJogoTitulo(e.target.value)} className={adminInputClass} required />
+                      <button type="button" onClick={buscarDadosDoJogo} className="bg-amber-500 hover:bg-amber-400 text-zinc-900 font-bold px-4 rounded-lg text-xs whitespace-nowrap transition-colors shadow-lg">✨ Buscar</button>
+                    </div>
+
+                    {/* 2. URL da Capa */}
+                    <input type="url" placeholder="URL da Capa" value={novoJogoImagem} onChange={e => setNovoJogoImagem(e.target.value)} className={adminInputClass} />
+
+                    {/* 3. Plataforma, Tempo e Nota */}
+                    <div className="flex gap-2">
+                      <select value={novoJogoPlataforma} onChange={e => setNovoJogoPlataforma(e.target.value)} className={adminInputClass}>
+                        <option value="PS5">PS5</option>
+                        <option value="PS4">PS4</option>
+                        <option value="PS4/PS5">PS4/PS5</option>
+                      </select>
+                      <input type="text" placeholder="Tempo (ex: 20h)" value={novoJogoTempo} onChange={e => setNovoJogoTempo(e.target.value)} className={adminInputClass} />
+                      <input type="number" step="0.1" placeholder="Nota" value={novoJogoNota} onChange={e => setNovoJogoNota(e.target.value)} className={adminInputClass} />
+                    </div>
+
+                    {/* 4. OS PREÇOS DE 7 E 14 DIAS LADO A LADO */}
                     <div className="flex gap-2">
                       <input type="number" step="0.01" placeholder="Preço 7 Dias (Ex: 35.00)" value={novoJogoPreco} onChange={e => setNovoJogoPreco(e.target.value)} className={adminInputClass} required />
                       <input type="number" step="0.01" placeholder="Preço 14 Dias (Ex: 60.00)" value={novoJogoPreco14} onChange={e => setNovoJogoPreco14(e.target.value)} className={adminInputClass} />
-                      <button type="button" onClick={buscarDadosDoJogo} className="bg-amber-500 hover:bg-amber-400 text-zinc-900 font-bold px-4 rounded-lg text-xs whitespace-nowrap transition-colors shadow-lg">✨ Buscar</button>
                     </div>
-                    <input type="url" placeholder="URL da Capa" value={novoJogoImagem} onChange={e => setNovoJogoImagem(e.target.value)} className={adminInputClass} />
-                    <div className="flex gap-2"><select value={novoJogoPlataforma} onChange={e => setNovoJogoPlataforma(e.target.value)} className={adminInputClass}><option value="PS5">PS5</option><option value="PS4">PS4</option><option value="PS4/PS5">PS4/PS5</option></select><input type="text" placeholder="Tempo (ex: 20h)" value={novoJogoTempo} onChange={e => setNovoJogoTempo(e.target.value)} className={adminInputClass} /><input type="number" step="0.1" placeholder="Nota" value={novoJogoNota} onChange={e => setNovoJogoNota(e.target.value)} className={adminInputClass} /></div>
-                    <input type="number" step="0.01" placeholder="Preço (Ex: 35.00)" value={novoJogoPreco} onChange={e => setNovoJogoPreco(e.target.value)} className={adminInputClass} required />
+
+                    {/* 5. Descrição e Botão Salvar */}
                     <textarea placeholder="Descrição" value={novoJogoDescricao} onChange={e => setNovoJogoDescricao(e.target.value)} className={`${adminInputClass} resize-none h-16`} required />
                     <button type="submit" className="w-full mt-auto py-2.5 bg-blue-600 hover:bg-blue-500 font-bold rounded-lg text-sm transition-colors">Salvar no Catálogo</button>
+
                   </form>
                 </div>
 
