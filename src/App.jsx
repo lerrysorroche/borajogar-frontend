@@ -16,7 +16,7 @@ function App() {
   const [abaAtual, setAbaAtual] = useState('vitrine') 
   const [modoLogin, setModoLogin] = useState(true) 
   const [toast, setToast] = useState({ visivel: false, mensagem: '', tipo: 'sucesso' })
-  const [modalConfirmacao, setModalConfirmacao] = useState({ visivel: false, tipo: '', jogoId: null, jogoTitulo: '', preco: 0 })
+  const [modalConfirmacao, setModalConfirmacao] = useState({ visivel: false, tipo: '', jogoId: null, jogoTitulo: '', preco7: 0, preco14: 0, diasEscolhidos: 7 })
   const [menuMobileAberto, setMenuMobileAberto] = useState(false)
 
   const [formEmail, setFormEmail] = useState('')
@@ -47,6 +47,7 @@ function App() {
   const [novoJogoTitulo, setNovoJogoTitulo] = useState('')
   const [novoJogoPlataforma, setNovoJogoPlataforma] = useState('PS5')
   const [novoJogoPreco, setNovoJogoPreco] = useState('')
+const [novoJogoPreco14, setNovoJogoPreco14] = useState('')
   const [novoJogoDescricao, setNovoJogoDescricao] = useState('')
   const [novoJogoImagem, setNovoJogoImagem] = useState('') 
   const [novoJogoTempo, setNovoJogoTempo] = useState('') 
@@ -183,22 +184,32 @@ function App() {
   // OUTRAS FUNÇÕES INTACTAS
   // ============================================================================
   
-  const abrirConfirmacao = (tipo, jogoId, jogoTitulo, preco) => {
-    if (usuarioLogado.saldo < preco) { mostrarToast(`Saldo insuficiente!\nColoque créditos em "Meus Acessos"!`, "erro"); return; }
+  const abrirConfirmacao = (tipo, jogoId, jogoTitulo, preco7, preco14) => {
+    // Nós só bloqueamos a abertura do modal se o cliente não tiver dinheiro nem pros 7 dias.
+    if (usuarioLogado.saldo < preco7) { mostrarToast(`Saldo insuficiente!\nColoque créditos em "Meus Acessos"!`, "erro"); return; }
     if (usuarioLogado.saldo < 0) { mostrarToast(`Você está negativado!`, "erro"); return; }
-    setModalConfirmacao({ visivel: true, tipo, jogoId, jogoTitulo, preco });
+    setModalConfirmacao({ visivel: true, tipo, jogoId, jogoTitulo, preco7, preco14, diasEscolhidos: 7 });
   }
 
   const confirmarTransacao = () => {
-    if (modalConfirmacao.tipo === 'aluguel') { executarAluguel(modalConfirmacao.jogoId, modalConfirmacao.preco); } 
-    else { executarReserva(modalConfirmacao.jogoId, modalConfirmacao.preco); }
-    setModalConfirmacao({ visivel: false, tipo: '', jogoId: null, jogoTitulo: '', preco: 0 }); 
+    const precoFinal = modalConfirmacao.diasEscolhidos === 7 ? modalConfirmacao.preco7 : modalConfirmacao.preco14;
+    
+    // Verificação dupla de segurança antes de cobrar
+    if (usuarioLogado.saldo < precoFinal) {
+        mostrarToast("Saldo insuficiente para esta opção de dias!", "erro");
+        return;
+    }
+
+    if (modalConfirmacao.tipo === 'aluguel') { executarAluguel(modalConfirmacao.jogoId, precoFinal, modalConfirmacao.diasEscolhidos); } 
+    else { executarReserva(modalConfirmacao.jogoId, precoFinal, modalConfirmacao.diasEscolhidos); }
+    
+    setModalConfirmacao({ visivel: false, tipo: '', jogoId: null, jogoTitulo: '', preco7: 0, preco14: 0, diasEscolhidos: 7 }); 
   }
 
-  const executarAluguel = (jogoId, precoJogo) => {
+  const executarAluguel = (jogoId, precoJogo, dias) => {
     fetch('https://borajogar-api.onrender.com/locacoes', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ utilizador_id: usuarioLogado.id, jogo_id: jogoId, dias_aluguel: 7 })
+      body: JSON.stringify({ utilizador_id: usuarioLogado.id, jogo_id: jogoId, dias_aluguel: dias }) // AGORA ENVIA OS DIAS DINAMICAMENTE
     }).then(async res => {
       const data = await res.json()
       if (res.ok) { 
@@ -212,7 +223,7 @@ function App() {
   const executarReserva = (jogoId, precoJogo) => {
     fetch('https://borajogar-api.onrender.com/reservas', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ utilizador_id: usuarioLogado.id, jogo_id: jogoId })
+      body: JSON.stringify({ utilizador_id: usuarioLogado.id, jogo_id: jogoId, dias_aluguel: dias }) // AGORA ENVIA OS DIAS DINAMICAMENTE
     }).then(async res => {
       const data = await res.json()
       if (res.ok) { 
@@ -394,7 +405,7 @@ function App() {
     e.preventDefault()
     fetch('https://borajogar-api.onrender.com/jogos', {
       method: 'POST', headers: getAuthHeaders(),
-      body: JSON.stringify({ titulo: novoJogoTitulo, plataforma: novoJogoPlataforma, preco_aluguel: parseFloat(novoJogoPreco), descricao: novoJogoDescricao, url_imagem: novoJogoImagem, tempo_jogo: novoJogoTempo, nota: parseFloat(novoJogoNota) || 0 })
+      body: JSON.stringify({ titulo: novoJogoTitulo, plataforma: novoJogoPlataforma, preco_aluguel: parseFloat(novoJogoPreco), preco_aluguel_14: parseFloat(novoJogoPreco14), descricao: novoJogoDescricao, url_imagem: novoJogoImagem, tempo_jogo: novoJogoTempo, nota: parseFloat(novoJogoNota) || 0 })
     }).then(res => {
       if (res.ok) { 
         mostrarToast("Jogo cadastrado!", "sucesso"); carregarDados(); 
@@ -616,25 +627,55 @@ function App() {
               {modalConfirmacao.tipo === 'aluguel' ? '🎮 Alugar Jogo' : '⏳ Entrar na Fila'}
             </h3>
             <p className="text-zinc-400 text-sm mb-6 leading-relaxed">
-              Você está prestes a {modalConfirmacao.tipo === 'aluguel' ? 'gastar seu saldo para alugar' : 'investir seu saldo para reservar'} o jogo <strong className="text-white">{modalConfirmacao.jogoTitulo}</strong> por 7 dias.
+              Escolha por quanto tempo você quer jogar <strong className="text-white">{modalConfirmacao.jogoTitulo}</strong>:
             </p>
             
-            <div className="bg-zinc-950 rounded-2xl p-5 mb-8 border border-zinc-800/80 shadow-inner">
-              <div className="flex justify-between items-center mb-3">
-                <span className="text-sm text-zinc-500 font-medium">Valor do jogo:</span>
-                <span className="text-rose-400 font-black">- R$ {modalConfirmacao.preco.toFixed(2)}</span>
-              </div>
-              <div className="w-full h-px bg-zinc-800/50 mb-3"></div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-zinc-500 font-medium">Seu saldo após a compra:</span>
-                <span className="text-emerald-400 font-black">R$ {(usuarioLogado.saldo - modalConfirmacao.preco).toFixed(2)}</span>
-              </div>
+            {/* CAIXAS DE SELEÇÃO 7 vs 14 DIAS */}
+            <div className="flex gap-3 mb-6">
+                <button onClick={() => setModalConfirmacao({...modalConfirmacao, diasEscolhidos: 7})} className={`flex-1 p-3 rounded-xl border-2 transition-all text-left ${modalConfirmacao.diasEscolhidos === 7 ? 'border-blue-500 bg-blue-500/10' : 'border-zinc-700 bg-zinc-800 hover:bg-zinc-700'}`}>
+                    <div className="text-sm font-bold text-white mb-1">7 Dias</div>
+                    <div className="text-lg font-black text-blue-400">R$ {modalConfirmacao.preco7.toFixed(2)}</div>
+                </button>
+
+                {modalConfirmacao.preco14 > 0 && (
+                    <button onClick={() => setModalConfirmacao({...modalConfirmacao, diasEscolhidos: 14})} className={`flex-1 p-3 rounded-xl border-2 transition-all text-left relative ${modalConfirmacao.diasEscolhidos === 14 ? 'border-purple-500 bg-purple-500/10' : 'border-zinc-700 bg-zinc-800 hover:bg-zinc-700'}`}>
+                        <span className="absolute -top-3 right-2 bg-purple-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider">Desconto!</span>
+                        <div className="text-sm font-bold text-white mb-1">14 Dias</div>
+                        <div className="text-lg font-black text-purple-400">R$ {modalConfirmacao.preco14.toFixed(2)}</div>
+                    </button>
+                )}
             </div>
 
-            <div className="flex gap-3">
-              <button onClick={() => setModalConfirmacao({ visivel: false, tipo: '', jogoId: null, jogoTitulo: '', preco: 0 })} className="flex-1 py-3 rounded-xl font-bold text-sm bg-zinc-800 text-zinc-300 hover:bg-zinc-700 hover:text-white transition-colors">Cancelar</button>
-              <button onClick={confirmarTransacao} className={`flex-1 py-3 rounded-xl font-bold text-sm text-white shadow-lg transition-all ${modalConfirmacao.tipo === 'aluguel' ? 'bg-blue-600 hover:bg-blue-500 shadow-blue-600/20' : 'bg-amber-600 hover:bg-amber-500 shadow-amber-600/20'}`}>Confirmar</button>
-            </div>
+            {/* CÁLCULO DE SALDO DINÂMICO */}
+            {(() => {
+              const precoAtual = modalConfirmacao.diasEscolhidos === 7 ? modalConfirmacao.preco7 : modalConfirmacao.preco14;
+              const temSaldo = usuarioLogado.saldo >= precoAtual;
+              
+              return (
+                <>
+                  <div className="bg-zinc-950 rounded-2xl p-5 mb-8 border border-zinc-800/80 shadow-inner">
+                    <div className="flex justify-between items-center mb-3">
+                      <span className="text-sm text-zinc-500 font-medium">Valor do aluguel:</span>
+                      <span className="text-rose-400 font-black">- R$ {precoAtual.toFixed(2)}</span>
+                    </div>
+                    <div className="w-full h-px bg-zinc-800/50 mb-3"></div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-zinc-500 font-medium">Saldo após compra:</span>
+                      <span className={`font-black ${temSaldo ? 'text-emerald-400' : 'text-rose-500 animate-pulse'}`}>
+                        R$ {(usuarioLogado.saldo - precoAtual).toFixed(2)}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-3">
+                    <button onClick={() => setModalConfirmacao({ visivel: false, tipo: '', jogoId: null, jogoTitulo: '', preco7: 0, preco14: 0, diasEscolhidos: 7 })} className="flex-1 py-3 rounded-xl font-bold text-sm bg-zinc-800 text-zinc-300 hover:bg-zinc-700 hover:text-white transition-colors">Cancelar</button>
+                    <button onClick={confirmarTransacao} disabled={!temSaldo} className={`flex-1 py-3 rounded-xl font-bold text-sm text-white shadow-lg transition-all ${!temSaldo ? 'opacity-50 cursor-not-allowed bg-zinc-600' : modalConfirmacao.tipo === 'aluguel' ? 'bg-blue-600 hover:bg-blue-500 shadow-blue-600/20' : 'bg-amber-600 hover:bg-amber-500 shadow-amber-600/20'}`}>
+                        {temSaldo ? 'Confirmar' : 'Sem Saldo'}
+                    </button>
+                  </div>
+                </>
+              )
+            })()}
           </div>
         </div>
       )}
@@ -879,7 +920,7 @@ function App() {
                           </div>
                         )}
 
-                        <button onClick={() => abrirConfirmacao(jogo.estoque > 0 ? 'aluguel' : 'reserva', jogo.id, jogo.titulo, jogo.preco_aluguel)} className={`w-full py-3 rounded-xl text-sm font-bold transition-all duration-300 ${ jogo.estoque > 0 ? 'bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-500/20' : 'bg-amber-600 hover:bg-amber-500 text-white shadow-lg shadow-amber-600/20'}`}>
+                        <button onClick={() => abrirConfirmacao(jogo.estoque > 0 ? 'aluguel' : 'reserva', jogo.id, jogo.titulo, jogo.preco_aluguel, jogo.preco_aluguel_14 || 0)} className={`w-full py-3 rounded-xl text-sm font-bold transition-all duration-300 ${ jogo.estoque > 0 ? 'bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-500/20' : 'bg-amber-600 hover:bg-amber-500 text-white shadow-lg shadow-amber-600/20'}`}>
                           {jogo.estoque > 0 ? 'Alugar Agora' : 'Reservar na Fila'}
                         </button>
                       </div>
@@ -1345,7 +1386,8 @@ function App() {
                   <h3 className="text-base font-bold text-blue-400 mb-4 flex items-center gap-2">🕹️ Novo Jogo</h3>
                   <form onSubmit={cadastrarJogo} className="space-y-3 flex-1 flex flex-col">
                     <div className="flex gap-2">
-                      <input type="text" placeholder="Título do jogo" value={novoJogoTitulo} onChange={e => setNovoJogoTitulo(e.target.value)} className={adminInputClass} required />
+                      <input type="number" step="0.01" placeholder="Preço 7 Dias (Ex: 35.00)" value={novoJogoPreco} onChange={e => setNovoJogoPreco(e.target.value)} className={adminInputClass} required />
+                      <input type="number" step="0.01" placeholder="Preço 14 Dias (Ex: 60.00)" value={novoJogoPreco14} onChange={e => setNovoJogoPreco14(e.target.value)} className={adminInputClass} />
                       <button type="button" onClick={buscarDadosDoJogo} className="bg-amber-500 hover:bg-amber-400 text-zinc-900 font-bold px-4 rounded-lg text-xs whitespace-nowrap transition-colors shadow-lg">✨ Buscar</button>
                     </div>
                     <input type="url" placeholder="URL da Capa" value={novoJogoImagem} onChange={e => setNovoJogoImagem(e.target.value)} className={adminInputClass} />
