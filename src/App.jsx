@@ -204,6 +204,7 @@ function App() {
     })
   }
 
+  // CORREÇÃO: O parâmetro "dias" estava faltando aqui!
   const executarReserva = (jogoId, precoJogo, dias) => {
     fetch('https://borajogar-api.onrender.com/reservas', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -286,12 +287,12 @@ function App() {
 
   const registrarConta = (e) => {
     e.preventDefault()
-    
-    // VALIDAÇÃO DE SENHA FORTE 
+
+    // VALIDAÇÃO DE SENHA FORTE
     const regexSenha = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
     if (!regexSenha.test(cadSenha)) {
       mostrarToast("Sua senha deve ter no mínimo 8 caracteres, 1 letra maiúscula, 1 número e 1 caractere especial (Ex: @, #, !).", "erro");
-      return; 
+      return; // Trava o envio para o servidor
     }
 
     fetch('https://borajogar-api.onrender.com/usuarios', {
@@ -514,7 +515,7 @@ function App() {
     if(!telefone) return;
     let numeroLimpo = telefone.replace(/\D/g, '');
     if(!numeroLimpo.startsWith('55')) numeroLimpo = '55' + numeroLimpo;
-    const mensagem = `Olá, ${nome}! Aqui é da locadora *BORA JOGAR!* 🎮\n\nSeu tempo com o jogo *${jogo}* terminou, mas notamos que a conta ainda está ativada como "Principal" no seu console.\n\n⚠️ Concedemos um *prazo de tolerância de 1 hora* para você entrar na conta e desativar. Caso não seja feito, o sistema aplicará uma multa automática de R$ 50,00 e sua carteira será bloqueada.\n\nMe avise aqui assim que desativar!`;
+    const mensagem = `Olá, ${nome}! Aqui é da locadora *BORA JOGAR!* 🎮\n\nSeu tempo com o jogo *${jogo}* terminou, mas notamos que a conta ainda está ativada como "Principal" no seu console.\n\n⚠️ Concedemos um *prazo de tolerância de 1 hora* para você entrar na conta e desativar. Caso não seja feito, o sistema aplicará uma multa automática de R$ 50,00 e sua carteira será bloqueada.\n\nComo fazer a desativação:\n\nNo PS5: Vá em Configurações > Usuários e Contas > Outros > Compartilhamento do console e jogo offline e desative.\n\nNo PS4: Vá em Configurações > Gerenciamento da conta > Ativar como seu PS4 principal e desative.\n\nMe avise aqui assim que desativar!`;
     const url = `https://wa.me/${numeroLimpo}?text=${encodeURIComponent(mensagem)}`;
     window.open(url, '_blank');
   }
@@ -870,6 +871,7 @@ function App() {
                           : <span className="bg-rose-600/90 backdrop-blur-sm text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow-lg border border-rose-500/50">ALUGADO</span>}
                       </div>
 
+                      {/* AQUI ENTRA O NOVO BADGE NEON DE LANÇAMENTO */}
                       {isLancamento && (
                         <div className="absolute bottom-3 left-3 z-20">
                           <span className="bg-fuchsia-600/90 text-white text-[10px] font-black px-3 py-1.5 rounded-lg border border-fuchsia-400 shadow-[0_0_15px_rgba(192,38,211,0.8)] flex items-center gap-1.5 tracking-widest uppercase backdrop-blur-md">
@@ -887,6 +889,7 @@ function App() {
                         <div className="flex items-end justify-between mb-4">
                           <div>
                             <div className="text-xl font-black text-white">R$ {jogo.preco_aluguel.toFixed(2)}</div>
+                            {/* CORREÇÃO DO TEXTO DA VITRINE: Mostra se tem opção de 14 dias */}
                             <span className="text-[10px] text-zinc-500 font-normal">
                                 {jogo.preco_aluguel_14 > 0 ? '/ 7 ou 14 dias' : '/ 7 dias'}
                             </span>
@@ -977,6 +980,7 @@ function App() {
                         <span>Gerar PIX</span> <span className="text-xl">⚡</span>
                       </button>
 
+                      {/* NOVO: SELOS DE SEGURANÇA (Checkout) */}
                       <div className="mt-5 pt-5 border-t border-zinc-800/50 flex flex-col items-center gap-2 opacity-80">
                         <div className="flex items-center gap-2 text-zinc-400 text-[10px] uppercase tracking-widest font-bold">
                           <span>🔒 Pagamento 100% Seguro</span>
@@ -991,7 +995,7 @@ function App() {
                   )}
                 </section>
 
-                <section className="bg-zinc-900/80 p-6 md:p-8 rounded-3xl border border-zinc-800 shadow-2xl flex flex-col h-full">
+                <section className="bg-zinc-900/80 p-6 md:p-8 rounded-3xl border border-zinc-800 shadow-2xl flex flex-col h-[400px]">
                   <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-2">🧾 Extrato da Conta</h3>
                   {extrato.length === 0 ? (
                     <div className="flex-1 flex flex-col items-center justify-center text-zinc-500"><span className="text-4xl mb-2 opacity-30">💳</span><p className="text-sm">Nenhuma transação encontrada.</p></div>
