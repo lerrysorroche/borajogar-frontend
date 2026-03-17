@@ -59,6 +59,7 @@ function App() {
 
   const [editandoPrecoId, setEditandoPrecoId] = useState(null)
   const [novoPrecoEdicao, setNovoPrecoEdicao] = useState('')
+  const [novoPrecoEdicao14, setNovoPrecoEdicao14] = useState('')
   
   const [termoBusca, setTermoBusca] = useState('')
   const [buscaEstoque, setBuscaEstoque] = useState('')
@@ -408,14 +409,15 @@ function App() {
 
   const salvarNovoPreco = (jogoId) => {
     const precoReal = parseFloat(novoPrecoEdicao);
-    if (isNaN(precoReal) || precoReal <= 0) { mostrarToast("Digite um valor válido.", "erro"); return; }
+    const precoReal14 = parseFloat(novoPrecoEdicao14) || 0; // Se deixar em branco, vai zerar o de 14 dias
+    if (isNaN(precoReal) || precoReal <= 0) { mostrarToast("Digite um valor válido para os 7 dias.", "erro"); return; }
     
     fetch(`https://borajogar-api.onrender.com/jogos/${jogoId}/preco`, {
       method: 'PATCH', headers: getAuthHeaders(),
-      body: JSON.stringify({ preco_aluguel: precoReal })
+      body: JSON.stringify({ preco_aluguel: precoReal, preco_aluguel_14: precoReal14 })
     }).then(async res => {
       if (res.ok) {
-        mostrarToast("Preço atualizado!", "sucesso");
+        mostrarToast("Preços atualizados!", "sucesso");
         setEditandoPrecoId(null);
         carregarDados();
       } else {
@@ -1449,13 +1451,14 @@ function App() {
                             {editandoPrecoId === jogo.id ? (
                               <div className="flex items-center gap-2">
                                 <span className="text-zinc-500 text-xs font-bold">R$</span>
-                                <input type="number" step="0.01" value={novoPrecoEdicao} onChange={e => setNovoPrecoEdicao(e.target.value)} className="w-20 px-2 py-1 bg-zinc-950 border border-zinc-700 rounded text-xs text-white focus:outline-none focus:border-emerald-500" placeholder="Novo" />
+                                <input type="number" step="0.01" value={novoPrecoEdicao} onChange={e => setNovoPrecoEdicao(e.target.value)} className="w-16 px-2 py-1 bg-zinc-950 border border-zinc-700 rounded text-xs text-white focus:outline-none focus:border-emerald-500" placeholder="7 Dias" />
+                                <input type="number" step="0.01" value={novoPrecoEdicao14} onChange={e => setNovoPrecoEdicao14(e.target.value)} className="w-16 px-2 py-1 bg-zinc-950 border border-zinc-700 rounded text-xs text-white focus:outline-none focus:border-emerald-500" placeholder="14 Dias" />
                                 <button onClick={() => salvarNovoPreco(jogo.id)} className="text-emerald-400 hover:text-white text-xs bg-emerald-900/30 hover:bg-emerald-600 px-3 py-1.5 rounded-lg font-bold transition-colors border border-emerald-500/30">Salvar</button>
                                 <button onClick={() => setEditandoPrecoId(null)} className="text-zinc-400 hover:text-white text-xs bg-zinc-800 hover:bg-zinc-700 px-3 py-1.5 rounded-lg font-bold transition-colors">X</button>
                               </div>
                             ) : (
                               <>
-                                <button onClick={() => { setEditandoPrecoId(jogo.id); setNovoPrecoEdicao(jogo.preco_aluguel); }} className="text-blue-400 hover:text-white text-xs bg-blue-900/30 hover:bg-blue-600 px-3 py-1.5 rounded-lg font-bold transition-colors border border-blue-500/30">Editar</button>
+                                <button onClick={() => { setEditandoPrecoId(jogo.id); setNovoPrecoEdicao(jogo.preco_aluguel); setNovoPrecoEdicao14(jogo.preco_aluguel_14 || ''); }} className="text-blue-400 hover:text-white text-xs bg-blue-900/30 hover:bg-blue-600 px-3 py-1.5 rounded-lg font-bold transition-colors border border-blue-500/30">Editar</button>
                                 <button onClick={() => removerJogo(jogo.id)} className="text-rose-400 hover:text-white text-xs bg-rose-900/30 hover:bg-rose-600 px-3 py-1.5 rounded-lg font-bold transition-colors border border-rose-500/30">Excluir</button>
                               </>
                             )}
