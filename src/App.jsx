@@ -288,7 +288,6 @@ function App() {
   const registrarConta = (e) => {
     e.preventDefault()
 
-    // VALIDAÇÃO DE SENHA FORTE
     const regexSenha = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
     if (!regexSenha.test(cadSenha)) {
       mostrarToast("Sua senha deve ter no mínimo 8 caracteres, 1 letra maiúscula, 1 número e 1 caractere especial (Ex: @, #, !).", "erro");
@@ -409,7 +408,7 @@ function App() {
 
   const salvarNovoPreco = (jogoId) => {
     const precoReal = parseFloat(novoPrecoEdicao);
-    const precoReal14 = parseFloat(novoPrecoEdicao14) || 0; // Se deixar em branco, vai zerar o de 14 dias
+    const precoReal14 = parseFloat(novoPrecoEdicao14) || 0;
     if (isNaN(precoReal) || precoReal <= 0) { mostrarToast("Digite um valor válido para os 7 dias.", "erro"); return; }
     
     fetch(`https://borajogar-api.onrender.com/jogos/${jogoId}/preco`, {
@@ -517,6 +516,14 @@ function App() {
     let numeroLimpo = telefone.replace(/\D/g, '');
     if(!numeroLimpo.startsWith('55')) numeroLimpo = '55' + numeroLimpo;
     const mensagem = `Olá, ${nome}! Aqui é da locadora *BORA JOGAR!* 🎮\n\nSeu tempo com o jogo *${jogo}* terminou, mas notamos que a conta ainda está ativada como "Principal" no seu console.\n\n⚠️ Concedemos um *prazo de tolerância de 1 hora* para você entrar na conta e desativar. Caso não seja feito, o sistema aplicará uma multa automática de R$ 50,00 e sua carteira será bloqueada.\n\nComo fazer a desativação:\n\nNo PS5: Vá em Configurações > Usuários e Contas > Outros > Compartilhamento do console e jogo offline e desative.\n\nNo PS4: Vá em Configurações > Gerenciamento da conta > Ativar como seu PS4 principal e desative.\n\nMe avise aqui assim que desativar!`;
+    const url = `https://wa.me/${numeroLimpo}?text=${encodeURIComponent(mensagem)}`;
+    window.open(url, '_blank');
+  }
+
+  // === NOVO: FUNÇÃO PARA PEDIR JOGO NO WHATSAPP ===
+  const pedirJogoEmBreve = (jogoNome) => {
+    let numeroLimpo = NUMERO_WHATSAPP_SUPORTE.replace(/\D/g, '');
+    const mensagem = `Olá! Vi o jogo *${jogoNome}* na vitrine da Bora Jogar e quero votar para vocês colocarem no catálogo! Tenho interesse em alugar.`;
     const url = `https://wa.me/${numeroLimpo}?text=${encodeURIComponent(mensagem)}`;
     window.open(url, '_blank');
   }
@@ -856,10 +863,14 @@ function App() {
                 {jogosDaPagina.map(jogo => {
                   const isLancamento = idsLancamentos.includes(jogo.id);
                   
+                  // === A MÁGICA DA "PORTA FALSA" COMEÇA AQUI ===
+                  const isEmBreve = jogo.titulo.toUpperCase().includes('[BREVE]');
+                  const tituloLimpo = jogo.titulo.replace(/\[BREVE\]/gi, '').trim();
+                  
                   return (
                   <div key={jogo.id} className="bg-zinc-900 rounded-2xl border border-zinc-800 flex flex-col shadow-xl hover:-translate-y-2 hover:border-blue-500/50 transition-all duration-300 group overflow-hidden">
                     <div className="h-48 w-full bg-zinc-800 relative overflow-hidden">
-                      {jogo.url_imagem ? <img src={jogo.url_imagem} alt={jogo.titulo} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out" /> : <div className="w-full h-full flex items-center justify-center bg-zinc-800/80"><span className="text-5xl opacity-50">🎮</span></div>}
+                      {jogo.url_imagem ? <img src={jogo.url_imagem} alt={tituloLimpo} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out" /> : <div className="w-full h-full flex items-center justify-center bg-zinc-800/80"><span className="text-5xl opacity-50">🎮</span></div>}
                       
                       <div className="absolute top-3 left-3 right-3 flex justify-between items-start">
                         <div className="flex flex-wrap gap-2">
@@ -867,12 +878,17 @@ function App() {
                           {jogo.nota > 0 && (<span className="bg-zinc-900/80 backdrop-blur-sm text-amber-400 border border-zinc-700/50 text-[10px] uppercase font-bold px-2 py-1 rounded-md shadow flex items-center gap-1">⭐ {jogo.nota}</span>)}
                           {jogo.tempo_jogo && jogo.tempo_jogo !== '0h' && (<span className="bg-zinc-900/80 backdrop-blur-sm text-zinc-300 border border-zinc-700/50 text-[10px] uppercase font-bold px-2 py-1 rounded-md shadow flex items-center gap-1">⏱️ ~{jogo.tempo_jogo}</span>)}
                         </div>
-                        {jogo.estoque > 0 
-                          ? <span className="bg-emerald-500/90 backdrop-blur-sm text-white text-[10px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1 shadow-lg border border-emerald-400/50"><span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>DISPONÍVEL</span>
-                          : <span className="bg-rose-600/90 backdrop-blur-sm text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow-lg border border-rose-500/50">ALUGADO</span>}
+                        
+                        {/* ETIQUETA INTELIGENTE (Disponível, Alugado ou Em Breve) */}
+                        {jogo.estoque > 0 ? (
+                          <span className="bg-emerald-500/90 backdrop-blur-sm text-white text-[10px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1 shadow-lg border border-emerald-400/50"><span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>DISPONÍVEL</span>
+                        ) : isEmBreve ? (
+                          <span className="bg-purple-600/90 backdrop-blur-sm text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow-lg border border-purple-500/50 uppercase tracking-widest">EM BREVE</span>
+                        ) : (
+                          <span className="bg-rose-600/90 backdrop-blur-sm text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow-lg border border-rose-500/50">ALUGADO</span>
+                        )}
                       </div>
 
-                      {/* AQUI ENTRA O NOVO BADGE NEON DE LANÇAMENTO */}
                       {isLancamento && (
                         <div className="absolute bottom-3 left-3 z-20">
                           <span className="bg-fuchsia-600/90 text-white text-[10px] font-black px-3 py-1.5 rounded-lg border border-fuchsia-400 shadow-[0_0_15px_rgba(192,38,211,0.8)] flex items-center gap-1.5 tracking-widest uppercase backdrop-blur-md">
@@ -883,7 +899,8 @@ function App() {
                     </div>
                     
                     <div className="p-5 md:p-6 flex flex-col flex-1">
-                      <h3 className="text-lg font-bold text-white mb-2 group-hover:text-blue-400 transition-colors leading-tight">{jogo.titulo}</h3>
+                      {/* Mostrar o título limpo para o cliente */}
+                      <h3 className="text-lg font-bold text-white mb-2 group-hover:text-blue-400 transition-colors leading-tight">{tituloLimpo}</h3>
                       <p className="text-zinc-400 text-xs mb-4 line-clamp-5 leading-relaxed" title={jogo.descricao}>{jogo.descricao}</p>
                       
                       <div className="mt-auto">
@@ -896,7 +913,8 @@ function App() {
                           </div>
                         </div>
 
-                        {jogo.estoque === 0 && (
+                        {/* Só mostra a caixa de Fila de Espera se o jogo NÃO for "Em Breve" */}
+                        {jogo.estoque === 0 && !isEmBreve && (
                           <div className="bg-zinc-950 rounded-lg p-2.5 mb-3 border border-zinc-800/80 shadow-inner">
                             <div className="flex justify-between items-center mb-1.5">
                               <span className="text-[10px] text-zinc-400">👥 Fila de espera:</span>
@@ -909,9 +927,17 @@ function App() {
                           </div>
                         )}
 
-                        <button onClick={() => abrirConfirmacao(jogo.estoque > 0 ? 'aluguel' : 'reserva', jogo.id, jogo.titulo, jogo.preco_aluguel, jogo.preco_aluguel_14 || 0)} className={`w-full py-3 rounded-xl text-sm font-bold transition-all duration-300 ${ jogo.estoque > 0 ? 'bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-500/20' : 'bg-amber-600 hover:bg-amber-500 text-white shadow-lg shadow-amber-600/20'}`}>
-                          {jogo.estoque > 0 ? 'Alugar Agora' : 'Reservar na Fila'}
-                        </button>
+                        {/* O BOTÃO INTELIGENTE */}
+                        {isEmBreve ? (
+                          <button onClick={() => pedirJogoEmBreve(tituloLimpo)} className="w-full py-3 rounded-xl text-sm font-bold transition-all duration-300 bg-purple-600 hover:bg-purple-500 text-white shadow-lg shadow-purple-600/20 flex items-center justify-center gap-2">
+                            📲 Pedir no WhatsApp
+                          </button>
+                        ) : (
+                          <button onClick={() => abrirConfirmacao(jogo.estoque > 0 ? 'aluguel' : 'reserva', jogo.id, tituloLimpo, jogo.preco_aluguel, jogo.preco_aluguel_14 || 0)} className={`w-full py-3 rounded-xl text-sm font-bold transition-all duration-300 ${ jogo.estoque > 0 ? 'bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-500/20' : 'bg-amber-600 hover:bg-amber-500 text-white shadow-lg shadow-amber-600/20'}`}>
+                            {jogo.estoque > 0 ? 'Alugar Agora' : 'Reservar na Fila'}
+                          </button>
+                        )}
+
                       </div>
                     </div>
                   </div>
@@ -1211,7 +1237,7 @@ function App() {
                   </summary>
                   <div className="px-6 pb-6 text-zinc-400 text-sm leading-relaxed border-t border-zinc-800 pt-4 mt-2">
                     Não se preocupe, você pode garantir a sua vaga! Clique no botão <strong>"Reservar na Fila"</strong>. O valor do jogo será investido e você verá uma data de <em>Previsão de Liberação</em> em "Meus Acessos". <br/><br/>
-                    Nosso sistema inteligente repassa a conta automaticamente para você no exato segundo em que o aluguel do cliente anterior terminar.
+                    Nosso sistema inteligente repassa a conta automatically para você no exato segundo em que o aluguel do cliente anterior terminar.
                   </div>
                 </details>
 
