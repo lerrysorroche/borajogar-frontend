@@ -939,7 +939,7 @@ function App() {
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 
                 {/* === CAIXA DE RECARGA === */}
-                <section className="bg-zinc-900 p-6 md:p-8 rounded-3xl border border-zinc-800 shadow-2xl flex flex-col h-full relative overflow-hidden">
+                <section className="bg-zinc-900 p-6 md:p-8 rounded-3xl border border-zinc-800 shadow-2xl flex flex-col h-auto lg:h-[520px] relative overflow-hidden">
                   <div className="absolute -right-8 -top-8 text-9xl opacity-5 pointer-events-none">💸</div>
                   <h3 className="text-lg font-bold text-emerald-400 mb-2 flex items-center gap-2">💰 Adicionar Saldo via PIX</h3>
                   <p className="text-sm text-zinc-400 mb-6">Recarregue sua carteira instantaneamente para alugar jogos sem filas.</p>
@@ -993,7 +993,7 @@ function App() {
                   )}
                 </section>
 
-                <section className="bg-zinc-900/80 p-6 md:p-8 rounded-3xl border border-zinc-800 shadow-2xl flex flex-col h-full">
+                <section className="bg-zinc-900/80 p-6 md:p-8 rounded-3xl border border-zinc-800 shadow-2xl flex flex-col h-[400px] lg:h-[520px]">
                   <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-2">🧾 Extrato da Conta</h3>
                   {extrato.length === 0 ? (
                     <div className="flex-1 flex flex-col items-center justify-center text-zinc-500"><span className="text-4xl mb-2 opacity-30">💳</span><p className="text-sm">Nenhuma transação encontrada.</p></div>
@@ -1557,7 +1557,7 @@ function App() {
         </main>
 
         {/* ==================== NOVO RODAPÉ (FOOTER) ==================== */}
-        <footer className="bg-zinc-950 border-t border-zinc-900 pt-16 pb-8 mt-12 relative z-10">
+        <footer className="bg-zinc-900 border-t border-zinc-800 pt-16 pb-8 mt-12 relative z-10">
           <div className="max-w-7xl mx-auto px-4 md:px-8">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
               
