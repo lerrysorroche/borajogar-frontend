@@ -287,6 +287,14 @@ function App() {
 
   const registrarConta = (e) => {
     e.preventDefault()
+
+    // VALIDAÇÃO DE SENHA FORTE
+    const regexSenha = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    if (!regexSenha.test(cadSenha)) {
+      mostrarToast("Sua senha deve ter no mínimo 8 caracteres, 1 letra maiúscula, 1 número e 1 caractere especial (Ex: @, #, !).", "erro");
+      return; // Trava o envio para o servidor
+    }
+
     fetch('https://borajogar-api.onrender.com/usuarios', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ nome: cadNome, email: cadEmail, senha: cadSenha, telefone: cadTelefone, codigo_indicacao: cadCodigoConvite })
@@ -971,6 +979,18 @@ function App() {
                       <button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black py-4 px-6 rounded-xl transition-all shadow-lg shadow-emerald-600/20 mt-2 flex items-center justify-center gap-2">
                         <span>Gerar PIX</span> <span className="text-xl">⚡</span>
                       </button>
+
+                      {/* NOVO: SELOS DE SEGURANÇA (Checkout) */}
+                      <div className="mt-5 pt-5 border-t border-zinc-800/50 flex flex-col items-center gap-2 opacity-80">
+                        <div className="flex items-center gap-2 text-zinc-400 text-[10px] uppercase tracking-widest font-bold">
+                          <span>🔒 Pagamento 100% Seguro</span>
+                          <span className="text-zinc-700">•</span>
+                          <span>🪙 Aceitamos PIX</span>
+                        </div>
+                        <div className="text-[10px] text-zinc-500 flex items-center gap-1 font-medium text-center">
+                          Transação blindada e processada por <strong className="text-white">Asaas Instituição de Pagamento S.A.</strong>
+                        </div>
+                      </div>
                     </form>
                   )}
                 </section>
@@ -1537,6 +1557,68 @@ function App() {
           )}
 
         </main>
+
+        {/* ==================== NOVO RODAPÉ (FOOTER) ==================== */}
+        <footer className="bg-zinc-950 border-t border-zinc-900 pt-16 pb-8 mt-12 relative z-10">
+          <div className="max-w-7xl mx-auto px-4 md:px-8">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+              
+              <div className="col-span-1 md:col-span-2">
+                <span className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400 tracking-tighter mb-4 block">BORA JOGAR!</span>
+                <p className="text-zinc-400 text-sm leading-relaxed max-w-sm mb-6">
+                  Sua locadora de jogos digitais next-gen. Alugue os maiores lançamentos de PlayStation de forma automática, rápida e sem sair de casa.
+                </p>
+                <div className="flex gap-4">
+                  {/* Ícones de Redes Sociais (Substitua os links depois) */}
+                  <a href="#" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-400 hover:text-white hover:border-pink-500 hover:bg-pink-500/10 transition-all shadow-lg" title="Instagram">
+                    📸
+                  </a>
+                  <a href={`https://wa.me/${NUMERO_WHATSAPP_SUPORTE}`} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-400 hover:text-white hover:border-emerald-500 hover:bg-emerald-500/10 transition-all shadow-lg" title="WhatsApp">
+                    💬
+                  </a>
+                </div>
+              </div>
+
+              <div>
+                <h4 className="text-white font-bold mb-5 tracking-wide uppercase text-sm">Acesso Rápido</h4>
+                <ul className="space-y-3 text-sm text-zinc-400">
+                  <li><button onClick={() => setAbaAtual('vitrine')} className="hover:text-blue-400 transition-colors">Catálogo de Jogos</button></li>
+                  <li><button onClick={() => setAbaAtual('faq')} className="hover:text-purple-400 transition-colors">Como Funciona (FAQ)</button></li>
+                  <li><a href="#" className="hover:text-white transition-colors">Termos de Uso</a></li>
+                  <li><a href="#" className="hover:text-white transition-colors">Política de Privacidade</a></li>
+                </ul>
+              </div>
+
+              <div>
+                <h4 className="text-white font-bold mb-5 tracking-wide uppercase text-sm">Segurança</h4>
+                <div className="flex flex-col gap-3">
+                  <div className="flex items-center gap-3 bg-zinc-900/50 p-3 rounded-xl border border-zinc-800/80 shadow-inner">
+                    <span className="text-2xl drop-shadow-[0_0_8px_rgba(52,211,153,0.5)]">🔒</span>
+                    <div className="flex flex-col">
+                      <span className="text-[10px] text-zinc-500 uppercase font-bold tracking-wider">Certificado SSL</span>
+                      <span className="text-xs text-zinc-300 font-medium">Site Seguro 256-bits</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3 bg-zinc-900/50 p-3 rounded-xl border border-zinc-800/80 shadow-inner">
+                    <span className="text-2xl drop-shadow-[0_0_8px_rgba(96,165,250,0.5)]">⚡</span>
+                    <div className="flex flex-col">
+                      <span className="text-[10px] text-zinc-500 uppercase font-bold tracking-wider">Gateway Oficial</span>
+                      <span className="text-xs text-zinc-300 font-medium">Powered by Asaas</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            <div className="pt-8 border-t border-zinc-900 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-zinc-500 font-medium">
+              <p>© 2026 Locadora Bora Jogar. Todos os direitos reservados.</p>
+              {/* Você pode colocar seu CNPJ real ou MEI aqui depois */}
+              <p>CNPJ: 00.000.000/0001-00 • Curitiba, PR</p> 
+            </div>
+          </div>
+        </footer>
+
       </>
       )}
     </div>
