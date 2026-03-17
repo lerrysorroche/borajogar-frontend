@@ -204,7 +204,6 @@ function App() {
     })
   }
 
-  // CORREÇÃO: O parâmetro "dias" estava faltando aqui!
   const executarReserva = (jogoId, precoJogo, dias) => {
     fetch('https://borajogar-api.onrender.com/reservas', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -292,7 +291,7 @@ function App() {
     const regexSenha = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
     if (!regexSenha.test(cadSenha)) {
       mostrarToast("Sua senha deve ter no mínimo 8 caracteres, 1 letra maiúscula, 1 número e 1 caractere especial (Ex: @, #, !).", "erro");
-      return; // Trava o envio para o servidor
+      return; 
     }
 
     fetch('https://borajogar-api.onrender.com/usuarios', {
@@ -889,7 +888,6 @@ function App() {
                         <div className="flex items-end justify-between mb-4">
                           <div>
                             <div className="text-xl font-black text-white">R$ {jogo.preco_aluguel.toFixed(2)}</div>
-                            {/* CORREÇÃO DO TEXTO DA VITRINE: Mostra se tem opção de 14 dias */}
                             <span className="text-[10px] text-zinc-500 font-normal">
                                 {jogo.preco_aluguel_14 > 0 ? '/ 7 ou 14 dias' : '/ 7 dias'}
                             </span>
@@ -995,7 +993,7 @@ function App() {
                   )}
                 </section>
 
-                <section className="bg-zinc-900/80 p-6 md:p-8 rounded-3xl border border-zinc-800 shadow-2xl flex flex-col h-[400px]">
+                <section className="bg-zinc-900/80 p-6 md:p-8 rounded-3xl border border-zinc-800 shadow-2xl flex flex-col h-full">
                   <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-2">🧾 Extrato da Conta</h3>
                   {extrato.length === 0 ? (
                     <div className="flex-1 flex flex-col items-center justify-center text-zinc-500"><span className="text-4xl mb-2 opacity-30">💳</span><p className="text-sm">Nenhuma transação encontrada.</p></div>
