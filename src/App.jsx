@@ -1101,37 +1101,55 @@ function App() {
                 )}
 
                 {alugueisAtivos.length === 0 ? <p className="text-zinc-500 text-sm">Nenhum jogo ativo no momento.</p> : (
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left whitespace-nowrap text-sm">
-                      <thead><tr className="text-zinc-500 border-b border-zinc-800"><th className="pb-3 px-4 font-medium">Jogo</th><th className="pb-3 px-4 font-medium">E-mail PSN</th><th className="pb-3 px-4 font-medium">Senha</th><th className="pb-3 px-4 font-medium text-center">Acesso (2FA)</th><th className="pb-3 px-4 font-medium">Expira em</th><th className="pb-3 px-4 font-medium text-right">Ações</th></tr></thead>
-                      <tbody>
-                        {alugueisAtivos.map(item => (
-                          <tr key={item.locacao_id} className="border-b border-zinc-800/50 hover:bg-zinc-800/30">
-                            <td className="py-4 px-4 font-bold text-white">{item.jogo}</td>
-                            <td className="py-4 px-4 text-blue-400 select-all">{item.email_login}</td>
-                            <td className="py-4 px-4 text-zinc-300 font-mono bg-black/20 rounded select-all">{item.senha_login}</td>
-                            <td className="py-4 px-4 text-center">
-                              {codigosGerados2FA[item.locacao_id] ? (
-                                <span className="text-emerald-400 font-mono text-lg font-bold tracking-widest bg-zinc-950 px-3 py-1 rounded border border-emerald-500/30 select-all">
-                                  {codigosGerados2FA[item.locacao_id]}
-                                </span>
-                              ) : (
-                                <button onClick={() => gerarCodigo2FA(item.locacao_id)} className="bg-zinc-800 hover:bg-blue-600 text-xs text-white font-bold px-3 py-1.5 rounded transition-colors shadow shadow-blue-500/10">🔐 Gerar 2FA</button>
-                              )}
-                            </td>
-                            <td className="py-4 px-4 text-amber-400">{new Date(item.data_fim).toLocaleString()}</td>
+                  <div className="grid grid-cols-1 gap-4">
+                    {alugueisAtivos.map(item => (
+                      <div key={item.locacao_id} className="bg-zinc-950/50 p-5 md:p-6 rounded-2xl border border-zinc-800/80 shadow-lg flex flex-col xl:flex-row gap-5 justify-between items-start xl:items-center hover:border-emerald-500/30 transition-colors">
+                        
+                        {/* Bloco 1: Nome do Jogo e Credenciais */}
+                        <div className="flex flex-col gap-3 w-full xl:w-auto flex-1">
+                          <h4 className="font-black text-lg md:text-xl text-white leading-tight">{item.jogo}</h4>
+                          
+                          <div className="flex flex-col gap-2 bg-black/40 p-4 rounded-xl border border-zinc-800/50">
+                            <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
+                              <span className="text-zinc-500 text-[10px] uppercase font-bold tracking-wider w-12">Login</span>
+                              <span className="text-blue-400 font-medium text-sm md:text-base select-all break-all">{item.email_login}</span>
+                            </div>
+                            <div className="w-full h-px bg-zinc-800/50"></div>
+                            <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
+                              <span className="text-zinc-500 text-[10px] uppercase font-bold tracking-wider w-12">Senha</span>
+                              <span className="text-zinc-300 font-mono text-sm md:text-base bg-zinc-900/80 px-2 py-0.5 rounded select-all border border-zinc-700/50 inline-block w-max">{item.senha_login}</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Bloco 2: Validade, 2FA e Ações */}
+                        <div className="flex flex-col gap-3 w-full xl:w-auto shrink-0">
+                          <div className="flex items-center gap-2 text-xs font-bold bg-amber-500/10 text-amber-400 px-3 py-2 rounded-lg border border-amber-500/20 w-max">
+                            <span>⏳ Expira:</span>
+                            <span>{new Date(item.data_fim).toLocaleString()}</span>
+                          </div>
+                          
+                          <div className="flex flex-col sm:flex-row gap-2 w-full">
+                            {codigosGerados2FA[item.locacao_id] ? (
+                              <div className="text-emerald-400 font-mono text-lg font-bold tracking-widest bg-zinc-950 px-4 py-2 rounded-xl border border-emerald-500/30 select-all flex-1 text-center shadow-inner">
+                                {codigosGerados2FA[item.locacao_id]}
+                              </div>
+                            ) : (
+                              <button onClick={() => gerarCodigo2FA(item.locacao_id)} className="bg-zinc-800 hover:bg-blue-600 text-sm text-white font-bold px-6 py-2.5 rounded-xl transition-all shadow-lg shadow-blue-500/10 flex-1 sm:flex-none flex items-center justify-center gap-2 border border-zinc-700">
+                                🔐 Gerar 2FA
+                              </button>
+                            )}
                             
-                            <td className="py-4 px-4 text-right">
-                              {configSistema.devolucao_dinamica && (
-                                <button onClick={() => devolverAntecipado(item.locacao_id, item.data_fim)} className="bg-emerald-900/40 hover:bg-emerald-600 text-emerald-400 hover:text-white font-bold px-3 py-1.5 rounded-lg text-xs transition-colors border border-emerald-500/30 shadow">
-                                  ♻️ Devolver
-                                </button>
-                              )}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                            {configSistema.devolucao_dinamica && (
+                              <button onClick={() => devolverAntecipado(item.locacao_id, item.data_fim)} className="bg-emerald-900/40 hover:bg-emerald-600 text-emerald-400 hover:text-white font-bold px-6 py-2.5 rounded-xl text-sm transition-all border border-emerald-500/30 shadow-lg flex items-center justify-center gap-2 flex-1 sm:flex-none">
+                                ♻️ Devolver
+                              </button>
+                            )}
+                          </div>
+                        </div>
+
+                      </div>
+                    ))}
                   </div>
                 )}
               </section>
@@ -1139,20 +1157,31 @@ function App() {
               <section className="bg-zinc-900/80 p-6 md:p-8 rounded-3xl border border-zinc-800 border-l-4 border-l-amber-500 shadow-2xl">
                 <h3 className="text-lg font-bold text-amber-400 mb-6 flex items-center gap-2">⏳ Minhas Reservas (Fila de Espera)</h3>
                 {minhasReservas.length === 0 ? <p className="text-zinc-500 text-sm">Você não possui reservas ativas na fila.</p> : (
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left whitespace-nowrap text-sm">
-                      <thead><tr className="text-zinc-500 border-b border-zinc-800"><th className="pb-3 px-4 font-medium">Jogo</th><th className="pb-3 px-4 font-medium">Data da Reserva</th><th className="pb-3 px-4 font-medium">Status</th><th className="pb-3 px-4 font-medium">Previsão de Liberação</th></tr></thead>
-                      <tbody>
-                        {minhasReservas.map(item => (
-                          <tr key={item.reserva_id} className="border-b border-zinc-800/50 hover:bg-zinc-800/30">
-                            <td className="py-4 px-4 font-bold text-white">{item.jogo}</td>
-                            <td className="py-4 px-4 text-zinc-300">{new Date(item.data_solicitacao).toLocaleString()}</td>
-                            <td className="py-4 px-4 text-amber-400 font-bold">Aguardando</td>
-                            <td className="py-4 px-4 text-blue-400 font-bold">{calcularPrevisao(item.proxima_devolucao, item.pessoas_na_frente)}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                  <div className="grid grid-cols-1 gap-4">
+                    {minhasReservas.map(item => (
+                      <div key={item.reserva_id} className="bg-zinc-950/50 p-5 rounded-2xl border border-zinc-800/80 shadow-lg flex flex-col md:flex-row justify-between items-start md:items-center gap-4 hover:border-amber-500/30 transition-colors">
+                        
+                        <div className="flex flex-col gap-1 w-full md:w-auto">
+                          <h4 className="font-black text-lg text-white">{item.jogo}</h4>
+                          <span className="text-[11px] text-zinc-500 uppercase font-bold tracking-wider">
+                            Reservado em: {new Date(item.data_solicitacao).toLocaleString()}
+                          </span>
+                        </div>
+                        
+                        <div className="flex flex-col gap-2 bg-black/40 p-3.5 rounded-xl border border-zinc-800/50 w-full md:w-auto min-w-[220px]">
+                          <div className="flex justify-between items-center gap-4">
+                            <span className="text-zinc-500 text-[10px] uppercase font-bold tracking-wider">Status</span>
+                            <span className="text-amber-400 font-black text-xs uppercase bg-amber-400/10 px-2 py-0.5 rounded border border-amber-500/20">Aguardando</span>
+                          </div>
+                          <div className="w-full h-px bg-zinc-800/50"></div>
+                          <div className="flex justify-between items-center gap-4">
+                            <span className="text-zinc-500 text-[10px] uppercase font-bold tracking-wider">Liberação</span>
+                            <span className="text-blue-400 font-bold text-xs">{calcularPrevisao(item.proxima_devolucao, item.pessoas_na_frente)}</span>
+                          </div>
+                        </div>
+
+                      </div>
+                    ))}
                   </div>
                 )}
               </section>
