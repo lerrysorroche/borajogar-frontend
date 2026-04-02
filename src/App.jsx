@@ -60,6 +60,8 @@ function App() {
   const [paginaCatalogo, setPaginaCatalogo] = useState(0);
   const [paginaClientes, setPaginaClientes] = useState(0);
 
+  const [indiceBanner, setIndiceBanner] = useState(0);
+
   const [modalEdicaoJogo, setModalEdicaoJogo] = useState(null)
   
   const [termoBusca, setTermoBusca] = useState('')
@@ -134,6 +136,18 @@ function App() {
     }
     return () => clearInterval(intervalId); 
   }, [pixPendente])
+
+  // LÓGICA DO CARROSSEL DE BANNERS (Troca a cada 5 segundos)
+  useEffect(() => {
+    const urls = configSistema.banners_url ? configSistema.banners_url.split(',').map(u => u.trim()).filter(u => u) : [];
+    if (urls.length <= 1) return; // Se tiver só 1 banner, não precisa rodar o carrossel
+
+    const intervalo = setInterval(() => {
+      setIndiceBanner(prev => (prev + 1) % urls.length);
+    }, 5000); // 5000 milissegundos = 5 segundos
+
+    return () => clearInterval(intervalo);
+  }, [configSistema.banners_url]);
 
   const solicitarRecuperacaoSenha = (e) => {
     e.preventDefault();
@@ -617,6 +631,9 @@ function App() {
   const adminInputClass = "w-full px-4 py-2.5 text-sm font-medium bg-zinc-950 border border-zinc-800 text-white rounded-xl focus:ring-1 focus:ring-blue-500 focus:outline-none transition-all placeholder-zinc-600"
   const adminCardClass = "bg-zinc-900 p-6 md:p-8 rounded-3xl border border-zinc-800 shadow-2xl flex flex-col"
 
+  // LOGICA PARA CALCULAR QUAL BANNER MOSTRAR
+  const bannerUrls = configSistema.banners_url ? configSistema.banners_url.split(',').map(u => u.trim()).filter(u => u) : [];
+  const currentBanner = bannerUrls.length > 0 ? bannerUrls[indiceBanner] : 'https://cinesiageek.com.br/wp-content/uploads/2024/09/playstation5.jpeg';
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-300 font-sans antialiased pb-10 relative overflow-x-hidden">
@@ -903,7 +920,8 @@ function App() {
 
           {abaAtual === 'vitrine' && (
             <div className="animate-fade-in">
-              <div className="relative rounded-3xl p-8 md:p-14 mb-10 border border-zinc-800 overflow-hidden shadow-2xl flex items-center min-h-[360px]" style={{ backgroundImage: `url('https://cinesiageek.com.br/wp-content/uploads/2024/09/playstation5.jpeg')`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
+              {/* O CARROSSEL É APLICADO AQUI */}
+              <div className="relative rounded-3xl p-8 md:p-14 mb-10 border border-zinc-800 overflow-hidden shadow-2xl flex items-center min-h-[360px] transition-all duration-700" style={{ backgroundImage: `url('${currentBanner}')`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
                 <div className="absolute inset-0 bg-gradient-to-r from-zinc-950 via-zinc-950/90 to-zinc-950/40"></div>
                 <div className="relative z-10 w-full">
                   <span className="inline-block py-1.5 px-4 rounded-full bg-blue-500/20 border border-blue-500/30 text-blue-400 text-[10px] font-bold tracking-wider mb-6 uppercase">CATÁLOGO ATUALIZADO</span>
@@ -928,6 +946,20 @@ function App() {
                     </div>
                   </div>
                 </div>
+
+                {/* INDICADORES DO CARROSSEL (BOLINHAS) */}
+                {bannerUrls.length > 1 && (
+                  <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-20">
+                    {bannerUrls.map((_, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => setIndiceBanner(idx)}
+                        className={`h-2 rounded-full transition-all duration-300 ${idx === indiceBanner ? 'bg-blue-500 w-6' : 'bg-white/30 hover:bg-white/60 w-2'}`}
+                        aria-label={`Banner ${idx + 1}`}
+                      />
+                    ))}
+                  </div>
+                )}
               </div>
 
               {configSistema.anuncio_ativo && configSistema.mensagem_anuncio && (
@@ -1566,23 +1598,33 @@ function App() {
                   {/* 🖼️ HERO BANNER */}
                   <details className="group bg-zinc-900/80 rounded-3xl border border-zinc-800 border-l-4 border-l-orange-500 shadow-2xl shadow-orange-500/10 [&_summary::-webkit-details-marker]:hidden overflow-hidden">
                       <summary className="flex items-center justify-between p-6 md:p-8 cursor-pointer hover:bg-orange-900/10 transition-colors select-none relative">
-                      <span className="flex items-center gap-3 relative z-10 text-lg font-black text-orange-400 tracking-tight">🖼️ Configurações do Hero Banner</span>
+                      <span className="flex items-center gap-3 relative z-10 text-lg font-black text-orange-400 tracking-tight">🖼️ Configurações da Vitrine e Banners</span>
                       <span className="transition duration-300 group-open:-rotate-180 text-orange-500 relative z-10 text-lg">▼</span>
                       </summary>
                       <div className="px-6 md:px-8 pb-6 md:pb-8 border-t border-zinc-800/50 pt-8">
-                          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-5">
+                          
+                          {/* PARTE 1: FAIXA DE ANÚNCIO (ALERTA) */}
+                          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 gap-5">
                               <div>
-                              <h4 className="text-white font-bold text-base tracking-tight">📣 Hero Alert (Banner da Vitrine)</h4>
-                              <p className="text-xs text-zinc-400 mt-2 font-medium">Crie um aviso chamativo na página inicial para anunciar promoções, avisos de feriado ou cupons.</p>
+                              <h4 className="text-white font-bold text-base tracking-tight">📣 Hero Alert (Faixa de Anúncio)</h4>
+                              <p className="text-xs text-zinc-400 mt-1 font-medium">Faixa colorida que aparece abaixo dos banners principais.</p>
                               </div>
                               <button onClick={toggleAnuncio} className={`px-6 py-3 rounded-xl font-bold text-xs uppercase tracking-wider transition-all shadow-lg w-full sm:w-auto ${configSistema.anuncio_ativo ? 'bg-orange-600 text-white shadow-orange-600/20' : 'bg-zinc-800 text-zinc-400 hover:text-white border border-zinc-700'}`}>
-                              {configSistema.anuncio_ativo ? '✅ BANNER LIGADO' : '❌ BANNER DESLIGADO'}
+                              {configSistema.anuncio_ativo ? '✅ FAIXA LIGADA' : '❌ FAIXA DESLIGADA'}
                               </button>
                           </div>
-                          <textarea placeholder="Ex: PROMOÇÃO DE FIM DE SEMANA! Recarregue R$ 50..." value={configSistema.mensagem_anuncio} onChange={(e) => setConfigSistema({...configSistema, mensagem_anuncio: e.target.value})} className={`${adminInputClass} resize-none h-24 bg-zinc-950 border-zinc-700 focus:ring-orange-500 text-sm`} />
-                          <div className="flex justify-end mt-5">
-                              <button onClick={salvarConfiguracoesGlobais} className="bg-blue-600 hover:bg-blue-500 text-white font-bold uppercase tracking-wider px-8 py-3.5 rounded-xl shadow-lg shadow-blue-600/20 transition-colors text-xs">
-                              💾 Salvar Texto
+                          <textarea placeholder="Ex: PROMOÇÃO DE FIM DE SEMANA! Recarregue R$ 50..." value={configSistema.mensagem_anuncio} onChange={(e) => setConfigSistema({...configSistema, mensagem_anuncio: e.target.value})} className={`${adminInputClass} resize-none h-16 bg-zinc-950 border-zinc-700 focus:ring-orange-500 text-sm`} />
+
+                          {/* PARTE 2: CARROSSEL DE IMAGENS */}
+                          <div className="mt-8 border-t border-zinc-800/50 pt-6">
+                            <h4 className="text-white font-bold text-base tracking-tight">🖼️ Banners do Carrossel (Imagens)</h4>
+                            <p className="text-xs text-zinc-400 mt-1 mb-4 font-medium">Cole as URLs das imagens que irão ficar trocando no topo do site. <strong className="text-emerald-400">Separe cada URL com uma vírgula.</strong></p>
+                            <textarea placeholder="https://imagem1.jpg, https://imagem2.jpg..." value={configSistema.banners_url || ''} onChange={(e) => setConfigSistema({...configSistema, banners_url: e.target.value})} className={`${adminInputClass} resize-none h-24 bg-zinc-950 border-zinc-700 focus:ring-orange-500 text-sm`} />
+                          </div>
+
+                          <div className="flex justify-end mt-6">
+                              <button onClick={salvarConfiguracoesGlobais} className="bg-blue-600 hover:bg-blue-500 text-white font-bold uppercase tracking-wider px-8 py-4 rounded-xl shadow-lg shadow-blue-600/20 transition-colors text-xs">
+                              💾 Salvar Configurações
                               </button>
                           </div>
                       </div>
