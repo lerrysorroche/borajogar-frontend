@@ -1417,6 +1417,117 @@ function App() {
             </div>
           )}
 
+          {/* ========================================================================= */}
+          {/* PÁGINA: TERMOS DE USO                                                     */}
+          {/* ========================================================================= */}
+          {abaAtual === 'termos' && (
+            <div className="animate-fade-in max-w-4xl mx-auto py-8">
+              <div className="mb-10 border-b border-zinc-800 pb-8">
+                <h2 className="text-3xl md:text-4xl font-black text-white mb-4 tracking-tight">Termos de Uso</h2>
+                <p className="text-sm text-zinc-400 font-medium">Última atualização: Abril de 2026</p>
+              </div>
+
+              <div className="space-y-8 text-zinc-300 text-sm md:text-base leading-relaxed">
+                
+                <section>
+                  <h3 className="text-xl font-bold text-blue-400 mb-3 tracking-tight">1. Objeto e Natureza do Serviço</h3>
+                  <p>A BORA JOGAR! oferece o serviço de locação de licenças de jogos digitais em contas secundárias para os consoles PlayStation 4 e PlayStation 5. O usuário adquire o direito de acessar a conta fornecida, baixar o jogo e jogá-lo em seu perfil pessoal durante o período contratado (7 ou 14 dias).</p>
+                </section>
+
+                <section>
+                  <h3 className="text-xl font-bold text-blue-400 mb-3 tracking-tight">2. Regras de Instalação e Uso</h3>
+                  <ul className="list-disc pl-5 space-y-2 text-zinc-400">
+                    <li>É expressamente <strong className="text-rose-400">PROIBIDO</strong> entrar na conta fornecida utilizando a opção "Jogar como Convidado".</li>
+                    <li>O usuário compromete-se a <strong className="text-white">NÃO ALTERAR</strong> nenhum dado da conta fornecida, incluindo (mas não se limitando a): E-mail, Senha, ID Online, Avatar ou configurações de segurança (2FA). Qualquer tentativa de alteração será registrada pelo sistema da Sony e resultará no banimento permanente do usuário em nossa plataforma e acionamento das medidas legais cabíveis.</li>
+                    <li>O usuário está autorizado a ativar o "Compartilhamento do Console e Jogo Offline" (PS5) ou "Ativar como PS4 Principal" (PS4) para jogar em sua conta pessoal e conquistar seus próprios troféus.</li>
+                  </ul>
+                </section>
+
+                <section>
+                  <h3 className="text-xl font-bold text-rose-400 mb-3 tracking-tight">3. Devolução Obrigatória e Multa por Atraso</h3>
+                  <p>Ao término do período de locação, o usuário perde o direito de acesso ao jogo. É <strong>obrigação exclusiva do usuário</strong> acessar as configurações do seu console e <strong className="text-rose-400">DESATIVAR</strong> o Compartilhamento de Console (PS5) ou a conta como Principal (PS4) antes de excluir o usuário do videogame.</p>
+                  <div className="bg-rose-950/20 border border-rose-500/30 p-4 rounded-xl mt-4">
+                    <strong className="text-rose-400 block mb-1">Cláusula de Multa Administrativa:</strong>
+                    <p className="text-sm text-zinc-400">A não desativação da conta prende a licença no console do usuário, impedindo que o próximo cliente da fila jogue. Caso isso ocorra, o sistema aplicará uma <strong className="text-white">Multa Administrativa Automática de R$ 50,00</strong>. O saldo do usuário ficará negativo e a conta suspensa até a regularização do débito e liberação da licença.</p>
+                  </div>
+                </section>
+
+                <section>
+                  <h3 className="text-xl font-bold text-emerald-400 mb-3 tracking-tight">4. Sistema de Devolução Dinâmica (Cashback)</h3>
+                  <p>Caso o jogo alugado possua fila de espera, o botão "Devolver" ficará ativo no painel do usuário. Ao optar pela devolução antecipada para agilizar a fila, o usuário receberá um reembolso em créditos na carteira digital (Cashback) de acordo com os dias inteiros não utilizados, conforme tabela vigente no site no momento da devolução.</p>
+                </section>
+
+                <section>
+                  <h3 className="text-xl font-bold text-blue-400 mb-3 tracking-tight">5. Fila de Espera (Reservas)</h3>
+                  <p>Ao reservar um jogo indisponível, o valor integral é retido da carteira do usuário. O sistema transferirá as credenciais de acesso automaticamente no exato momento em que a locação do usuário anterior for encerrada. O prazo de 7 ou 14 dias só começa a contar a partir do momento em que a conta é liberada no painel.</p>
+                </section>
+
+                <section>
+                  <h3 className="text-xl font-bold text-blue-400 mb-3 tracking-tight">6. Infrações e Banimentos da Sony</h3>
+                  <p>A BORA JOGAR! não se responsabiliza por banimentos sofridos no console do usuário devido à quebra dos Termos de Serviço da PlayStation Network. Caso o usuário utilize softwares de trapaça (hacks/exploits) ou conduta tóxica que resulte no banimento da nossa conta fornecida, o usuário será cobrado judicialmente pelo valor integral de compra do jogo perdido.</p>
+                </section>
+
+              </div>
+            </div>
+          )}
+
+          {/* ========================================================================= */}
+          {/* PÁGINA: POLÍTICA DE PRIVACIDADE                                           */}
+          {/* ========================================================================= */}
+          {abaAtual === 'privacidade' && (
+            <div className="animate-fade-in max-w-4xl mx-auto py-8">
+              <div className="mb-10 border-b border-zinc-800 pb-8">
+                <h2 className="text-3xl md:text-4xl font-black text-white mb-4 tracking-tight">Política de Privacidade</h2>
+                <p className="text-sm text-zinc-400 font-medium">Última atualização: Abril de 2026</p>
+              </div>
+
+              <div className="space-y-8 text-zinc-300 text-sm md:text-base leading-relaxed">
+                
+                <section>
+                  <p className="text-zinc-400">A sua privacidade é nossa prioridade. Esta política descreve como a BORA JOGAR! coleta, utiliza e protege os seus dados pessoais ao utilizar nossa plataforma, em total conformidade com a Lei Geral de Proteção de Dados (LGPD - Lei nº 13.709/2018).</p>
+                </section>
+
+                <section>
+                  <h3 className="text-xl font-bold text-emerald-400 mb-3 tracking-tight">1. Dados que Coletamos</h3>
+                  <p>Para o funcionamento da plataforma e liberação das locações, coletamos as seguintes informações no momento do seu cadastro:</p>
+                  <ul className="list-disc pl-5 mt-2 space-y-1 text-zinc-400">
+                    <li>Nome Completo</li>
+                    <li>Endereço de E-mail</li>
+                    <li>Número de Telefone (WhatsApp)</li>
+                    <li>Senha (armazenada de forma criptografada e inacessível até mesmo para nossos administradores).</li>
+                  </ul>
+                </section>
+
+                <section>
+                  <h3 className="text-xl font-bold text-emerald-400 mb-3 tracking-tight">2. Como Utilizamos seus Dados</h3>
+                  <p>As informações coletadas são estritamente utilizadas para:</p>
+                  <ul className="list-disc pl-5 mt-2 space-y-1 text-zinc-400">
+                    <li>Criar e gerenciar sua carteira digital dentro da plataforma.</li>
+                    <li>Enviar credenciais de acesso aos jogos alugados.</li>
+                    <li>Notificar via e-mail ou WhatsApp quando a fila de espera do seu jogo favorito andar.</li>
+                    <li>Fornecer suporte técnico e prevenir fraudes ou apropriação indevida das contas da locadora.</li>
+                  </ul>
+                </section>
+
+                <section>
+                  <h3 className="text-xl font-bold text-emerald-400 mb-3 tracking-tight">3. Proteção e Pagamentos</h3>
+                  <p>A BORA JOGAR! <strong className="text-white">NÃO armazena</strong> dados bancários, números de cartão de crédito ou chaves PIX de suas contas pessoais. Todo o processamento financeiro é realizado em ambiente blindado e seguro através da instituição de pagamento parceira oficial (Asaas).</p>
+                </section>
+
+                <section>
+                  <h3 className="text-xl font-bold text-emerald-400 mb-3 tracking-tight">4. Compartilhamento de Dados</h3>
+                  <p>Nós não vendemos, alugamos ou repassamos seus dados pessoais para terceiros ou agências de publicidade sob nenhuma hipótese. Seus dados são mantidos em servidores seguros e acessados apenas pelo sistema automatizado para garantir o seu aluguel.</p>
+                </section>
+
+                <section>
+                  <h3 className="text-xl font-bold text-emerald-400 mb-3 tracking-tight">5. Seus Direitos</h3>
+                  <p>Você tem o direito de solicitar a exclusão da sua conta e de todos os seus dados de nossos servidores a qualquer momento. A exclusão será processada em até 72 horas, desde que não existam locações ativas, pendências de devolução no console ou saldos negativos (multas) em aberto.</p>
+                </section>
+
+              </div>
+            </div>
+          )}
+
           {abaAtual === 'admin' && usuarioLogado.is_admin && (
             <div className="animate-fade-in mt-2 max-w-6xl mx-auto">
               <h2 className="text-2xl md:text-3xl font-black text-white tracking-tight mb-8">Administração do Sistema</h2>
@@ -1777,8 +1888,8 @@ function App() {
                 <ul className="space-y-4 text-xs text-zinc-400 font-medium">
                   <li><button onClick={() => setAbaAtual('vitrine')} className="hover:text-blue-400 transition-colors">Catálogo de Jogos</button></li>
                   <li><button onClick={() => setAbaAtual('faq')} className="hover:text-purple-400 transition-colors">Como Funciona (FAQ)</button></li>
-                  <li><a href="#" className="hover:text-white transition-colors">Termos de Uso</a></li>
-                  <li><a href="#" className="hover:text-white transition-colors">Política de Privacidade</a></li>
+                  <li><button onClick={() => setAbaAtual('termos')} className="hover:text-white transition-colors">Termos de Uso</button></li>
+                  <li><button onClick={() => setAbaAtual('privacidade')} className="hover:text-white transition-colors">Política de Privacidade</button></li>
                 </ul>
               </div>
 
