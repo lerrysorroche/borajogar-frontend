@@ -800,6 +800,14 @@ function App() {
                 <input type="text" placeholder="WhatsApp (DDD+Número)" value={cadTelefone} onChange={e => setCadTelefone(e.target.value)} className={inputClass} required />
                 <input type="password" placeholder="Crie uma Senha" value={cadSenha} onChange={e => setCadSenha(e.target.value)} className={inputClass} required />
                 <input type="text" placeholder="Código de um Amigo (Opcional)" value={cadCodigoConvite} onChange={e => setCadCodigoConvite(e.target.value.toUpperCase())} className={`${inputClass} border-purple-500/50 bg-purple-950/20 text-purple-100 placeholder-purple-400/50 uppercase`} />
+                
+                {/* === AVISO LEGAL E LGPD === */}
+                <div className="bg-zinc-950/50 border border-zinc-800 p-4 rounded-xl mt-4 shadow-inner">
+                  <p className="text-[11px] text-zinc-400 leading-relaxed text-center">
+                    Ao clicar em "Finalizar Cadastro", você confirma que é maior de idade e declara que leu, compreendeu e concorda integralmente com os nossos <strong className="text-emerald-400">Termos de Uso</strong> e <strong className="text-emerald-400">Política de Privacidade</strong> (disponíveis para leitura no rodapé da plataforma após o acesso).
+                  </p>
+                </div>
+
                 <button type="submit" className="w-full py-4 mt-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm uppercase tracking-wide rounded-xl transition-all shadow-lg shadow-emerald-500/30">Finalizar Cadastro</button>
                 
                 <div className="pt-6 text-center border-t border-zinc-800 mt-6">
