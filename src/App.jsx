@@ -517,6 +517,18 @@ function App() {
     window.open(url, '_blank');
   }
 
+  const avisarLiberacao = (nomeCliente, jogoNome) => {
+    const clienteObj = todosUsuarios.find(u => u.nome === nomeCliente);
+    if (!clienteObj || !clienteObj.telefone) {
+      mostrarToast("Telefone do cliente não encontrado.", "erro");
+      return;
+    }
+    let numeroLimpo = clienteObj.telefone.replace(/\D/g, '');
+    if(!numeroLimpo.startsWith('55')) numeroLimpo = '55' + numeroLimpo;
+    const mensagem = `Fala, ${nomeCliente}! A sua vez na fila chegou e o seu acesso para o jogo *${jogoNome}* já está liberado! 🎮\n\nAcesse seu painel na locadora (aba Meus Acessos) para pegar o e-mail, a senha e gerar o código de acesso.\n\nBora Jogar! 🚀`;
+    window.open(`https://wa.me/${numeroLimpo}?text=${encodeURIComponent(mensagem)}`, '_blank');
+  }
+
   const pedirJogoEmBreve = (jogoNome) => {
     let numeroLimpo = NUMERO_WHATSAPP_SUPORTE.replace(/\D/g, '');
     const mensagem = `Olá! Vi o jogo *${jogoNome}* na vitrine da Bora Jogar e quero votar para vocês colocarem no catálogo! Tenho interesse em alugar.`;
@@ -1166,6 +1178,32 @@ function App() {
                               return null;
                             })()}
                           </div>
+                          {/* ================= TUTORIAL DE INSTALAÇÃO ================= */}
+                          <details className="mt-4 group/tut bg-zinc-900/50 rounded-xl border border-zinc-700/50 [&_summary::-webkit-details-marker]:hidden overflow-hidden shadow-inner">
+                            <summary className="flex items-center justify-between p-3 cursor-pointer text-blue-400 font-bold text-sm select-none hover:bg-zinc-800/50 transition-colors">
+                              <span className="flex items-center gap-2">📖 Passo a Passo de Instalação (PS4/PS5)</span>
+                              <span className="transition duration-300 group-open/tut:-rotate-180">▼</span>
+                            </summary>
+                            <div className="p-4 md:p-5 border-t border-zinc-700/50 text-xs text-zinc-300 space-y-3 bg-black/40">
+                              <p className="text-rose-400 font-black uppercase mb-1 tracking-wider flex items-center gap-1">
+                                <span className="text-base">⚠️</span> ATENÇÃO: NUNCA ENTRE COMO CONVIDADO!
+                              </p>
+                              <ol className="list-decimal pl-5 space-y-2.5">
+                                <li>Ligue o console e selecione <strong>Adicionar Novo Usuário</strong> (e aceite os termos).</li>
+                                <li>Selecione <strong>Iniciar Sessão Manualmente</strong>.</li>
+                                <li>Insira o E-mail e Senha da conta que estão disponíveis acima.</li>
+                                <li>Quando o console pedir o código (2FA), clique no botão azul <strong>"Gerar Código"</strong> aqui no site e digite os 6 números rapidamente.</li>
+                                <li>Para jogar na sua conta pessoal e ganhar os troféus, é OBRIGATÓRIO habilitar o compartilhamento:
+                                  <ul className="list-disc pl-4 mt-1.5 text-zinc-400 space-y-1 border-l-2 border-zinc-700 ml-1">
+                                    <li><strong>No PS5:</strong> Vá em Configurações &gt; Usuários e contas &gt; Outros &gt; Compartilhamento do console... &gt; <strong>Habilitar</strong>.</li>
+                                    <li><strong>No PS4:</strong> Vá em Configurações &gt; Gerenciamento da conta &gt; <strong>Ativar como seu PS4 principal</strong>.</li>
+                                  </ul>
+                                </li>
+                                <li className="text-emerald-400 font-bold mt-2">Vá na Biblioteca da conta, coloque o jogo para baixar, volte para o seu perfil pessoal (a sua conta oficial) e divirta-se!</li>
+                              </ol>
+                            </div>
+                          </details>
+                          {/* ================= FIM DO TUTORIAL ================= */}
                         </div>
                       ))}
                     </div>
@@ -1600,10 +1638,15 @@ function App() {
                                   <td className="py-2.5 text-zinc-300">{loc.cliente}</td>
                                   <td className="py-2.5 font-bold text-white">{loc.jogo}</td>
                                   <td className="py-2.5 text-amber-400">{new Date(loc.data_fim).toLocaleDateString()}</td>
-                                  <td className="py-2.5 text-right">
-                                      <button onClick={() => revogarLocacao(loc.id)} className="text-rose-400 hover:text-white text-[10px] uppercase tracking-wider bg-rose-900/30 hover:bg-rose-600 px-3 py-1.5 rounded-lg font-bold transition-colors border border-rose-500/30 shadow">
-                                      Revogar
+                                  <td className="py-2.5">
+                                    <div className="flex justify-end gap-2">
+                                      <button onClick={() => avisarLiberacao(loc.cliente, loc.jogo)} className="text-emerald-400 hover:text-white text-[10px] uppercase tracking-wider bg-emerald-900/30 hover:bg-emerald-600 px-3 py-1.5 rounded-lg font-bold transition-colors border border-emerald-500/30 shadow flex items-center gap-1" title="Avisar Liberação via WhatsApp">
+                                        <span className="text-sm">📲</span> Avisar
                                       </button>
+                                      <button onClick={() => revogarLocacao(loc.id)} className="text-rose-400 hover:text-white text-[10px] uppercase tracking-wider bg-rose-900/30 hover:bg-rose-600 px-3 py-1.5 rounded-lg font-bold transition-colors border border-rose-500/30 shadow">
+                                        Revogar
+                                      </button>
+                                    </div>
                                   </td>
                                   </tr>
                               ))}
