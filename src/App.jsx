@@ -1043,161 +1043,177 @@ function App() {
                 </section>
               </div>
 
-              {/* === NOVA CAIXA DE MUDANÇA DE SENHA === */}
-              <section className="bg-zinc-900/80 p-6 md:p-8 rounded-3xl border border-zinc-800 shadow-2xl relative overflow-hidden group">
-                <div className="absolute -right-8 -top-8 text-9xl opacity-5 pointer-events-none">🔐</div>
-                <h3 className="text-lg font-bold text-white mb-2 flex items-center gap-2">🔐 Segurança da Conta</h3>
-                <p className="text-sm text-zinc-400 mb-6 max-w-2xl leading-relaxed">
-                  Mantenha sua conta segura alterando sua senha regularmente ou troque a senha temporária que enviamos por e-mail.
-                </p>
+              {/* === CAIXA DE MUDANÇA DE SENHA (ACORDEÃO) === */}
+              <details className="group bg-zinc-900/80 rounded-3xl border border-zinc-800 shadow-2xl [&_summary::-webkit-details-marker]:hidden overflow-hidden">
+                <summary className="flex items-center justify-between p-6 md:p-8 cursor-pointer text-white font-bold text-lg select-none relative">
+                  <span className="flex items-center gap-2 relative z-10">🔐 Segurança da Conta</span>
+                  <span className="transition duration-300 group-open:-rotate-180 text-zinc-500 relative z-10">▼</span>
+                  <div className="absolute -right-8 -top-8 text-9xl opacity-5 pointer-events-none transition-transform duration-500 group-open:scale-110">🔐</div>
+                </summary>
                 
-                <form onSubmit={alterarMinhaSenha} className="flex flex-col sm:flex-row gap-4 items-end max-w-3xl relative z-10">
-                  <div className="w-full">
-                    <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1 block">Senha Atual</label>
-                    <input type="password" placeholder="Sua senha atual" value={mudarSenhaAtual} onChange={e => setMudarSenhaAtual(e.target.value)} className="w-full px-4 py-3 bg-zinc-950 border border-zinc-700 text-white rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" required />
-                  </div>
-                  <div className="w-full">
-                    <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1 block">Nova Senha</label>
-                    <input type="password" placeholder="Sua nova senha" value={mudarSenhaNova} onChange={e => setMudarSenhaNova(e.target.value)} className="w-full px-4 py-3 bg-zinc-950 border border-zinc-700 text-white rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none" required />
-                  </div>
-                  <button type="submit" className="w-full sm:w-auto bg-zinc-800 hover:bg-zinc-700 text-white font-bold px-8 py-3 rounded-xl transition-colors border border-zinc-700 whitespace-nowrap shadow-lg">
-                    Atualizar Senha
-                  </button>
-                </form>
-              </section>
-
-              {usuarioLogado && usuarioLogado.codigo_indicacao && (
-                <section className="bg-gradient-to-r from-purple-900/40 to-blue-900/40 p-6 md:p-8 rounded-3xl border border-purple-500/30 shadow-2xl relative overflow-hidden group">
-                  <div className="absolute -right-10 -top-10 text-9xl opacity-5 group-hover:scale-110 transition-transform duration-700 pointer-events-none">🎁</div>
-                  <h3 className="text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-400 mb-2">Indique um Amigo e Ganhe Bônus!</h3>
-                  <p className="text-sm text-zinc-300 mb-6 max-w-2xl leading-relaxed">
-                    Mande o seu código para um amigo. Quando ele criar uma conta nova e fizer a <strong className="text-emerald-400">primeira recarga</strong>, nós daremos <strong>10% do valor</strong> da recarga dele de presente para você gastar em jogos!
+                <div className="px-6 md:px-8 pb-6 md:pb-8 border-t border-zinc-800/50 pt-6 relative z-10 animate-fade-in">
+                  <p className="text-sm text-zinc-400 mb-6 max-w-2xl leading-relaxed">
+                    Mantenha sua conta segura alterando sua senha regularmente ou troque a senha temporária que enviamos por e-mail.
                   </p>
-                  <div className="flex flex-col sm:flex-row gap-4 items-center">
-                    <div className="bg-zinc-950 border border-zinc-800 px-6 py-3 rounded-xl flex items-center gap-4 w-full sm:w-auto justify-center">
-                      <span className="text-xs text-zinc-500 uppercase font-bold tracking-wider">Seu Código:</span>
-                      <span className="text-2xl font-black text-white tracking-widest select-all">{usuarioLogado.codigo_indicacao}</span>
+                  <form onSubmit={alterarMinhaSenha} className="flex flex-col sm:flex-row gap-4 items-end max-w-3xl">
+                    <div className="w-full">
+                      <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1 block">Senha Atual</label>
+                      <input type="password" placeholder="Sua senha atual" value={mudarSenhaAtual} onChange={e => setMudarSenhaAtual(e.target.value)} className="w-full px-4 py-3 bg-zinc-950 border border-zinc-700 text-white rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" required />
                     </div>
-                    <button onClick={() => { navigator.clipboard.writeText(usuarioLogado.codigo_indicacao); mostrarToast("Código copiado! Envie para seus amigos.", "sucesso"); }} className="bg-purple-600 hover:bg-purple-500 text-white font-bold px-6 py-4 rounded-xl text-sm transition-colors shadow-lg shadow-purple-600/20 w-full sm:w-auto">
-                      📋 Copiar Código
+                    <div className="w-full">
+                      <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1 block">Nova Senha</label>
+                      <input type="password" placeholder="Sua nova senha" value={mudarSenhaNova} onChange={e => setMudarSenhaNova(e.target.value)} className="w-full px-4 py-3 bg-zinc-950 border border-zinc-700 text-white rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none" required />
+                    </div>
+                    <button type="submit" className="w-full sm:w-auto bg-zinc-800 hover:bg-zinc-700 text-white font-bold px-8 py-3 rounded-xl transition-colors border border-zinc-700 whitespace-nowrap shadow-lg">
+                      Atualizar Senha
                     </button>
+                  </form>
+                </div>
+              </details>
+
+              {/* === INDIQUE UM AMIGO (ACORDEÃO) === */}
+              {usuarioLogado && usuarioLogado.codigo_indicacao && (
+                <details className="group bg-gradient-to-r from-purple-900/40 to-blue-900/40 rounded-3xl border border-purple-500/30 shadow-2xl [&_summary::-webkit-details-marker]:hidden overflow-hidden">
+                  <summary className="flex items-center justify-between p-6 md:p-8 cursor-pointer font-black text-xl select-none relative">
+                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-400 relative z-10">🎁 Indique um Amigo e Ganhe Bônus!</span>
+                    <span className="transition duration-300 group-open:-rotate-180 text-purple-400 relative z-10">▼</span>
+                    <div className="absolute -right-10 -top-10 text-9xl opacity-5 transition-transform duration-700 group-open:scale-110 pointer-events-none">🎁</div>
+                  </summary>
+                  
+                  <div className="px-6 md:px-8 pb-6 md:pb-8 border-t border-purple-500/20 pt-6 animate-fade-in relative z-10">
+                    <p className="text-sm text-zinc-300 mb-6 max-w-2xl leading-relaxed">
+                      Mande o seu código para um amigo. Quando ele criar uma conta nova e fizer a <strong className="text-emerald-400">primeira recarga</strong>, nós daremos <strong>10% do valor</strong> da recarga dele de presente para você gastar em jogos!
+                    </p>
+                    <div className="flex flex-col sm:flex-row gap-4 items-center">
+                      <div className="bg-zinc-950 border border-zinc-800 px-6 py-3 rounded-xl flex items-center gap-4 w-full sm:w-auto justify-center">
+                        <span className="text-xs text-zinc-500 uppercase font-bold tracking-wider">Seu Código:</span>
+                        <span className="text-2xl font-black text-white tracking-widest select-all">{usuarioLogado.codigo_indicacao}</span>
+                      </div>
+                      <button onClick={() => { navigator.clipboard.writeText(usuarioLogado.codigo_indicacao); mostrarToast("Código copiado! Envie para seus amigos.", "sucesso"); }} className="bg-purple-600 hover:bg-purple-500 text-white font-bold px-6 py-4 rounded-xl text-sm transition-colors shadow-lg shadow-purple-600/20 w-full sm:w-auto">
+                        📋 Copiar Código
+                      </button>
+                    </div>
                   </div>
-                </section>
+                </details>
               )}
 
-              <section className="bg-zinc-900/80 p-6 md:p-8 rounded-3xl border border-zinc-800 border-l-4 border-l-emerald-500 shadow-2xl">
-                <h3 className="text-lg font-bold text-emerald-400 mb-6 flex items-center gap-2">🔑 Chaves de Acesso Ativas</h3>
+              {/* === CHAVES DE ACESSO ATIVAS (ACORDEÃO) === */}
+              <details className="group bg-zinc-900/80 rounded-3xl border border-zinc-800 border-l-4 border-l-emerald-500 shadow-2xl [&_summary::-webkit-details-marker]:hidden overflow-hidden">
+                <summary className="flex items-center justify-between p-6 md:p-8 cursor-pointer text-emerald-400 font-bold text-lg select-none">
+                  <span className="flex items-center gap-2">🔑 Chaves de Acesso Ativas</span>
+                  <span className="transition duration-300 group-open:-rotate-180 text-emerald-500">▼</span>
+                </summary>
                 
-                {alugueisAtivos.length > 0 && (
-                  <div className="mb-6 bg-rose-950/40 border border-rose-500/50 rounded-xl p-4 flex items-start gap-4 shadow-inner">
-                    <span className="text-2xl animate-pulse">🚨</span>
-                    <div>
-                      <h4 className="text-rose-400 font-bold text-sm uppercase tracking-wider mb-1">Evite Bloqueio e Multa de R$ 50,00</h4>
-                      <p className="text-xs text-zinc-300 leading-relaxed">
-                        É <strong>obrigatório</strong> desativar o "Compartilhamento de Console" ou "PS4 Principal" na sua conta ANTES do tempo de aluguel expirar. O descumprimento gera uma multa automática e deixa seu saldo negativo.
-                      </p>
+                <div className="px-6 md:px-8 pb-6 md:pb-8 border-t border-zinc-800/50 pt-6 animate-fade-in">
+                  {alugueisAtivos.length > 0 && (
+                    <div className="mb-6 bg-rose-950/40 border border-rose-500/50 rounded-xl p-4 flex items-start gap-4 shadow-inner">
+                      <span className="text-2xl animate-pulse">🚨</span>
+                      <div>
+                        <h4 className="text-rose-400 font-bold text-sm uppercase tracking-wider mb-1">Evite Bloqueio e Multa de R$ 50,00</h4>
+                        <p className="text-xs text-zinc-300 leading-relaxed">
+                          É <strong>obrigatório</strong> desativar o "Compartilhamento de Console" ou "PS4 Principal" na sua conta ANTES do tempo de aluguel expirar. O descumprimento gera uma multa automática e deixa seu saldo negativo.
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
 
-                {alugueisAtivos.length === 0 ? <p className="text-zinc-500 text-sm">Nenhum jogo ativo no momento.</p> : (
-                  <div className="grid grid-cols-1 gap-5">
-                    {alugueisAtivos.map(item => (
-                      <div key={item.locacao_id} className="bg-zinc-950/50 p-5 md:p-6 rounded-2xl border border-zinc-800/80 shadow-lg flex flex-col gap-4 hover:border-emerald-500/30 transition-colors">
-                        
-                        {/* 1. NOME DO JOGO */}
-                        <h4 className="font-black text-lg md:text-xl text-white leading-tight">{item.jogo}</h4>
-                        
-                        {/* 2. CREDENCIAIS DE ACESSO */}
-                        <div className="flex flex-col gap-2 bg-black/40 p-4 rounded-xl border border-zinc-800/50">
-                          <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
-                            <span className="text-zinc-500 text-[10px] uppercase font-bold tracking-wider w-12">Login</span>
-                            <span className="text-blue-400 font-medium text-sm md:text-base select-all break-all">{item.email_login}</span>
-                          </div>
-                          <div className="w-full h-px bg-zinc-800/50"></div>
-                          <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
-                            <span className="text-zinc-500 text-[10px] uppercase font-bold tracking-wider w-12">Senha</span>
-                            <span className="text-zinc-300 font-mono text-sm md:text-base bg-zinc-900/80 px-2 py-0.5 rounded select-all border border-zinc-700/50 inline-block w-max">{item.senha_login}</span>
-                          </div>
-                        </div>
-
-                        {/* 3. BOTÃO DE GERAR 2FA */}
-                        <div className="w-full">
-                          {codigosGerados2FA[item.locacao_id] ? (
-                            <div className="text-emerald-400 font-mono text-xl md:text-2xl font-bold tracking-widest bg-zinc-950 py-3 rounded-xl border border-emerald-500/30 select-all text-center shadow-inner">
-                              {codigosGerados2FA[item.locacao_id]}
-                            </div>
-                          ) : (
-                            <button onClick={() => gerarCodigo2FA(item.locacao_id)} className="w-full bg-zinc-800 hover:bg-blue-600 text-sm text-white font-bold py-3.5 rounded-xl transition-all shadow-lg shadow-blue-500/10 flex items-center justify-center gap-2 border border-zinc-700">
-                              🔐 Gerar Código de Acesso (2FA)
-                            </button>
-                          )}
-                        </div>
-
-                        {/* 4. DATA DE EXPIRAÇÃO E DEVOLVER */}
-                        <div className="flex flex-col sm:flex-row justify-between items-center gap-3 mt-1">
-                          <div className="flex items-center gap-2 text-xs font-bold bg-amber-500/10 text-amber-400 px-3 py-2.5 rounded-xl border border-amber-500/20 w-full sm:w-auto justify-center">
-                            <span>⏳ Expira:</span>
-                            <span>{new Date(item.data_fim).toLocaleString()}</span>
-                          </div>
-                          
-                          {configSistema.devolucao_dinamica && (
-                            <button onClick={() => devolverAntecipado(item.locacao_id, item.data_fim)} className="w-full sm:w-auto bg-emerald-900/40 hover:bg-emerald-600 text-emerald-400 hover:text-white font-bold px-6 py-2.5 rounded-xl text-sm transition-all border border-emerald-500/30 shadow-lg flex items-center justify-center gap-2">
-                              ♻️ Devolver Antecipado
-                            </button>
-                          )}
-                        </div>
-
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </section>
-
-              <section className="bg-zinc-900/80 p-6 md:p-8 rounded-3xl border border-zinc-800 border-l-4 border-l-amber-500 shadow-2xl">
-                <h3 className="text-lg font-bold text-amber-400 mb-6 flex items-center gap-2">⏳ Minhas Reservas (Fila de Espera)</h3>
-                {minhasReservas.length === 0 ? <p className="text-zinc-500 text-sm">Você não possui reservas ativas na fila.</p> : (
-                  <div className="grid grid-cols-1 gap-5">
-                    {minhasReservas.map(item => (
-                      <div key={item.reserva_id} className="bg-zinc-950/50 p-5 md:p-6 rounded-2xl border border-zinc-800/80 shadow-lg flex flex-col gap-4 hover:border-amber-500/30 transition-colors">
-                        
-                        {/* 1. NOME E DATA */}
-                        <div className="flex flex-col gap-1">
+                  {alugueisAtivos.length === 0 ? <p className="text-zinc-500 text-sm">Nenhum jogo ativo no momento.</p> : (
+                    <div className="grid grid-cols-1 gap-5">
+                      {alugueisAtivos.map(item => (
+                        <div key={item.locacao_id} className="bg-zinc-950/50 p-5 md:p-6 rounded-2xl border border-zinc-800/80 shadow-lg flex flex-col gap-4 hover:border-emerald-500/30 transition-colors">
                           <h4 className="font-black text-lg md:text-xl text-white leading-tight">{item.jogo}</h4>
-                          <span className="text-[11px] text-zinc-500 uppercase font-bold tracking-wider">
-                            Reservado em: {new Date(item.data_solicitacao).toLocaleString()}
-                          </span>
-                        </div>
-                        
-                        {/* 2. STATUS E LIBERAÇÃO (No mesmo formato da caixa de Login) */}
-                        <div className="flex flex-col gap-2 bg-black/40 p-4 rounded-xl border border-zinc-800/50">
-                          <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
-                            <span className="text-zinc-500 text-[10px] uppercase font-bold tracking-wider w-16">Status</span>
-                            <span className="text-amber-400 font-black text-xs uppercase bg-amber-400/10 px-2 py-0.5 rounded border border-amber-500/20 w-max">Aguardando Fila</span>
+                          <div className="flex flex-col gap-2 bg-black/40 p-4 rounded-xl border border-zinc-800/50">
+                            <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
+                              <span className="text-zinc-500 text-[10px] uppercase font-bold tracking-wider w-12">Login</span>
+                              <span className="text-blue-400 font-medium text-sm md:text-base select-all break-all">{item.email_login}</span>
+                            </div>
+                            <div className="w-full h-px bg-zinc-800/50"></div>
+                            <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
+                              <span className="text-zinc-500 text-[10px] uppercase font-bold tracking-wider w-12">Senha</span>
+                              <span className="text-zinc-300 font-mono text-sm md:text-base bg-zinc-900/80 px-2 py-0.5 rounded select-all border border-zinc-700/50 inline-block w-max">{item.senha_login}</span>
+                            </div>
                           </div>
-                          <div className="w-full h-px bg-zinc-800/50"></div>
-                          <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
-                            <span className="text-zinc-500 text-[10px] uppercase font-bold tracking-wider w-16">Liberação</span>
-                            <span className="text-blue-400 font-bold text-sm md:text-base">{calcularPrevisao(item.proxima_devolucao, item.pessoas_na_frente)}</span>
+                          <div className="w-full">
+                            {codigosGerados2FA[item.locacao_id] ? (
+                              <div className="text-emerald-400 font-mono text-xl md:text-2xl font-bold tracking-widest bg-zinc-950 py-3 rounded-xl border border-emerald-500/30 select-all text-center shadow-inner">
+                                {codigosGerados2FA[item.locacao_id]}
+                              </div>
+                            ) : (
+                              <button onClick={() => gerarCodigo2FA(item.locacao_id)} className="w-full bg-zinc-800 hover:bg-blue-600 text-sm text-white font-bold py-3.5 rounded-xl transition-all shadow-lg shadow-blue-500/10 flex items-center justify-center gap-2 border border-zinc-700">
+                                🔐 Gerar Código de Acesso (2FA)
+                              </button>
+                            )}
+                          </div>
+                          <div className="flex flex-col sm:flex-row justify-between items-center gap-3 mt-1">
+                            <div className="flex items-center gap-2 text-xs font-bold bg-amber-500/10 text-amber-400 px-3 py-2.5 rounded-xl border border-amber-500/20 w-full sm:w-auto justify-center">
+                              <span>⏳ Expira:</span>
+                              <span>{new Date(item.data_fim).toLocaleString()}</span>
+                            </div>
+                            {configSistema.devolucao_dinamica && (
+                              <button onClick={() => devolverAntecipado(item.locacao_id, item.data_fim)} className="w-full sm:w-auto bg-emerald-900/40 hover:bg-emerald-600 text-emerald-400 hover:text-white font-bold px-6 py-2.5 rounded-xl text-sm transition-all border border-emerald-500/30 shadow-lg flex items-center justify-center gap-2">
+                                ♻️ Devolver Antecipado
+                              </button>
+                            )}
                           </div>
                         </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </details>
 
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </section>
+              {/* === MINHAS RESERVAS (ACORDEÃO) === */}
+              <details className="group bg-zinc-900/80 rounded-3xl border border-zinc-800 border-l-4 border-l-amber-500 shadow-2xl [&_summary::-webkit-details-marker]:hidden overflow-hidden">
+                <summary className="flex items-center justify-between p-6 md:p-8 cursor-pointer text-amber-400 font-bold text-lg select-none">
+                  <span className="flex items-center gap-2">⏳ Minhas Reservas (Fila de Espera)</span>
+                  <span className="transition duration-300 group-open:-rotate-180 text-amber-500">▼</span>
+                </summary>
+                
+                <div className="px-6 md:px-8 pb-6 md:pb-8 border-t border-zinc-800/50 pt-6 animate-fade-in">
+                  {minhasReservas.length === 0 ? <p className="text-zinc-500 text-sm">Você não possui reservas ativas na fila.</p> : (
+                    <div className="grid grid-cols-1 gap-5">
+                      {minhasReservas.map(item => (
+                        <div key={item.reserva_id} className="bg-zinc-950/50 p-5 md:p-6 rounded-2xl border border-zinc-800/80 shadow-lg flex flex-col gap-4 hover:border-amber-500/30 transition-colors">
+                          <div className="flex flex-col gap-1">
+                            <h4 className="font-black text-lg md:text-xl text-white leading-tight">{item.jogo}</h4>
+                            <span className="text-[11px] text-zinc-500 uppercase font-bold tracking-wider">
+                              Reservado em: {new Date(item.data_solicitacao).toLocaleString()}
+                            </span>
+                          </div>
+                          <div className="flex flex-col gap-2 bg-black/40 p-4 rounded-xl border border-zinc-800/50">
+                            <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
+                              <span className="text-zinc-500 text-[10px] uppercase font-bold tracking-wider w-16">Status</span>
+                              <span className="text-amber-400 font-black text-xs uppercase bg-amber-400/10 px-2 py-0.5 rounded border border-amber-500/20 w-max">Aguardando Fila</span>
+                            </div>
+                            <div className="w-full h-px bg-zinc-800/50"></div>
+                            <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
+                              <span className="text-zinc-500 text-[10px] uppercase font-bold tracking-wider w-16">Liberação</span>
+                              <span className="text-blue-400 font-bold text-sm md:text-base">{calcularPrevisao(item.proxima_devolucao, item.pessoas_na_frente)}</span>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </details>
 
+              {/* === HISTÓRICO DE ALUGUÉIS (ACORDEÃO) === */}
               {historicoAlugueis.length > 0 && (
-                <section className="bg-zinc-900 p-6 rounded-2xl border border-zinc-800">
-                  <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-4">🕰️ Últimos 5 Aluguéis</h3>
-                  <div className="flex flex-wrap gap-2">
+                <details className="group bg-zinc-900 rounded-2xl border border-zinc-800 shadow-lg [&_summary::-webkit-details-marker]:hidden overflow-hidden">
+                  <summary className="flex items-center justify-between p-6 cursor-pointer text-zinc-500 font-bold text-xs uppercase tracking-wider select-none">
+                    <span className="flex items-center gap-2">🕰️ Últimos 5 Aluguéis</span>
+                    <span className="transition duration-300 group-open:-rotate-180 text-zinc-600">▼</span>
+                  </summary>
+                  
+                  <div className="px-6 pb-6 border-t border-zinc-800/50 pt-6 flex flex-wrap gap-2 animate-fade-in">
                     {historicoAlugueis.map(item => (
                       <span key={item.locacao_id} className="bg-zinc-950 border border-zinc-800 text-zinc-400 px-4 py-1.5 rounded-full text-xs">{item.jogo} <span className="opacity-50 ml-1">({new Date(item.data_fim).toLocaleDateString()})</span></span>
                     ))}
                   </div>
-                </section>
+                </details>
               )}
+
             </div>
           )}
 
