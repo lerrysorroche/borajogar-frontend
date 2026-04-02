@@ -966,16 +966,16 @@ function App() {
               
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 
-                {/* === CAIXA DE RECARGA === */}
-                <section className="bg-zinc-900 p-6 md:p-8 rounded-3xl border border-zinc-800 shadow-2xl flex flex-col h-auto lg:h-[520px] relative overflow-hidden">
+                {/* === CAIXA DE RECARGA (NEON CIANO / PIX) === */}
+                <section className="bg-gradient-to-br from-cyan-900/20 to-zinc-900 p-6 md:p-8 rounded-3xl border border-cyan-500/30 shadow-2xl shadow-cyan-500/10 flex flex-col h-auto lg:h-[520px] relative overflow-hidden hover:-translate-y-1 transition-transform duration-300">
                   <div className="absolute -right-8 -top-8 text-9xl opacity-5 pointer-events-none">💸</div>
-                  <h3 className="text-lg font-bold text-emerald-400 mb-2 flex items-center gap-2">💰 Adicionar Saldo via PIX</h3>
+                  <h3 className="text-lg font-bold text-cyan-400 mb-2 flex items-center gap-2">💰 Adicionar Saldo via PIX</h3>
                   <p className="text-sm text-zinc-400 mb-6">Recarregue sua carteira instantaneamente para alugar jogos sem filas.</p>
                   
                   {pixPendente ? (
-                    <div className="flex flex-col items-center justify-center animate-fade-in z-10 bg-zinc-950 p-6 rounded-2xl border border-emerald-500/30 shadow-inner">
+                    <div className="flex flex-col items-center justify-center animate-fade-in z-10 bg-zinc-950 p-6 rounded-2xl border border-cyan-500/30 shadow-inner">
                         <img src={`data:image/png;base64,${pixPendente.qr_code}`} alt="QR Code PIX" className="w-48 h-48 rounded-xl border border-zinc-800 p-2 mb-4 bg-white" />
-                        <p className="text-xs text-zinc-400 mb-3 text-center">Escaneie o QR Code ou copie o código abaixo para pagar no app do seu banco. <strong className="text-emerald-400 block mt-1 animate-pulse">Aguardando pagamento...</strong></p>
+                        <p className="text-xs text-zinc-400 mb-3 text-center">Escaneie o QR Code ou copie o código abaixo para pagar no app do seu banco. <strong className="text-cyan-400 block mt-1 animate-pulse">Aguardando pagamento...</strong></p>
                         
                         <div className="flex gap-2 w-full">
                             <button onClick={() => { navigator.clipboard.writeText(pixPendente.copia_cola); mostrarToast("PIX Copiado!", "sucesso"); }} className="flex-1 bg-zinc-800 hover:bg-zinc-700 text-white font-bold py-3 rounded-xl text-xs transition-colors border border-zinc-700">
@@ -992,7 +992,7 @@ function App() {
                         <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1 block">Valor da Recarga (R$)</label>
                         <div className="relative">
                           <span className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 font-bold">R$</span>
-                          <input type="number" min="30" step="1" value={valorRecarga} onChange={e => setValorRecarga(e.target.value)} className="w-full pl-12 pr-4 py-3 bg-zinc-950 border border-zinc-700 text-white rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none font-bold text-lg" required />
+                          <input type="number" min="30" step="1" value={valorRecarga} onChange={e => setValorRecarga(e.target.value)} className="w-full pl-12 pr-4 py-3 bg-zinc-950 border border-zinc-700 text-white rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none font-bold text-lg" required />
                         </div>
                         <span className="text-[10px] text-zinc-500 mt-1 block">Valor mínimo: R$ 30,00</span>
                       </div>
@@ -1002,11 +1002,11 @@ function App() {
                         <input type="text" placeholder="Ex: BORA20" value={cupomRecarga} onChange={e => setCupomRecarga(e.target.value.toUpperCase())} className="w-full px-4 py-3 bg-zinc-950 border border-zinc-700 text-white rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none uppercase placeholder:normal-case placeholder-zinc-600" />
                       </div>
   
-                      <button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black py-4 px-6 rounded-xl transition-all shadow-lg shadow-emerald-600/20 mt-2 flex items-center justify-center gap-2">
+                      <button type="submit" className="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-black py-4 px-6 rounded-xl transition-all shadow-lg shadow-cyan-600/20 mt-2 flex items-center justify-center gap-2">
                         <span>Gerar PIX</span> <span className="text-xl">⚡</span>
                       </button>
 
-                      {/* NOVO: SELOS DE SEGURANÇA (Checkout) */}
+                      {/* SELOS DE SEGURANÇA */}
                       <div className="mt-5 pt-5 border-t border-zinc-800/50 flex flex-col items-center gap-2 opacity-80">
                         <div className="flex items-center gap-2 text-zinc-400 text-[10px] uppercase tracking-widest font-bold">
                           <span>🔒 Pagamento 100% Seguro</span>
@@ -1021,7 +1021,8 @@ function App() {
                   )}
                 </section>
 
-                <section className="bg-zinc-900/80 p-6 md:p-8 rounded-3xl border border-zinc-800 shadow-2xl flex flex-col h-[400px] lg:h-[520px]">
+                {/* === EXTRATO DA CONTA (NEUTRO) === */}
+                <section className="bg-gradient-to-br from-zinc-800/20 to-zinc-900 p-6 md:p-8 rounded-3xl border border-zinc-700/30 shadow-2xl flex flex-col h-[400px] lg:h-[520px] hover:-translate-y-1 transition-transform duration-300">
                   <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-2">🧾 Extrato da Conta</h3>
                   {extrato.length === 0 ? (
                     <div className="flex-1 flex flex-col items-center justify-center text-zinc-500"><span className="text-4xl mb-2 opacity-30">💳</span><p className="text-sm">Nenhuma transação encontrada.</p></div>
@@ -1043,37 +1044,37 @@ function App() {
                 </section>
               </div>
 
-              {/* === CAIXA DE MUDANÇA DE SENHA (ACORDEÃO) === */}
-              <details className="group bg-zinc-900/80 rounded-3xl border border-zinc-800 shadow-2xl [&_summary::-webkit-details-marker]:hidden overflow-hidden">
+              {/* === CAIXA DE MUDANÇA DE SENHA (NEON VERMELHO/ROSE) === */}
+              <details className="group bg-gradient-to-r from-rose-900/20 to-zinc-900 rounded-3xl border border-rose-500/30 shadow-2xl shadow-rose-500/10 [&_summary::-webkit-details-marker]:hidden overflow-hidden">
                 <summary className="flex items-center justify-between p-6 md:p-8 cursor-pointer text-white font-bold text-lg select-none relative">
-                  <span className="flex items-center gap-2 relative z-10">🔐 Segurança da Conta</span>
-                  <span className="transition duration-300 group-open:-rotate-180 text-zinc-500 relative z-10">▼</span>
+                  <span className="flex items-center gap-2 relative z-10 text-rose-400">🔐 Segurança da Conta</span>
+                  <span className="transition duration-300 group-open:-rotate-180 text-rose-500 relative z-10">▼</span>
                   <div className="absolute -right-8 -top-8 text-9xl opacity-5 pointer-events-none transition-transform duration-500 group-open:scale-110">🔐</div>
                 </summary>
                 
-                <div className="px-6 md:px-8 pb-6 md:pb-8 border-t border-zinc-800/50 pt-6 relative z-10 animate-fade-in">
+                <div className="px-6 md:px-8 pb-6 md:pb-8 border-t border-rose-500/20 pt-6 relative z-10 animate-fade-in">
                   <p className="text-sm text-zinc-400 mb-6 max-w-2xl leading-relaxed">
                     Mantenha sua conta segura alterando sua senha regularmente ou troque a senha temporária que enviamos por e-mail.
                   </p>
                   <form onSubmit={alterarMinhaSenha} className="flex flex-col sm:flex-row gap-4 items-end max-w-3xl">
                     <div className="w-full">
                       <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1 block">Senha Atual</label>
-                      <input type="password" placeholder="Sua senha atual" value={mudarSenhaAtual} onChange={e => setMudarSenhaAtual(e.target.value)} className="w-full px-4 py-3 bg-zinc-950 border border-zinc-700 text-white rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" required />
+                      <input type="password" placeholder="Sua senha atual" value={mudarSenhaAtual} onChange={e => setMudarSenhaAtual(e.target.value)} className="w-full px-4 py-3 bg-zinc-950 border border-zinc-700 text-white rounded-xl focus:ring-2 focus:ring-rose-500 outline-none" required />
                     </div>
                     <div className="w-full">
                       <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1 block">Nova Senha</label>
-                      <input type="password" placeholder="Sua nova senha" value={mudarSenhaNova} onChange={e => setMudarSenhaNova(e.target.value)} className="w-full px-4 py-3 bg-zinc-950 border border-zinc-700 text-white rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none" required />
+                      <input type="password" placeholder="Sua nova senha" value={mudarSenhaNova} onChange={e => setMudarSenhaNova(e.target.value)} className="w-full px-4 py-3 bg-zinc-950 border border-zinc-700 text-white rounded-xl focus:ring-2 focus:ring-rose-500 outline-none" required />
                     </div>
-                    <button type="submit" className="w-full sm:w-auto bg-zinc-800 hover:bg-zinc-700 text-white font-bold px-8 py-3 rounded-xl transition-colors border border-zinc-700 whitespace-nowrap shadow-lg">
+                    <button type="submit" className="w-full sm:w-auto bg-rose-600 hover:bg-rose-500 text-white font-bold px-8 py-3 rounded-xl transition-colors border border-rose-500/50 shadow-lg shadow-rose-600/20 whitespace-nowrap">
                       Atualizar Senha
                     </button>
                   </form>
                 </div>
               </details>
 
-              {/* === INDIQUE UM AMIGO (ACORDEÃO) === */}
+              {/* === INDIQUE UM AMIGO (NEON ROXO) === */}
               {usuarioLogado && usuarioLogado.codigo_indicacao && (
-                <details className="group bg-gradient-to-r from-purple-900/40 to-blue-900/40 rounded-3xl border border-purple-500/30 shadow-2xl [&_summary::-webkit-details-marker]:hidden overflow-hidden">
+                <details className="group bg-gradient-to-r from-purple-900/30 to-blue-900/20 rounded-3xl border border-purple-500/30 shadow-2xl shadow-purple-500/10 [&_summary::-webkit-details-marker]:hidden overflow-hidden">
                   <summary className="flex items-center justify-between p-6 md:p-8 cursor-pointer font-black text-xl select-none relative">
                     <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-400 relative z-10">🎁 Indique um Amigo e Ganhe Bônus!</span>
                     <span className="transition duration-300 group-open:-rotate-180 text-purple-400 relative z-10">▼</span>
@@ -1097,14 +1098,14 @@ function App() {
                 </details>
               )}
 
-              {/* === CHAVES DE ACESSO ATIVAS (ACORDEÃO) === */}
-              <details className="group bg-zinc-900/80 rounded-3xl border border-zinc-800 border-l-4 border-l-emerald-500 shadow-2xl [&_summary::-webkit-details-marker]:hidden overflow-hidden">
+              {/* === CHAVES DE ACESSO ATIVAS (NEON VERDE) === */}
+              <details className="group bg-gradient-to-r from-emerald-900/20 to-zinc-900 rounded-3xl border border-emerald-500/30 border-l-4 border-l-emerald-500 shadow-2xl shadow-emerald-500/10 [&_summary::-webkit-details-marker]:hidden overflow-hidden">
                 <summary className="flex items-center justify-between p-6 md:p-8 cursor-pointer text-emerald-400 font-bold text-lg select-none">
                   <span className="flex items-center gap-2">🔑 Chaves de Acesso Ativas</span>
                   <span className="transition duration-300 group-open:-rotate-180 text-emerald-500">▼</span>
                 </summary>
                 
-                <div className="px-6 md:px-8 pb-6 md:pb-8 border-t border-zinc-800/50 pt-6 animate-fade-in">
+                <div className="px-6 md:px-8 pb-6 md:pb-8 border-t border-emerald-500/20 pt-6 animate-fade-in">
                   {alugueisAtivos.length > 0 && (
                     <div className="mb-6 bg-rose-950/40 border border-rose-500/50 rounded-xl p-4 flex items-start gap-4 shadow-inner">
                       <span className="text-2xl animate-pulse">🚨</span>
@@ -1120,12 +1121,12 @@ function App() {
                   {alugueisAtivos.length === 0 ? <p className="text-zinc-500 text-sm">Nenhum jogo ativo no momento.</p> : (
                     <div className="grid grid-cols-1 gap-5">
                       {alugueisAtivos.map(item => (
-                        <div key={item.locacao_id} className="bg-zinc-950/50 p-5 md:p-6 rounded-2xl border border-zinc-800/80 shadow-lg flex flex-col gap-4 hover:border-emerald-500/30 transition-colors">
+                        <div key={item.locacao_id} className="bg-zinc-950/50 p-5 md:p-6 rounded-2xl border border-emerald-500/30 shadow-lg flex flex-col gap-4 hover:border-emerald-400/50 transition-colors">
                           <h4 className="font-black text-lg md:text-xl text-white leading-tight">{item.jogo}</h4>
                           <div className="flex flex-col gap-2 bg-black/40 p-4 rounded-xl border border-zinc-800/50">
                             <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
                               <span className="text-zinc-500 text-[10px] uppercase font-bold tracking-wider w-12">Login</span>
-                              <span className="text-blue-400 font-medium text-sm md:text-base select-all break-all">{item.email_login}</span>
+                              <span className="text-emerald-400 font-medium text-sm md:text-base select-all break-all">{item.email_login}</span>
                             </div>
                             <div className="w-full h-px bg-zinc-800/50"></div>
                             <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
@@ -1139,7 +1140,7 @@ function App() {
                                 {codigosGerados2FA[item.locacao_id]}
                               </div>
                             ) : (
-                              <button onClick={() => gerarCodigo2FA(item.locacao_id)} className="w-full bg-zinc-800 hover:bg-blue-600 text-sm text-white font-bold py-3.5 rounded-xl transition-all shadow-lg shadow-blue-500/10 flex items-center justify-center gap-2 border border-zinc-700">
+                              <button onClick={() => gerarCodigo2FA(item.locacao_id)} className="w-full bg-zinc-800 hover:bg-emerald-600 text-sm text-white font-bold py-3.5 rounded-xl transition-all shadow-lg hover:shadow-emerald-500/20 flex items-center justify-center gap-2 border border-zinc-700 hover:border-emerald-500">
                                 🔐 Gerar Código de Acesso (2FA)
                               </button>
                             )}
@@ -1162,7 +1163,6 @@ function App() {
                                   </button>
                                 )
                               }
-                              // Se não tem fila, o botão nem é renderizado (desaparece)
                               return null;
                             })()}
                           </div>
@@ -1173,18 +1173,18 @@ function App() {
                 </div>
               </details>
 
-              {/* === MINHAS RESERVAS (ACORDEÃO) === */}
-              <details className="group bg-zinc-900/80 rounded-3xl border border-zinc-800 border-l-4 border-l-amber-500 shadow-2xl [&_summary::-webkit-details-marker]:hidden overflow-hidden">
+              {/* === MINHAS RESERVAS (NEON AMARELO/DOURADO) === */}
+              <details className="group bg-gradient-to-r from-amber-900/20 to-zinc-900 rounded-3xl border border-amber-500/30 border-l-4 border-l-amber-500 shadow-2xl shadow-amber-500/10 [&_summary::-webkit-details-marker]:hidden overflow-hidden">
                 <summary className="flex items-center justify-between p-6 md:p-8 cursor-pointer text-amber-400 font-bold text-lg select-none">
                   <span className="flex items-center gap-2">⏳ Minhas Reservas (Fila de Espera)</span>
                   <span className="transition duration-300 group-open:-rotate-180 text-amber-500">▼</span>
                 </summary>
                 
-                <div className="px-6 md:px-8 pb-6 md:pb-8 border-t border-zinc-800/50 pt-6 animate-fade-in">
+                <div className="px-6 md:px-8 pb-6 md:pb-8 border-t border-amber-500/20 pt-6 animate-fade-in">
                   {minhasReservas.length === 0 ? <p className="text-zinc-500 text-sm">Você não possui reservas ativas na fila.</p> : (
                     <div className="grid grid-cols-1 gap-5">
                       {minhasReservas.map(item => (
-                        <div key={item.reserva_id} className="bg-zinc-950/50 p-5 md:p-6 rounded-2xl border border-zinc-800/80 shadow-lg flex flex-col gap-4 hover:border-amber-500/30 transition-colors">
+                        <div key={item.reserva_id} className="bg-zinc-950/50 p-5 md:p-6 rounded-2xl border border-amber-500/30 shadow-lg flex flex-col gap-4 hover:border-amber-400/50 transition-colors">
                           <div className="flex flex-col gap-1">
                             <h4 className="font-black text-lg md:text-xl text-white leading-tight">{item.jogo}</h4>
                             <span className="text-[11px] text-zinc-500 uppercase font-bold tracking-wider">
@@ -1199,7 +1199,7 @@ function App() {
                             <div className="w-full h-px bg-zinc-800/50"></div>
                             <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
                               <span className="text-zinc-500 text-[10px] uppercase font-bold tracking-wider w-16">Liberação</span>
-                              <span className="text-blue-400 font-bold text-sm md:text-base">{calcularPrevisao(item.proxima_devolucao, item.pessoas_na_frente)}</span>
+                              <span className="text-amber-400 font-bold text-sm md:text-base">{calcularPrevisao(item.proxima_devolucao, item.pessoas_na_frente)}</span>
                             </div>
                           </div>
                         </div>
@@ -1209,9 +1209,9 @@ function App() {
                 </div>
               </details>
 
-              {/* === HISTÓRICO DE ALUGUÉIS (ACORDEÃO) === */}
+              {/* === HISTÓRICO DE ALUGUÉIS === */}
               {historicoAlugueis.length > 0 && (
-                <details className="group bg-zinc-900 rounded-2xl border border-zinc-800 shadow-lg [&_summary::-webkit-details-marker]:hidden overflow-hidden">
+                <details className="group bg-zinc-900/80 rounded-2xl border border-zinc-800 shadow-lg [&_summary::-webkit-details-marker]:hidden overflow-hidden">
                   <summary className="flex items-center justify-between p-6 cursor-pointer text-zinc-500 font-bold text-xs uppercase tracking-wider select-none">
                     <span className="flex items-center gap-2">🕰️ Últimos 5 Aluguéis</span>
                     <span className="transition duration-300 group-open:-rotate-180 text-zinc-600">▼</span>
