@@ -1189,14 +1189,19 @@ function App() {
                                 <span className="text-base">⚠️</span> ATENÇÃO: NUNCA ENTRE COMO CONVIDADO!
                               </p>
                               <ol className="list-decimal pl-5 space-y-2.5">
-                                <li>Ligue o console e selecione <strong>Adicionar Novo Usuário</strong> (e aceite os termos).</li>
-                                <li>Selecione <strong>Iniciar Sessão Manualmente</strong>.</li>
+                                <li>Ligue o console. selecione <strong>ADICIONAR USUÁRIO</strong>. (na tela de boas vindas dos usuários)</li>
+                                <li>Do lado esquerdo da tela, selecione <strong>VAMOS COMEÇAR</strong>.</li>
+                                <li>Aceite os termos e selecione <strong>CONFIRMAR</strong>.</li>
+                                <li>Na tela com o QR Code, selecione <strong>INICIAR SESSÃO MANUALMENTE</strong>. (canto esquerdo embaixo)</li>
                                 <li>Insira o E-mail e Senha da conta que estão disponíveis acima.</li>
-                                <li>Quando o console pedir o código (2FA), clique no botão azul <strong>"Gerar Código"</strong> aqui no site e digite os 6 números rapidamente.</li>
+                                <li>Quando o console pedir o código (2FA), clique no botão <strong>"Gerar Código de Acesso (2FA)"</strong> aqui no site.</li>
+                                <li>Digite o código 2FA (6 dígitos) rápidamente, ele fica ativo por 30 segundos.</li>
+                                <li><strong>NÃO ATIVE MAIS NADA</strong>. Somente selecione OK.</li>
                                 <li>Para jogar na sua conta pessoal e ganhar os troféus, é OBRIGATÓRIO habilitar o compartilhamento:
                                   <ul className="list-disc pl-4 mt-1.5 text-zinc-400 space-y-1 border-l-2 border-zinc-700 ml-1">
-                                    <li><strong>No PS5:</strong> Vá em Configurações &gt; Usuários e contas &gt; Outros &gt; Compartilhamento do console... &gt; <strong>Habilitar</strong>.</li>
-                                    <li><strong>No PS4:</strong> Vá em Configurações &gt; Gerenciamento da conta &gt; <strong>Ativar como seu PS4 principal</strong>.</li>
+                                    <li><strong>No PS5:</strong> Vá em Configurações &gt; Usuários e contas &gt; Outros &gt; Compartilhamento do console... &gt; <strong>Habilitar</strong>. (Se não estiver habilitado)</li>
+                                    <li><strong>No PS4:</strong> Vá em Configurações &gt; Gerenciamento da conta &gt; <strong>Ativar como seu PS4 principal</strong>. (Se não estiver habilitado)</li>
+                                    <li><span className="text-base">⚠️</span> É aqui também, que no final do seu aluguel, você vai DESABILITAR o compartilhamento.</li>
                                   </ul>
                                 </li>
                                 <li className="text-emerald-400 font-bold mt-2">Vá na Biblioteca da conta, coloque o jogo para baixar, volte para o seu perfil pessoal (a sua conta oficial) e divirta-se!</li>
