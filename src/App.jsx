@@ -740,24 +740,30 @@ function App() {
         <nav className="bg-zinc-900/90 backdrop-blur-md border-b border-zinc-800 fixed top-0 left-0 w-full z-50 shadow-lg">
           <div className="max-w-7xl mx-auto px-4 md:px-8">
             <div className="flex items-center justify-between h-16">
+              
+              {/* LADO ESQUERDO: LOGO E LINKS PÚBLICOS */}
               <div className="flex items-center gap-8">
-                <span className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400 tracking-tighter">BORA JOGAR!</span>
+                <span className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400 tracking-tighter cursor-pointer" onClick={() => setAbaAtual('vitrine')}>BORA JOGAR!</span>
                 
                 {/* MENU DESKTOP (Invisível no Celular) */}
                 <div className="hidden md:flex space-x-2">
                   <button onClick={() => setAbaAtual('vitrine')} className={`${navBtnClass} ${abaAtual === 'vitrine' ? 'bg-blue-600 text-white shadow-md shadow-blue-600/20' : 'text-zinc-400 hover:text-white hover:bg-zinc-800'}`}>🎮 Loja</button>
-                  <button onClick={() => setAbaAtual('dashboard')} className={`${navBtnClass} ${abaAtual === 'dashboard' ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/20' : 'text-zinc-400 hover:text-white hover:bg-zinc-800'}`}>🔑 Meus Acessos</button>
                   <button onClick={() => setAbaAtual('faq')} className={`${navBtnClass} ${abaAtual === 'faq' ? 'bg-purple-600 text-white shadow-md shadow-purple-600/20' : 'text-zinc-400 hover:text-white hover:bg-zinc-800'}`}>📖 Como Funciona</button>
+                </div>
+              </div>
+
+              {/* LADO DIREITO: LINKS DA CONTA, SALDO, NOME E BOTÕES */}
+              <div className="flex items-center gap-4">
+                
+                {/* LINKS DA CONTA DESKTOP */}
+                <div className="hidden md:flex items-center space-x-2 mr-2 border-r border-zinc-800 pr-4">
+                  <button onClick={() => setAbaAtual('dashboard')} className={`${navBtnClass} ${abaAtual === 'dashboard' ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/20' : 'text-zinc-400 hover:text-white hover:bg-zinc-800'}`}>🔑 Meus Acessos</button>
                   
                   {usuarioLogado.is_admin && (
                     <button onClick={() => setAbaAtual('admin')} className={`${navBtnClass} ${abaAtual === 'admin' ? 'bg-rose-600 text-white shadow-md shadow-rose-600/20' : 'text-zinc-400 hover:text-white hover:bg-zinc-800'}`}>⚙️ Painel Admin</button>
                   )}
                 </div>
-              </div>
 
-              {/* ÁREA DIREITA: SALDO, NOME E BOTÕES */}
-              <div className="flex items-center gap-4">
-                
                 {/* INFO DESKTOP (Invisível no Celular) */}
                 <div className="hidden md:flex bg-zinc-950 border border-zinc-800 px-3 py-1.5 rounded-xl items-center gap-2 shadow-inner">
                   <span className="text-[10px] text-zinc-500 uppercase font-bold tracking-wider">Saldo</span>
