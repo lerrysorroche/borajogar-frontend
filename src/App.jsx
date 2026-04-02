@@ -55,7 +55,10 @@ function App() {
   const [novaContaJogoId, setNovaContaJogoId] = useState('')
   const [novaContaEmail, setNovaContaEmail] = useState('')
   const [novaContaSenha, setNovaContaSenha] = useState('')
-  const [novaContaMfaSecret, setNovaContaMfaSecret] = useState('') 
+  const [novaContaMfaSecret, setNovaContaMfaSecret] = useState('')
+
+  const [paginaCatalogo, setPaginaCatalogo] = useState(0);
+  const [paginaClientes, setPaginaClientes] = useState(0);
 
   const [editandoPrecoId, setEditandoPrecoId] = useState(null)
   const [novoPrecoEdicao, setNovoPrecoEdicao] = useState('')
@@ -377,12 +380,6 @@ function App() {
     });
   }
 
-  const toggleDevolucao = () => {
-    const novaConfig = { ...configSistema, devolucao_dinamica: !configSistema.devolucao_dinamica };
-    setConfigSistema(novaConfig); 
-    salvarConfiguracoesDireto(novaConfig, novaConfig.devolucao_dinamica ? "✅ Cashback Ativado!" : "❌ Cashback Desativado!"); 
-  }
-
   const toggleAnuncio = () => {
     const novaConfig = { ...configSistema, anuncio_ativo: !configSistema.anuncio_ativo };
     setConfigSistema(novaConfig);
@@ -520,7 +517,6 @@ function App() {
     window.open(url, '_blank');
   }
 
-  // === NOVO: FUNÇÃO PARA PEDIR JOGO NO WHATSAPP ===
   const pedirJogoEmBreve = (jogoNome) => {
     let numeroLimpo = NUMERO_WHATSAPP_SUPORTE.replace(/\D/g, '');
     const mensagem = `Olá! Vi o jogo *${jogoNome}* na vitrine da Bora Jogar e quero votar para vocês colocarem no catálogo! Tenho interesse em alugar.`;
@@ -582,15 +578,13 @@ function App() {
   const indicePrimeiroJogo = indiceUltimoJogo - JOGOS_POR_PAGINA;
   const jogosDaPagina = jogosFiltrados.slice(indicePrimeiroJogo, indiceUltimoJogo);
 
-  const jogosAdminParaMostrar = jogosFiltrados.slice(0, 5)
   const jogosEstoqueFiltrados = jogos.filter(jogo => jogo.titulo.toLowerCase().includes(buscaEstoque.toLowerCase()))
   const locacoesAtivasFiltradas = todasLocacoes.filter(loc => loc.status === 'ATIVA').filter(loc => loc.jogo.toLowerCase().includes(buscaLocacao.toLowerCase()) || loc.cliente.toLowerCase().includes(buscaLocacao.toLowerCase()))
-  const locacoesAdminParaMostrar = locacoesAtivasFiltradas.slice(0, 5)
   
   const clientesFiltrados = todosUsuarios
     .filter(u => u.nome.toLowerCase().includes(buscaCliente.toLowerCase()))
-    .sort((a, b) => b.id - a.id);
-  const clientesParaMostrar = clientesFiltrados.slice(0, 100);
+    .sort((a, b) => a.nome.localeCompare(b.nome));
+
   const alugueisAtivos = meusAlugueis.filter(item => item.status === 'ATIVA')
   const historicoAlugueis = meusAlugueis.filter(item => item.status === 'EXPIRADA').slice(0, 5)
 
@@ -1353,31 +1347,76 @@ function App() {
                 </div>
               </section>
 
-              <section className="bg-zinc-900 border border-zinc-800 p-6 rounded-3xl mb-8 shadow-2xl">
-                <h3 className="text-lg font-bold text-blue-400 mb-6 flex items-center gap-2">⚙️ Configurações Globais do Sistema</h3>
-                
-                <div className="space-y-6">
-                  
-                  <div className="bg-zinc-950 p-5 rounded-xl border border-zinc-800/50 gap-4">
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 gap-4">
-                      <div>
-                        <h4 className="text-white font-bold text-base text-orange-400">📣 Hero Alert (Banner da Vitrine)</h4>
-                        <p className="text-sm text-zinc-400 mt-1">Crie um aviso chamativo na página inicial para anunciar promoções, avisos de feriado ou cupons.</p>
+              {/* ========================================== */}
+              {/* BLOCOS ACORDEÕES: BANNER E CUPONS          */}
+              {/* ========================================== */}
+              <div className="flex flex-col gap-6 mb-8">
+                  {/* 🖼️ HERO BANNER */}
+                  <details className="group bg-zinc-900/80 rounded-3xl border border-zinc-800 shadow-xl [&_summary::-webkit-details-marker]:hidden overflow-hidden">
+                      <summary className="flex items-center justify-between p-6 cursor-pointer text-white font-bold text-lg select-none relative">
+                      <span className="flex items-center gap-2 relative z-10">🖼️ Configurações do Hero Banner</span>
+                      <span className="transition duration-300 group-open:-rotate-180 text-zinc-500 relative z-10">▼</span>
+                      </summary>
+                      <div className="px-6 pb-6 border-t border-zinc-800/50 pt-6">
+                          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 gap-4">
+                              <div>
+                              <h4 className="text-white font-bold text-base text-orange-400">📣 Hero Alert (Banner da Vitrine)</h4>
+                              <p className="text-sm text-zinc-400 mt-1">Crie um aviso chamativo na página inicial para anunciar promoções, avisos de feriado ou cupons.</p>
+                              </div>
+                              <button onClick={toggleAnuncio} className={`px-6 py-3 rounded-xl font-black text-sm transition-all shadow-lg w-full sm:w-auto ${configSistema.anuncio_ativo ? 'bg-orange-600 text-white shadow-orange-600/20' : 'bg-zinc-800 text-zinc-400 hover:text-white border border-zinc-700'}`}>
+                              {configSistema.anuncio_ativo ? '✅ BANNER LIGADO' : '❌ BANNER DESLIGADO'}
+                              </button>
+                          </div>
+                          <textarea placeholder="Ex: PROMOÇÃO DE FIM DE SEMANA! Recarregue R$ 50..." value={configSistema.mensagem_anuncio} onChange={(e) => setConfigSistema({...configSistema, mensagem_anuncio: e.target.value})} className={`${adminInputClass} resize-none h-20 bg-zinc-950 border-zinc-700 focus:ring-orange-500`} />
+                          <div className="flex justify-end mt-4">
+                              <button onClick={salvarConfiguracoesGlobais} className="bg-blue-600 hover:bg-blue-500 text-white font-bold px-8 py-3 rounded-xl shadow-lg shadow-blue-600/20 transition-colors">
+                              💾 Salvar Texto do Anúncio
+                              </button>
+                          </div>
                       </div>
-                      <button onClick={toggleAnuncio} className={`px-6 py-3 rounded-xl font-black text-sm transition-all shadow-lg w-full sm:w-auto ${configSistema.anuncio_ativo ? 'bg-orange-600 text-white shadow-orange-600/20' : 'bg-zinc-800 text-zinc-400 hover:text-white border border-zinc-700'}`}>
-                        {configSistema.anuncio_ativo ? '✅ BANNER LIGADO' : '❌ BANNER DESLIGADO'}
-                      </button>
-                    </div>
-                    <textarea placeholder="Ex: PROMOÇÃO DE FIM DE SEMANA! Recarregue R$ 50..." value={configSistema.mensagem_anuncio} onChange={(e) => setConfigSistema({...configSistema, mensagem_anuncio: e.target.value})} className={`${adminInputClass} resize-none h-20 bg-zinc-900 border-zinc-700 focus:ring-orange-500`} />
-                  </div>
+                  </details>
 
-                  <div className="flex justify-end">
-                    <button onClick={salvarConfiguracoesGlobais} className="bg-blue-600 hover:bg-blue-500 text-white font-bold px-8 py-3 rounded-xl shadow-lg shadow-blue-600/20 transition-colors">
-                      💾 Salvar Texto do Anúncio
-                    </button>
-                  </div>
-                </div>
-              </section>
+                  {/* 🎫 CUPONS PROMOCIONAIS */}
+                  <details className="group bg-zinc-900/80 rounded-3xl border border-zinc-800 shadow-xl [&_summary::-webkit-details-marker]:hidden overflow-hidden">
+                      <summary className="flex items-center justify-between p-6 cursor-pointer text-white font-bold text-lg select-none relative">
+                      <span className="flex items-center gap-2 relative z-10">🎫 Gerenciar Cupons Promocionais</span>
+                      <span className="transition duration-300 group-open:-rotate-180 text-zinc-500 relative z-10">▼</span>
+                      </summary>
+                      <div className="px-6 pb-6 border-t border-zinc-800/50 pt-6">
+                          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                              <form onSubmit={cadastrarCupom} className="flex flex-col gap-3 lg:col-span-1">
+                              <input type="text" placeholder="Código (Ex: VIP20)" value={novoCupomCodigo} onChange={e => setNovoCupomCodigo(e.target.value.toUpperCase())} className={adminInputClass} required />
+                              <div className="flex gap-2">
+                                  <select value={novoCupomTipo} onChange={e => setNovoCupomTipo(e.target.value)} className={adminInputClass}>
+                                  <option value="PORCENTAGEM">% Porcentagem</option>
+                                  <option value="FIXO">R$ Valor Fixo</option>
+                                  </select>
+                                  <input type="number" step="0.01" placeholder="Valor" value={novoCupomValor} onChange={e => setNovoCupomValor(e.target.value)} className={adminInputClass} required />
+                              </div>
+                              <button type="submit" className="w-full py-2.5 bg-purple-600 hover:bg-purple-500 font-bold rounded-lg text-sm text-white transition-colors shadow-lg shadow-purple-500/20 mt-2">Criar Cupom</button>
+                              </form>
+
+                              <div className="lg:col-span-2 overflow-y-auto max-h-[160px] pr-2 scrollbar-thin scrollbar-thumb-zinc-700 scrollbar-track-transparent">
+                              {listaCupons.length === 0 ? <p className="text-zinc-500 text-sm">Nenhum cupom ativo.</p> : (
+                                  <table className="w-full text-left text-sm whitespace-nowrap">
+                                  <thead><tr className="text-zinc-500 border-b border-zinc-800"><th className="pb-2">Código</th><th className="pb-2">Tipo</th><th className="pb-2">Bônus</th><th className="pb-2 text-right">Ação</th></tr></thead>
+                                  <tbody>
+                                      {listaCupons.map(c => (
+                                      <tr key={c.id} className="border-b border-zinc-800/50 hover:bg-zinc-800/30">
+                                          <td className="py-2.5 font-bold text-white tracking-widest">{c.codigo}</td>
+                                          <td className="py-2.5 text-zinc-400 text-xs">{c.tipo}</td>
+                                          <td className="py-2.5 text-emerald-400 font-bold">{c.tipo === 'FIXO' ? `+ R$ ${c.valor.toFixed(2)}` : `+ ${c.valor}%`}</td>
+                                          <td className="py-2.5 text-right"><button onClick={() => removerCupom(c.id)} className="text-rose-400 hover:text-white bg-rose-900/30 px-3 py-1 rounded-lg text-xs font-bold transition-colors">Excluir</button></td>
+                                      </tr>
+                                      ))}
+                                  </tbody>
+                                  </table>
+                              )}
+                              </div>
+                          </div>
+                      </div>
+                  </details>
+              </div>
 
               {contasManutencao.length > 0 && (
                 <section className="bg-rose-950/20 border border-rose-500/30 p-6 rounded-3xl mb-8 animate-pulse-slow">
@@ -1428,198 +1467,203 @@ function App() {
                 </section>
               )}
 
-              <section className="bg-gradient-to-r from-purple-900/20 to-zinc-900 border border-purple-500/30 p-6 rounded-3xl mb-8 shadow-2xl">
-                <h3 className="text-lg font-bold text-purple-400 mb-6 flex items-center gap-2">🎟️ Gerenciar Cupons Promocionais</h3>
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                  <form onSubmit={cadastrarCupom} className="flex flex-col gap-3 lg:col-span-1">
-                    <input type="text" placeholder="Código (Ex: VIP20)" value={novoCupomCodigo} onChange={e => setNovoCupomCodigo(e.target.value.toUpperCase())} className={adminInputClass} required />
-                    <div className="flex gap-2">
-                      <select value={novoCupomTipo} onChange={e => setNovoCupomTipo(e.target.value)} className={adminInputClass}>
-                        <option value="PORCENTAGEM">% Porcentagem</option>
-                        <option value="FIXO">R$ Valor Fixo</option>
-                      </select>
-                      <input type="number" step="0.01" placeholder="Valor" value={novoCupomValor} onChange={e => setNovoCupomValor(e.target.value)} className={adminInputClass} required />
-                    </div>
-                    <button type="submit" className="w-full py-2.5 bg-purple-600 hover:bg-purple-500 font-bold rounded-lg text-sm text-white transition-colors shadow-lg shadow-purple-500/20 mt-2">Criar Cupom</button>
-                  </form>
-
-                  <div className="lg:col-span-2 overflow-y-auto max-h-[160px] pr-2 scrollbar-thin scrollbar-thumb-zinc-700 scrollbar-track-transparent">
-                    {listaCupons.length === 0 ? <p className="text-zinc-500 text-sm">Nenhum cupom ativo.</p> : (
-                      <table className="w-full text-left text-sm whitespace-nowrap">
-                        <thead><tr className="text-zinc-500 border-b border-zinc-800"><th className="pb-2">Código</th><th className="pb-2">Tipo</th><th className="pb-2">Bônus</th><th className="pb-2 text-right">Ação</th></tr></thead>
-                        <tbody>
-                          {listaCupons.map(c => (
-                            <tr key={c.id} className="border-b border-zinc-800/50 hover:bg-zinc-800/30">
-                              <td className="py-2.5 font-bold text-white tracking-widest">{c.codigo}</td>
-                              <td className="py-2.5 text-zinc-400 text-xs">{c.tipo}</td>
-                              <td className="py-2.5 text-emerald-400 font-bold">{c.tipo === 'FIXO' ? `+ R$ ${c.valor.toFixed(2)}` : `+ ${c.valor}%`}</td>
-                              <td className="py-2.5 text-right"><button onClick={() => removerCupom(c.id)} className="text-rose-400 hover:text-white bg-rose-900/30 px-3 py-1 rounded-lg text-xs font-bold transition-colors">Excluir</button></td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    )}
+              {/* ========================================== */}
+              {/* BLOCOS FIXOS: CADASTRAR JOGO E ESTOQUE     */}
+              {/* ========================================== */}
+              <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 mb-8">
+                  
+                  {/* ➕ CADASTRAR NOVO JOGO */}
+                  <div className="bg-zinc-900/80 rounded-3xl border border-zinc-800 p-6 md:p-8 shadow-2xl">
+                      <h3 className="text-xl font-black text-white mb-6 flex items-center gap-2">➕ Cadastrar Novo Jogo</h3>
+                      <form onSubmit={cadastrarJogo} className="space-y-3 flex-1 flex flex-col">
+                      <div className="flex gap-2">
+                          <input type="text" placeholder="Título do jogo" value={novoJogoTitulo} onChange={e => setNovoJogoTitulo(e.target.value)} className={adminInputClass} required />
+                          <button type="button" onClick={buscarDadosDoJogo} className="bg-amber-500 hover:bg-amber-400 text-zinc-900 font-bold px-4 rounded-lg text-xs whitespace-nowrap transition-colors shadow-lg">✨ Buscar</button>
+                      </div>
+                      <input type="url" placeholder="URL da Capa" value={novoJogoImagem} onChange={e => setNovoJogoImagem(e.target.value)} className={adminInputClass} />
+                      <div className="flex gap-2">
+                          <select value={novoJogoPlataforma} onChange={e => setNovoJogoPlataforma(e.target.value)} className={adminInputClass}>
+                          <option value="PS5">PS5</option>
+                          <option value="PS4">PS4</option>
+                          <option value="PS4/PS5">PS4/PS5</option>
+                          </select>
+                          <input type="text" placeholder="Tempo (ex: 20h)" value={novoJogoTempo} onChange={e => setNovoJogoTempo(e.target.value)} className={adminInputClass} />
+                          <input type="number" step="0.1" placeholder="Nota" value={novoJogoNota} onChange={e => setNovoJogoNota(e.target.value)} className={adminInputClass} />
+                      </div>
+                      <div className="flex gap-2">
+                          <input type="number" step="0.01" placeholder="Preço 7 Dias (Ex: 35.00)" value={novoJogoPreco} onChange={e => setNovoJogoPreco(e.target.value)} className={adminInputClass} required />
+                          <input type="number" step="0.01" placeholder="Preço 14 Dias (Ex: 60.00)" value={novoJogoPreco14} onChange={e => setNovoJogoPreco14(e.target.value)} className={adminInputClass} />
+                      </div>
+                      <textarea placeholder="Descrição" value={novoJogoDescricao} onChange={e => setNovoJogoDescricao(e.target.value)} className={`${adminInputClass} resize-none h-16`} required />
+                      <button type="submit" className="w-full mt-auto py-2.5 bg-blue-600 hover:bg-blue-500 font-bold rounded-lg text-sm transition-colors">Salvar no Catálogo</button>
+                      </form>
                   </div>
-                </div>
-              </section>
 
-              <section className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-                <div className={adminCardClass}>
-                  <h3 className="text-base font-bold text-blue-400 mb-4 flex items-center gap-2">🕹️ Novo Jogo</h3>
-                  <form onSubmit={cadastrarJogo} className="space-y-3 flex-1 flex flex-col">
-  
-                    {/* 1. Título e Botão de Busca */}
-                    <div className="flex gap-2">
-                      <input type="text" placeholder="Título do jogo" value={novoJogoTitulo} onChange={e => setNovoJogoTitulo(e.target.value)} className={adminInputClass} required />
-                      <button type="button" onClick={buscarDadosDoJogo} className="bg-amber-500 hover:bg-amber-400 text-zinc-900 font-bold px-4 rounded-lg text-xs whitespace-nowrap transition-colors shadow-lg">✨ Buscar</button>
-                    </div>
-
-                    {/* 2. URL da Capa */}
-                    <input type="url" placeholder="URL da Capa" value={novoJogoImagem} onChange={e => setNovoJogoImagem(e.target.value)} className={adminInputClass} />
-
-                    {/* 3. Plataforma, Tempo e Nota */}
-                    <div className="flex gap-2">
-                      <select value={novoJogoPlataforma} onChange={e => setNovoJogoPlataforma(e.target.value)} className={adminInputClass}>
-                        <option value="PS5">PS5</option>
-                        <option value="PS4">PS4</option>
-                        <option value="PS4/PS5">PS4/PS5</option>
-                      </select>
-                      <input type="text" placeholder="Tempo (ex: 20h)" value={novoJogoTempo} onChange={e => setNovoJogoTempo(e.target.value)} className={adminInputClass} />
-                      <input type="number" step="0.1" placeholder="Nota" value={novoJogoNota} onChange={e => setNovoJogoNota(e.target.value)} className={adminInputClass} />
-                    </div>
-
-                    {/* 4. OS PREÇOS DE 7 E 14 DIAS LADO A LADO */}
-                    <div className="flex gap-2">
-                      <input type="number" step="0.01" placeholder="Preço 7 Dias (Ex: 35.00)" value={novoJogoPreco} onChange={e => setNovoJogoPreco(e.target.value)} className={adminInputClass} required />
-                      <input type="number" step="0.01" placeholder="Preço 14 Dias (Ex: 60.00)" value={novoJogoPreco14} onChange={e => setNovoJogoPreco14(e.target.value)} className={adminInputClass} />
-                    </div>
-
-                    {/* 5. Descrição e Botão Salvar */}
-                    <textarea placeholder="Descrição" value={novoJogoDescricao} onChange={e => setNovoJogoDescricao(e.target.value)} className={`${adminInputClass} resize-none h-16`} required />
-                    <button type="submit" className="w-full mt-auto py-2.5 bg-blue-600 hover:bg-blue-500 font-bold rounded-lg text-sm transition-colors">Salvar no Catálogo</button>
-
-                  </form>
-                </div>
-
-                <div className={`${adminCardClass} border-purple-500/30`}>
-                  <h3 className="text-base font-bold text-purple-400 mb-4 flex items-center gap-2">🔐 Abastecer Estoque</h3>
-                  <input type="text" placeholder="🔍 Filtrar jogo..." value={buscaEstoque} onChange={e => setBuscaEstoque(e.target.value)} className={`${adminInputClass} mb-3`} />
-                  <form onSubmit={cadastrarConta} className="space-y-3 flex-1 flex flex-col">
-                    <select value={novaContaJogoId} onChange={e => setNovaContaJogoId(e.target.value)} className={adminInputClass} required><option value="">Selecione o Jogo...</option>{jogosEstoqueFiltrados.map(j => <option key={j.id} value={j.id}>{j.titulo}</option>)}</select>
-                    <input type="email" placeholder="E-mail PSN" value={novaContaEmail} onChange={e => setNovaContaEmail(e.target.value)} className={adminInputClass} required />
-                    <input type="text" placeholder="Senha PSN" value={novaContaSenha} onChange={e => setNovaContaSenha(e.target.value)} className={adminInputClass} required />
-                    <input type="text" placeholder="Segredo MFA (Opcional)" value={novaContaMfaSecret} onChange={e => setNovaContaMfaSecret(e.target.value)} className={adminInputClass} title="Cole aqui o texto de configuração do App Autenticador da Sony" />
-                    <button type="submit" className="w-full mt-auto py-2.5 bg-purple-600 hover:bg-purple-500 font-bold rounded-lg text-sm transition-colors">Adicionar Conta</button>
-                  </form>
-                </div>
-
-                <div className={adminCardClass}>
-                  <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-base font-bold text-blue-400">📚 Catálogo</h3>
-                    <input type="text" placeholder="🔍 Buscar..." value={termoBusca} onChange={e => setTermoBusca(e.target.value)} className="w-1/2 p-1.5 px-3 bg-zinc-800 border border-zinc-700 rounded-lg text-sm focus:outline-none" />
+                  {/* 📦 ABASTECER ESTOQUE (CONTAS PSN) */}
+                  <div className="bg-zinc-900/80 rounded-3xl border border-zinc-800 p-6 md:p-8 shadow-2xl">
+                      <h3 className="text-xl font-black text-white mb-6 flex items-center gap-2">📦 Abastecer Estoque</h3>
+                      <input type="text" placeholder="🔍 Filtrar jogo..." value={buscaEstoque} onChange={e => setBuscaEstoque(e.target.value)} className={`${adminInputClass} mb-3`} />
+                      <form onSubmit={cadastrarConta} className="space-y-3 flex-1 flex flex-col">
+                      <select value={novaContaJogoId} onChange={e => setNovaContaJogoId(e.target.value)} className={adminInputClass} required><option value="">Selecione o Jogo...</option>{jogosEstoqueFiltrados.map(j => <option key={j.id} value={j.id}>{j.titulo}</option>)}</select>
+                      <input type="email" placeholder="E-mail PSN" value={novaContaEmail} onChange={e => setNovaContaEmail(e.target.value)} className={adminInputClass} required />
+                      <input type="text" placeholder="Senha PSN" value={novaContaSenha} onChange={e => setNovaContaSenha(e.target.value)} className={adminInputClass} required />
+                      <input type="text" placeholder="Segredo MFA (Opcional)" value={novaContaMfaSecret} onChange={e => setNovaContaMfaSecret(e.target.value)} className={adminInputClass} title="Cole aqui o texto de configuração do App Autenticador da Sony" />
+                      <button type="submit" className="w-full mt-auto py-2.5 bg-purple-600 hover:bg-purple-500 font-bold rounded-lg text-sm transition-colors">Adicionar Conta</button>
+                      </form>
                   </div>
-                  {jogosAdminParaMostrar.length === 0 ? <p className="text-zinc-500 text-sm">Vazio.</p> : (
-                    <ul className="space-y-2 flex-1">
-                      {jogosAdminParaMostrar.map(jogo => (
-                        <li key={jogo.id} className="flex flex-col md:flex-row justify-between items-start md:items-center bg-zinc-800/50 p-3 rounded-lg border-l-2 border-rose-500 gap-3">
-                          <div className="flex flex-col leading-tight gap-1 w-full md:w-auto">
-                            <span className="font-bold text-sm truncate max-w-[200px]">{jogo.titulo}</span>
-                            <span className="text-xs text-zinc-400">R$ {jogo.preco_aluguel.toFixed(2)}</span>
-                            {jogo.estoque > 0 ? <span className="text-emerald-400 text-xs">✅ {jogo.estoque} Disponível</span> : <span className="text-rose-400 text-xs">❌ Alugado</span>}
-                          </div>
-                          
-                          <div className="flex gap-2 w-full md:w-auto justify-end">
-                            {editandoPrecoId === jogo.id ? (
-                              <div className="flex items-center gap-2">
-                                <span className="text-zinc-500 text-xs font-bold">R$</span>
-                                <input type="number" step="0.01" value={novoPrecoEdicao} onChange={e => setNovoPrecoEdicao(e.target.value)} className="w-16 px-2 py-1 bg-zinc-950 border border-zinc-700 rounded text-xs text-white focus:outline-none focus:border-emerald-500" placeholder="7 Dias" />
-                                <input type="number" step="0.01" value={novoPrecoEdicao14} onChange={e => setNovoPrecoEdicao14(e.target.value)} className="w-16 px-2 py-1 bg-zinc-950 border border-zinc-700 rounded text-xs text-white focus:outline-none focus:border-emerald-500" placeholder="14 Dias" />
-                                <button onClick={() => salvarNovoPreco(jogo.id)} className="text-emerald-400 hover:text-white text-xs bg-emerald-900/30 hover:bg-emerald-600 px-3 py-1.5 rounded-lg font-bold transition-colors border border-emerald-500/30">Salvar</button>
-                                <button onClick={() => setEditandoPrecoId(null)} className="text-zinc-400 hover:text-white text-xs bg-zinc-800 hover:bg-zinc-700 px-3 py-1.5 rounded-lg font-bold transition-colors">X</button>
-                              </div>
-                            ) : (
-                              <>
-                                <button onClick={() => { setEditandoPrecoId(jogo.id); setNovoPrecoEdicao(jogo.preco_aluguel); setNovoPrecoEdicao14(jogo.preco_aluguel_14 || ''); }} className="text-blue-400 hover:text-white text-xs bg-blue-900/30 hover:bg-blue-600 px-3 py-1.5 rounded-lg font-bold transition-colors border border-blue-500/30">Editar</button>
-                                <button onClick={() => removerJogo(jogo.id)} className="text-rose-400 hover:text-white text-xs bg-rose-900/30 hover:bg-rose-600 px-3 py-1.5 rounded-lg font-bold transition-colors border border-rose-500/30">Excluir</button>
-                              </>
-                            )}
-                          </div>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-              </section>
 
-              <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div className={adminCardClass}>
-                  <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-base font-bold text-emerald-400">👁️ Locações Ativas</h3>
-                    <input type="text" placeholder="🔍 Buscar locação..." value={buscaLocacao} onChange={e => setBuscaLocacao(e.target.value)} className="w-1/3 p-1.5 px-3 bg-zinc-800 border border-zinc-700 rounded-lg text-sm" />
-                  </div>
-                  {locacoesAdminParaMostrar.length === 0 ? <p className="text-zinc-500 text-sm">Nenhuma locação.</p> : (
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-left text-sm whitespace-nowrap">
-                        <thead>
-                          <tr className="text-zinc-500 border-b border-zinc-800">
-                            <th className="pb-2">Cliente</th>
-                            <th className="pb-2">Jogo</th>
-                            <th className="pb-2">Expira</th>
-                            <th className="pb-2 text-right">Ação</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {locacoesAdminParaMostrar.map(loc => (
-                            <tr key={loc.id} className="border-b border-zinc-800/50 hover:bg-zinc-800/30">
-                              <td className="py-2 text-zinc-300">{loc.cliente}</td>
-                              <td className="py-2 font-semibold">{loc.jogo}</td>
-                              <td className="py-2 text-rose-300">{new Date(loc.data_fim).toLocaleDateString()}</td>
-                              <td className="py-2 text-right">
-                                <button onClick={() => revogarLocacao(loc.id)} className="text-rose-400 hover:text-white text-[10px] uppercase tracking-wider bg-rose-900/30 hover:bg-rose-600 px-3 py-1.5 rounded-lg font-bold transition-colors border border-rose-500/30 shadow">
-                                  Revogar
-                                </button>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  )}
-                </div>
+              </div>
 
-                <div className={adminCardClass}>
-                  <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-base font-bold text-amber-400">👥 Clientes</h3>
-                    <input type="text" placeholder="🔍 Buscar cliente..." value={buscaCliente} onChange={e => setBuscaCliente(e.target.value)} className="w-1/3 p-1.5 px-3 bg-zinc-800 border border-zinc-700 rounded-lg text-sm" />
-                  </div>
-                  {clientesParaMostrar.length === 0 ? <p className="text-zinc-500 text-sm">Vazio.</p> : (
-                    <ul className="space-y-3 overflow-y-auto max-h-[400px] pr-2 scrollbar-thin scrollbar-thumb-zinc-700 scrollbar-track-transparent">
-                      {clientesParaMostrar.map(u => (
-                        <li key={u.id} className="flex justify-between items-center bg-zinc-800/50 p-3 rounded-lg border border-zinc-700/50">
-                          <div className="flex flex-col gap-1">
-                            <span className="text-sm font-medium">
-                              {u.nome} {u.is_admin && <span className="ml-2 text-[10px] bg-amber-500/20 text-amber-400 px-2 py-0.5 rounded-full uppercase">Admin</span>}
-                            </span>
-                            <span className="text-xs text-zinc-400">
-                              Saldo: <strong className={u.saldo < 0 ? 'text-rose-400' : 'text-emerald-400'}>R$ {parseFloat(u.saldo).toFixed(2)}</strong>
-                            </span>
-                          </div>
-                          {!u.is_admin && (
-                            <div className="flex gap-2">
-                              <button onClick={() => ajustarSaldoCliente(u.id, u.nome)} className="text-blue-400 hover:text-white text-xs bg-blue-900/30 hover:bg-blue-600 px-3 py-1.5 rounded-lg font-bold transition-colors border border-blue-500/30">
-                                ⚖️ Ajustar Saldo
-                              </button>
-                              <button onClick={() => removerUsuario(u.id)} className="text-rose-400 hover:text-white text-xs bg-rose-900/30 hover:bg-rose-600 px-3 py-1.5 rounded-lg font-bold transition-colors border border-rose-500/30">
-                                Excluir
-                              </button>
-                            </div>
+              {/* ========================================== */}
+              {/* BLOCOS ACORDEÕES: DADOS GERAIS (LISTAS)    */}
+              {/* ========================================== */}
+              <div className="flex flex-col gap-6 mb-8">
+
+                  {/* 🎮 CATÁLOGO DE JOGOS */}
+                  <details className="group bg-zinc-900/80 rounded-3xl border border-zinc-800 shadow-2xl [&_summary::-webkit-details-marker]:hidden overflow-hidden">
+                      <summary className="flex items-center justify-between p-6 md:p-8 cursor-pointer text-blue-400 font-bold text-lg select-none">
+                      <span className="flex items-center gap-2">🎮 Catálogo de Jogos ({jogos.length})</span>
+                      <span className="transition duration-300 group-open:-rotate-180 text-blue-500">▼</span>
+                      </summary>
+                      <div className="px-6 md:px-8 pb-6 md:pb-8 border-t border-zinc-800/50 pt-6">
+                      <div className="mb-4">
+                          <input type="text" placeholder="Pesquisar jogo no catálogo..." value={termoBusca} onChange={e => setTermoBusca(e.target.value)} className="w-full bg-zinc-950 border border-zinc-700 text-white px-4 py-3 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" />
+                      </div>
+                      
+                      <div className="max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
+                          {jogosFiltrados.length === 0 ? <p className="text-zinc-500 text-sm">Vazio.</p> : (
+                          <ul className="space-y-2">
+                              {jogosFiltrados.slice(paginaCatalogo * 50, (paginaCatalogo + 1) * 50).map(jogo => (
+                              <li key={jogo.id} className="flex flex-col md:flex-row justify-between items-start md:items-center bg-zinc-800/50 p-3 rounded-lg border-l-2 border-rose-500 gap-3">
+                                  <div className="flex flex-col leading-tight gap-1 w-full md:w-auto">
+                                  <span className="font-bold text-sm truncate max-w-[200px]">{jogo.titulo}</span>
+                                  <span className="text-xs text-zinc-400">R$ {jogo.preco_aluguel.toFixed(2)}</span>
+                                  {jogo.estoque > 0 ? <span className="text-emerald-400 text-xs">✅ {jogo.estoque} Disponível</span> : <span className="text-rose-400 text-xs">❌ Alugado</span>}
+                                  </div>
+                                  
+                                  <div className="flex gap-2 w-full md:w-auto justify-end">
+                                  {editandoPrecoId === jogo.id ? (
+                                      <div className="flex items-center gap-2">
+                                      <span className="text-zinc-500 text-xs font-bold">R$</span>
+                                      <input type="number" step="0.01" value={novoPrecoEdicao} onChange={e => setNovoPrecoEdicao(e.target.value)} className="w-16 px-2 py-1 bg-zinc-950 border border-zinc-700 rounded text-xs text-white focus:outline-none focus:border-emerald-500" placeholder="7 Dias" />
+                                      <input type="number" step="0.01" value={novoPrecoEdicao14} onChange={e => setNovoPrecoEdicao14(e.target.value)} className="w-16 px-2 py-1 bg-zinc-950 border border-zinc-700 rounded text-xs text-white focus:outline-none focus:border-emerald-500" placeholder="14 Dias" />
+                                      <button onClick={() => salvarNovoPreco(jogo.id)} className="text-emerald-400 hover:text-white text-xs bg-emerald-900/30 hover:bg-emerald-600 px-3 py-1.5 rounded-lg font-bold transition-colors border border-emerald-500/30">Salvar</button>
+                                      <button onClick={() => setEditandoPrecoId(null)} className="text-zinc-400 hover:text-white text-xs bg-zinc-800 hover:bg-zinc-700 px-3 py-1.5 rounded-lg font-bold transition-colors">X</button>
+                                      </div>
+                                  ) : (
+                                      <>
+                                      <button onClick={() => { setEditandoPrecoId(jogo.id); setNovoPrecoEdicao(jogo.preco_aluguel); setNovoPrecoEdicao14(jogo.preco_aluguel_14 || ''); }} className="text-blue-400 hover:text-white text-xs bg-blue-900/30 hover:bg-blue-600 px-3 py-1.5 rounded-lg font-bold transition-colors border border-blue-500/30">Editar</button>
+                                      <button onClick={() => removerJogo(jogo.id)} className="text-rose-400 hover:text-white text-xs bg-rose-900/30 hover:bg-rose-600 px-3 py-1.5 rounded-lg font-bold transition-colors border border-rose-500/30">Excluir</button>
+                                      </>
+                                  )}
+                                  </div>
+                              </li>
+                              ))}
+                          </ul>
                           )}
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-              </section>
+                      </div>
+
+                      {/* PAGINAÇÃO */}
+                      <div className="mt-4 flex justify-between items-center bg-zinc-950 p-3 rounded-xl border border-zinc-800">
+                          <button onClick={() => setPaginaCatalogo(Math.max(0, paginaCatalogo - 1))} disabled={paginaCatalogo === 0} className="px-4 py-2 bg-zinc-800 text-white rounded-lg disabled:opacity-50 hover:bg-zinc-700 text-sm font-bold transition-colors">◀ Anterior</button>
+                          <span className="text-zinc-400 text-sm">Página {paginaCatalogo + 1}</span>
+                          <button onClick={() => setPaginaCatalogo(paginaCatalogo + 1)} disabled={(paginaCatalogo + 1) * 50 >= jogosFiltrados.length} className="px-4 py-2 bg-zinc-800 text-white rounded-lg disabled:opacity-50 hover:bg-zinc-700 text-sm font-bold transition-colors">Próxima ▶</button>
+                      </div>
+                      </div>
+                  </details>
+
+                  {/* 🔑 LOCAÇÕES ATIVAS */}
+                  <details className="group bg-zinc-900/80 rounded-3xl border border-zinc-800 shadow-2xl [&_summary::-webkit-details-marker]:hidden overflow-hidden">
+                      <summary className="flex items-center justify-between p-6 md:p-8 cursor-pointer text-emerald-400 font-bold text-lg select-none">
+                      <span className="flex items-center gap-2">🔑 Locações Ativas ({locacoesAtivasFiltradas.length})</span>
+                      <span className="transition duration-300 group-open:-rotate-180 text-emerald-500">▼</span>
+                      </summary>
+                      <div className="px-6 md:px-8 pb-6 md:pb-8 border-t border-zinc-800/50 pt-6">
+                      <div className="mb-4">
+                          <input type="text" placeholder="🔍 Buscar locação por jogo ou cliente..." value={buscaLocacao} onChange={e => setBuscaLocacao(e.target.value)} className="w-full bg-zinc-950 border border-zinc-700 text-white px-4 py-3 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none" />
+                      </div>
+                      <div className="max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
+                          {locacoesAtivasFiltradas.length === 0 ? <p className="text-zinc-500 text-sm">Nenhuma locação.</p> : (
+                          <table className="w-full text-left text-sm whitespace-nowrap">
+                              <thead>
+                              <tr className="text-zinc-500 border-b border-zinc-800">
+                                  <th className="pb-2 font-medium">Cliente</th>
+                                  <th className="pb-2 font-medium">Jogo</th>
+                                  <th className="pb-2 font-medium">Expira</th>
+                                  <th className="pb-2 text-right font-medium">Ação</th>
+                              </tr>
+                              </thead>
+                              <tbody>
+                              {locacoesAtivasFiltradas.map(loc => (
+                                  <tr key={loc.id} className="border-b border-zinc-800/50 hover:bg-zinc-800/30">
+                                  <td className="py-2.5 text-zinc-300">{loc.cliente}</td>
+                                  <td className="py-2.5 font-bold text-white">{loc.jogo}</td>
+                                  <td className="py-2.5 text-amber-400">{new Date(loc.data_fim).toLocaleDateString()}</td>
+                                  <td className="py-2.5 text-right">
+                                      <button onClick={() => revogarLocacao(loc.id)} className="text-rose-400 hover:text-white text-[10px] uppercase tracking-wider bg-rose-900/30 hover:bg-rose-600 px-3 py-1.5 rounded-lg font-bold transition-colors border border-rose-500/30 shadow">
+                                      Revogar
+                                      </button>
+                                  </td>
+                                  </tr>
+                              ))}
+                              </tbody>
+                          </table>
+                          )}
+                      </div>
+                      </div>
+                  </details>
+
+                  {/* 👥 BASE DE CLIENTES */}
+                  <details className="group bg-zinc-900/80 rounded-3xl border border-zinc-800 shadow-2xl [&_summary::-webkit-details-marker]:hidden overflow-hidden">
+                      <summary className="flex items-center justify-between p-6 md:p-8 cursor-pointer text-purple-400 font-bold text-lg select-none">
+                      <span className="flex items-center gap-2">👥 Base de Clientes ({todosUsuarios.length})</span>
+                      <span className="transition duration-300 group-open:-rotate-180 text-purple-500">▼</span>
+                      </summary>
+                      <div className="px-6 md:px-8 pb-6 md:pb-8 border-t border-zinc-800/50 pt-6">
+                      <div className="mb-4">
+                          <input type="text" placeholder="Buscar cliente por nome..." value={buscaCliente} onChange={e => setBuscaCliente(e.target.value)} className="w-full bg-zinc-950 border border-zinc-700 text-white px-4 py-3 rounded-xl focus:ring-2 focus:ring-purple-500 outline-none" />
+                      </div>
+
+                      <div className="max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
+                          {clientesFiltrados.length === 0 ? <p className="text-zinc-500 text-sm">Vazio.</p> : (
+                          <ul className="space-y-3">
+                              {clientesFiltrados.slice(paginaClientes * 50, (paginaClientes + 1) * 50).map(u => (
+                              <li key={u.id} className="flex justify-between items-center bg-zinc-800/50 p-3 rounded-lg border border-zinc-700/50">
+                                  <div className="flex flex-col gap-1">
+                                  <span className="text-sm font-medium text-white">
+                                      {u.nome} {u.is_admin && <span className="ml-2 text-[10px] bg-amber-500/20 text-amber-400 px-2 py-0.5 rounded-full uppercase">Admin</span>}
+                                  </span>
+                                  <span className="text-xs text-zinc-400">
+                                      Saldo: <strong className={u.saldo < 0 ? 'text-rose-400' : 'text-emerald-400'}>R$ {parseFloat(u.saldo).toFixed(2)}</strong>
+                                  </span>
+                                  </div>
+                                  {!u.is_admin && (
+                                  <div className="flex gap-2">
+                                      <button onClick={() => ajustarSaldoCliente(u.id, u.nome)} className="text-blue-400 hover:text-white text-xs bg-blue-900/30 hover:bg-blue-600 px-3 py-1.5 rounded-lg font-bold transition-colors border border-blue-500/30">
+                                      ⚖️ Ajustar
+                                      </button>
+                                      <button onClick={() => removerUsuario(u.id)} className="text-rose-400 hover:text-white text-xs bg-rose-900/30 hover:bg-rose-600 px-3 py-1.5 rounded-lg font-bold transition-colors border border-rose-500/30">
+                                      Excluir
+                                      </button>
+                                  </div>
+                                  )}
+                              </li>
+                              ))}
+                          </ul>
+                          )}
+                      </div>
+
+                      {/* PAGINAÇÃO DE CLIENTES */}
+                      <div className="mt-4 flex justify-between items-center bg-zinc-950 p-3 rounded-xl border border-zinc-800">
+                          <button onClick={() => setPaginaClientes(Math.max(0, paginaClientes - 1))} disabled={paginaClientes === 0} className="px-4 py-2 bg-zinc-800 text-white rounded-lg disabled:opacity-50 hover:bg-zinc-700 text-sm font-bold transition-colors">◀ Anterior</button>
+                          <span className="text-zinc-400 text-sm">Página {paginaClientes + 1}</span>
+                          <button onClick={() => setPaginaClientes(paginaClientes + 1)} disabled={(paginaClientes + 1) * 50 >= clientesFiltrados.length} className="px-4 py-2 bg-zinc-800 text-white rounded-lg disabled:opacity-50 hover:bg-zinc-700 text-sm font-bold transition-colors">Próxima ▶</button>
+                      </div>
+
+                      </div>
+                  </details>
+
+              </div>
             </div>
           )}
 
