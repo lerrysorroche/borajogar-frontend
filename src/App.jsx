@@ -60,9 +60,8 @@ function App() {
   const [paginaCatalogo, setPaginaCatalogo] = useState(0);
   const [paginaClientes, setPaginaClientes] = useState(0);
 
-  const [editandoPrecoId, setEditandoPrecoId] = useState(null)
-  const [novoPrecoEdicao, setNovoPrecoEdicao] = useState('')
-  const [novoPrecoEdicao14, setNovoPrecoEdicao14] = useState('')
+  // NOVO: Estado para controlar a edição completa do jogo
+  const [modalEdicaoJogo, setModalEdicaoJogo] = useState(null)
   
   const [termoBusca, setTermoBusca] = useState('')
   const [buscaEstoque, setBuscaEstoque] = useState('')
@@ -403,21 +402,32 @@ function App() {
     })
   }
 
-  const salvarNovoPreco = (jogoId) => {
-    const precoReal = parseFloat(novoPrecoEdicao);
-    const precoReal14 = parseFloat(novoPrecoEdicao14) || 0;
-    if (isNaN(precoReal) || precoReal <= 0) { mostrarToast("Digite um valor válido para os 7 dias.", "erro"); return; }
-    
-    fetch(`https://borajogar-api.onrender.com/jogos/${jogoId}/preco`, {
-      method: 'PATCH', headers: getAuthHeaders(),
-      body: JSON.stringify({ preco_aluguel: precoReal, preco_aluguel_14: precoReal14 })
+  // NOVO: Função completa para editar o jogo (Substitui o antigo salvarNovoPreco)
+  const salvarEdicaoJogo = (e) => {
+    e.preventDefault();
+    if (!modalEdicaoJogo) return;
+
+    fetch(`https://borajogar-api.onrender.com/jogos/${modalEdicaoJogo.id}`, {
+      method: 'PUT',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({
+        titulo: modalEdicaoJogo.titulo,
+        plataforma: modalEdicaoJogo.plataforma,
+        preco_aluguel: parseFloat(modalEdicaoJogo.preco_aluguel),
+        preco_aluguel_14: parseFloat(modalEdicaoJogo.preco_aluguel_14) || 0.0,
+        descricao: modalEdicaoJogo.descricao,
+        url_imagem: modalEdicaoJogo.url_imagem,
+        tempo_jogo: modalEdicaoJogo.tempo_jogo,
+        nota: parseFloat(modalEdicaoJogo.nota) || 0
+      })
     }).then(async res => {
       if (res.ok) {
-        mostrarToast("Preços atualizados!", "sucesso");
-        setEditandoPrecoId(null);
+        mostrarToast("Jogo atualizado com sucesso!", "sucesso");
+        setModalEdicaoJogo(null);
         carregarDados();
       } else {
-        const data = await res.json(); mostrarToast(data.detail, "erro");
+        const data = await res.json();
+        mostrarToast(data.detail || "Erro ao atualizar jogo.", "erro");
       }
     }).catch(() => mostrarToast("Erro de conexão.", "erro"));
   }
@@ -620,6 +630,72 @@ function App() {
           <p className="text-sm font-medium leading-relaxed whitespace-pre-line">{toast.mensagem}</p>
         </div>
       )}
+
+      {/* ========================================================================= */}
+      {/* NOVO MODAL DE EDIÇÃO DE JOGOS (ADMIN)                                     */}
+      {/* ========================================================================= */}
+      {modalEdicaoJogo && (
+        <div className="fixed inset-0 z-[250] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-fade-in">
+          <div className="bg-gradient-to-br from-blue-900/20 to-zinc-900 border border-blue-500/30 rounded-3xl p-6 md:p-8 max-w-2xl w-full shadow-2xl shadow-blue-500/10 overflow-y-auto max-h-[90vh] custom-scrollbar">
+            <h3 className="text-2xl font-black text-blue-400 mb-6 tracking-tight flex items-center gap-3">
+              ✏️ Editar Jogo
+            </h3>
+            <form onSubmit={salvarEdicaoJogo} className="flex flex-col gap-4">
+              
+              <div>
+                <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1 block">Título do Jogo</label>
+                <input type="text" value={modalEdicaoJogo.titulo} onChange={e => setModalEdicaoJogo({...modalEdicaoJogo, titulo: e.target.value})} className={adminInputClass} required />
+              </div>
+
+              <div className="flex flex-col md:flex-row gap-4">
+                <div className="w-full">
+                  <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1 block">Plataforma</label>
+                  <select value={modalEdicaoJogo.plataforma} onChange={e => setModalEdicaoJogo({...modalEdicaoJogo, plataforma: e.target.value})} className={adminInputClass}>
+                    <option value="PS5">PS5</option>
+                    <option value="PS4">PS4</option>
+                    <option value="PS4/PS5">PS4/PS5</option>
+                  </select>
+                </div>
+                <div className="w-full">
+                  <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1 block">Nota (Ex: 4.8)</label>
+                  <input type="number" step="0.1" value={modalEdicaoJogo.nota} onChange={e => setModalEdicaoJogo({...modalEdicaoJogo, nota: e.target.value})} className={adminInputClass} />
+                </div>
+                <div className="w-full">
+                  <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1 block">Tempo (Ex: 20h)</label>
+                  <input type="text" value={modalEdicaoJogo.tempo_jogo} onChange={e => setModalEdicaoJogo({...modalEdicaoJogo, tempo_jogo: e.target.value})} className={adminInputClass} />
+                </div>
+              </div>
+
+              <div className="flex flex-col md:flex-row gap-4">
+                <div className="w-full relative">
+                  <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1 block">Preço 7 Dias (R$)</label>
+                  <input type="number" step="0.01" value={modalEdicaoJogo.preco_aluguel} onChange={e => setModalEdicaoJogo({...modalEdicaoJogo, preco_aluguel: e.target.value})} className={adminInputClass} required />
+                </div>
+                <div className="w-full relative">
+                  <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1 block">Preço 14 Dias (R$)</label>
+                  <input type="number" step="0.01" value={modalEdicaoJogo.preco_aluguel_14} onChange={e => setModalEdicaoJogo({...modalEdicaoJogo, preco_aluguel_14: e.target.value})} className={adminInputClass} />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1 block">URL da Imagem (Capa)</label>
+                <input type="url" value={modalEdicaoJogo.url_imagem} onChange={e => setModalEdicaoJogo({...modalEdicaoJogo, url_imagem: e.target.value})} className={adminInputClass} />
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1 block">Descrição do Jogo</label>
+                <textarea value={modalEdicaoJogo.descricao} onChange={e => setModalEdicaoJogo({...modalEdicaoJogo, descricao: e.target.value})} className={`${adminInputClass} resize-none h-24`} required />
+              </div>
+
+              <div className="flex gap-3 mt-4 pt-4 border-t border-zinc-800">
+                <button type="button" onClick={() => setModalEdicaoJogo(null)} className="flex-1 py-3 rounded-xl font-bold text-sm bg-zinc-800 text-zinc-300 hover:bg-zinc-700 hover:text-white uppercase tracking-wide transition-colors">Cancelar</button>
+                <button type="submit" className="flex-1 py-3 rounded-xl font-bold text-sm text-white uppercase tracking-wide shadow-lg transition-all bg-blue-600 hover:bg-blue-500 shadow-blue-600/20">Salvar Alterações</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
 
       {modalConfirmacao.visivel && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-fade-in">
@@ -1156,7 +1232,6 @@ function App() {
                             })()}
                           </div>
 
-                          {/* TUTORIAL DE INSTALAÇÃO VERDE */}
                           <details className="mt-6 group/tut bg-gradient-to-r from-emerald-900/30 to-zinc-900 rounded-2xl border border-emerald-500/40 shadow-[0_0_20px_rgba(16,185,129,0.2)] hover:shadow-[0_0_30px_rgba(16,185,129,0.3)] transition-all duration-300 [&_summary::-webkit-details-marker]:hidden overflow-hidden">
                             <summary className="flex items-center justify-between p-5 cursor-pointer text-emerald-400 font-black text-sm md:text-base select-none hover:bg-emerald-900/30 transition-colors uppercase tracking-wider">
                               <span className="flex items-center gap-2 animate-pulse-slow">📖 PASSO A PASSO DE COMO ENTRAR NA CONTA E JOGAR (PS4/PS5)</span>
@@ -1553,20 +1628,8 @@ function App() {
                                   </div>
                                   
                                   <div className="flex gap-2 w-full md:w-auto justify-end">
-                                  {editandoPrecoId === jogo.id ? (
-                                      <div className="flex flex-wrap items-center gap-2">
-                                      <span className="text-zinc-500 text-xs font-bold">R$</span>
-                                      <input type="number" step="0.01" value={novoPrecoEdicao} onChange={e => setNovoPrecoEdicao(e.target.value)} className="w-20 px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-sm text-white focus:outline-none focus:border-emerald-500 font-bold" placeholder="7 Dias" />
-                                      <input type="number" step="0.01" value={novoPrecoEdicao14} onChange={e => setNovoPrecoEdicao14(e.target.value)} className="w-20 px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-sm text-white focus:outline-none focus:border-emerald-500 font-bold" placeholder="14 Dias" />
-                                      <button onClick={() => salvarNovoPreco(jogo.id)} className="text-emerald-400 hover:text-white text-xs uppercase tracking-wider bg-emerald-900/30 hover:bg-emerald-600 px-4 py-2 rounded-lg font-bold transition-colors border border-emerald-500/30">Salvar</button>
-                                      <button onClick={() => setEditandoPrecoId(null)} className="text-zinc-400 hover:text-white text-xs uppercase tracking-wider bg-zinc-800 hover:bg-zinc-700 px-4 py-2 rounded-lg font-bold transition-colors">Cancelar</button>
-                                      </div>
-                                  ) : (
-                                      <>
-                                      <button onClick={() => { setEditandoPrecoId(jogo.id); setNovoPrecoEdicao(jogo.preco_aluguel); setNovoPrecoEdicao14(jogo.preco_aluguel_14 || ''); }} className="text-blue-400 hover:text-white text-xs uppercase tracking-wider bg-blue-900/30 hover:bg-blue-600 px-4 py-2 rounded-lg font-bold transition-colors border border-blue-500/30">Editar</button>
+                                      <button onClick={() => setModalEdicaoJogo(jogo)} className="text-blue-400 hover:text-white text-xs uppercase tracking-wider bg-blue-900/30 hover:bg-blue-600 px-4 py-2 rounded-lg font-bold transition-colors border border-blue-500/30">Editar</button>
                                       <button onClick={() => removerJogo(jogo.id)} className="text-rose-400 hover:text-white text-xs uppercase tracking-wider bg-rose-900/30 hover:bg-rose-600 px-4 py-2 rounded-lg font-bold transition-colors border border-rose-500/30">Excluir</button>
-                                      </>
-                                  )}
                                   </div>
                               </li>
                               ))}
