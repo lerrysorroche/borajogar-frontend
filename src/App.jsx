@@ -1330,17 +1330,17 @@ function App() {
             <div className="animate-fade-in mt-2">
               
               <section className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <div className="bg-gradient-to-br from-emerald-900/40 to-zinc-900 border border-emerald-500/30 p-6 rounded-3xl shadow-lg relative overflow-hidden">
+                <div className="bg-gradient-to-br from-emerald-900/40 to-zinc-900 border border-emerald-500/30 p-6 rounded-3xl shadow-lg shadow-emerald-500/10 relative overflow-hidden hover:-translate-y-1 transition-transform">
                   <div className="absolute -right-4 -top-4 text-6xl opacity-10">💰</div>
                   <h4 className="text-zinc-400 text-sm font-bold uppercase tracking-wider mb-2">Faturamento Total</h4>
                   <span className="text-3xl md:text-4xl font-black text-emerald-400">R$ {estatisticasAdmin.faturamento.toFixed(2)}</span>
                 </div>
-                <div className="bg-gradient-to-br from-blue-900/40 to-zinc-900 border border-blue-500/30 p-6 rounded-3xl shadow-lg relative overflow-hidden">
+                <div className="bg-gradient-to-br from-blue-900/40 to-zinc-900 border border-blue-500/30 p-6 rounded-3xl shadow-lg shadow-blue-500/10 relative overflow-hidden hover:-translate-y-1 transition-transform">
                   <div className="absolute -right-4 -top-4 text-6xl opacity-10">👥</div>
                   <h4 className="text-zinc-400 text-sm font-bold uppercase tracking-wider mb-2">Clientes Cadastrados</h4>
                   <span className="text-3xl md:text-4xl font-black text-blue-400">{estatisticasAdmin.total_clientes}</span>
                 </div>
-                <div className="bg-gradient-to-br from-amber-900/40 to-zinc-900 border border-amber-500/30 p-6 rounded-3xl shadow-lg relative overflow-hidden">
+                <div className="bg-gradient-to-br from-amber-900/40 to-zinc-900 border border-amber-500/30 p-6 rounded-3xl shadow-lg shadow-amber-500/10 relative overflow-hidden hover:-translate-y-1 transition-transform">
                   <div className="absolute -right-4 -top-4 text-6xl opacity-10">🎮</div>
                   <h4 className="text-zinc-400 text-sm font-bold uppercase tracking-wider mb-2">Locações Ativas Agora</h4>
                   <span className="text-3xl md:text-4xl font-black text-amber-400">{estatisticasAdmin.locacoes_ativas}</span>
@@ -1352,10 +1352,10 @@ function App() {
               {/* ========================================== */}
               <div className="flex flex-col gap-6 mb-8">
                   {/* 🖼️ HERO BANNER */}
-                  <details className="group bg-zinc-900/80 rounded-3xl border border-zinc-800 shadow-xl [&_summary::-webkit-details-marker]:hidden overflow-hidden">
+                  <details className="group bg-zinc-900/80 rounded-3xl border border-zinc-800 border-l-4 border-l-orange-500 shadow-2xl shadow-orange-500/10 [&_summary::-webkit-details-marker]:hidden overflow-hidden">
                       <summary className="flex items-center justify-between p-6 cursor-pointer text-white font-bold text-lg select-none relative">
-                      <span className="flex items-center gap-2 relative z-10">🖼️ Configurações do Hero Banner</span>
-                      <span className="transition duration-300 group-open:-rotate-180 text-zinc-500 relative z-10">▼</span>
+                      <span className="flex items-center gap-2 relative z-10 text-orange-400">🖼️ Configurações do Hero Banner</span>
+                      <span className="transition duration-300 group-open:-rotate-180 text-orange-500 relative z-10">▼</span>
                       </summary>
                       <div className="px-6 pb-6 border-t border-zinc-800/50 pt-6">
                           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 gap-4">
@@ -1377,12 +1377,12 @@ function App() {
                   </details>
 
                   {/* 🎫 CUPONS PROMOCIONAIS */}
-                  <details className="group bg-zinc-900/80 rounded-3xl border border-zinc-800 shadow-xl [&_summary::-webkit-details-marker]:hidden overflow-hidden">
+                  <details className="group bg-gradient-to-r from-purple-900/20 to-zinc-900 rounded-3xl border border-purple-500/30 shadow-2xl shadow-purple-500/10 [&_summary::-webkit-details-marker]:hidden overflow-hidden">
                       <summary className="flex items-center justify-between p-6 cursor-pointer text-white font-bold text-lg select-none relative">
-                      <span className="flex items-center gap-2 relative z-10">🎫 Gerenciar Cupons Promocionais</span>
-                      <span className="transition duration-300 group-open:-rotate-180 text-zinc-500 relative z-10">▼</span>
+                      <span className="flex items-center gap-2 relative z-10 text-purple-400">🎫 Gerenciar Cupons Promocionais</span>
+                      <span className="transition duration-300 group-open:-rotate-180 text-purple-500 relative z-10">▼</span>
                       </summary>
-                      <div className="px-6 pb-6 border-t border-zinc-800/50 pt-6">
+                      <div className="px-6 pb-6 border-t border-purple-500/20 pt-6">
                           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                               <form onSubmit={cadastrarCupom} className="flex flex-col gap-3 lg:col-span-1">
                               <input type="text" placeholder="Código (Ex: VIP20)" value={novoCupomCodigo} onChange={e => setNovoCupomCodigo(e.target.value.toUpperCase())} className={adminInputClass} required />
@@ -1396,17 +1396,17 @@ function App() {
                               <button type="submit" className="w-full py-2.5 bg-purple-600 hover:bg-purple-500 font-bold rounded-lg text-sm text-white transition-colors shadow-lg shadow-purple-500/20 mt-2">Criar Cupom</button>
                               </form>
 
-                              <div className="lg:col-span-2 overflow-y-auto max-h-[160px] pr-2 scrollbar-thin scrollbar-thumb-zinc-700 scrollbar-track-transparent">
+                              <div className="lg:col-span-2 overflow-y-auto max-h-[160px] pr-2 scrollbar-thin scrollbar-thumb-purple-700 scrollbar-track-transparent">
                               {listaCupons.length === 0 ? <p className="text-zinc-500 text-sm">Nenhum cupom ativo.</p> : (
                                   <table className="w-full text-left text-sm whitespace-nowrap">
-                                  <thead><tr className="text-zinc-500 border-b border-zinc-800"><th className="pb-2">Código</th><th className="pb-2">Tipo</th><th className="pb-2">Bônus</th><th className="pb-2 text-right">Ação</th></tr></thead>
+                                  <thead><tr className="text-zinc-400 border-b border-purple-500/30"><th className="pb-2">Código</th><th className="pb-2">Tipo</th><th className="pb-2">Bônus</th><th className="pb-2 text-right">Ação</th></tr></thead>
                                   <tbody>
                                       {listaCupons.map(c => (
-                                      <tr key={c.id} className="border-b border-zinc-800/50 hover:bg-zinc-800/30">
+                                      <tr key={c.id} className="border-b border-purple-500/10 hover:bg-purple-900/20">
                                           <td className="py-2.5 font-bold text-white tracking-widest">{c.codigo}</td>
                                           <td className="py-2.5 text-zinc-400 text-xs">{c.tipo}</td>
                                           <td className="py-2.5 text-emerald-400 font-bold">{c.tipo === 'FIXO' ? `+ R$ ${c.valor.toFixed(2)}` : `+ ${c.valor}%`}</td>
-                                          <td className="py-2.5 text-right"><button onClick={() => removerCupom(c.id)} className="text-rose-400 hover:text-white bg-rose-900/30 px-3 py-1 rounded-lg text-xs font-bold transition-colors">Excluir</button></td>
+                                          <td className="py-2.5 text-right"><button onClick={() => removerCupom(c.id)} className="text-rose-400 hover:text-white bg-rose-900/30 px-3 py-1 rounded-lg text-xs font-bold transition-colors border border-rose-500/30">Excluir</button></td>
                                       </tr>
                                       ))}
                                   </tbody>
@@ -1418,8 +1418,9 @@ function App() {
                   </details>
               </div>
 
+              {/* AVISO DE MANUTENÇÃO */}
               {contasManutencao.length > 0 && (
-                <section className="bg-rose-950/20 border border-rose-500/30 p-6 rounded-3xl mb-8 animate-pulse-slow">
+                <section className="bg-rose-950/20 border border-rose-500/50 shadow-2xl shadow-rose-500/10 p-6 rounded-3xl mb-8 animate-pulse-slow">
                   <h3 className="text-xl font-bold text-rose-400 mb-4 flex items-center gap-2">🚨 Atenção: Troca de Senha Necessária</h3>
                   <p className="text-base text-zinc-300 mb-6">As locações abaixo terminaram. Você deve entrar na PSN, alterar a senha destas contas e informá-las aqui para que o sistema repasse para o próximo da fila.</p>
                   
@@ -1457,7 +1458,7 @@ function App() {
                           </div>
                         </div>
                         
-                        <div className="flex gap-3 mt-2 pt-4 border-t border-zinc-800">
+                        <div className="flex gap-3 mt-2 pt-4 border-t border-rose-900">
                           <input type="text" placeholder="Digite a NOVA senha para liberar" value={novasSenhasTemp[conta.conta_psn_id] || ''} onChange={(e) => setNovasSenhasTemp({...novasSenhasTemp, [conta.conta_psn_id]: e.target.value})} className="flex-1 px-4 py-2 bg-zinc-950 border border-zinc-700 rounded-lg text-base text-white focus:border-rose-500 outline-none"/>
                           <button onClick={() => confirmarResetSenha(conta.conta_psn_id)} className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-5 rounded-lg text-base transition-colors shadow-lg shadow-emerald-600/20">Liberar Jogo</button>
                         </div>
@@ -1472,13 +1473,13 @@ function App() {
               {/* ========================================== */}
               <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 mb-8">
                   
-                  {/* ➕ CADASTRAR NOVO JOGO */}
-                  <div className="bg-zinc-900/80 rounded-3xl border border-zinc-800 p-6 md:p-8 shadow-2xl">
-                      <h3 className="text-xl font-black text-white mb-6 flex items-center gap-2">➕ Cadastrar Novo Jogo</h3>
+                  {/* ➕ CADASTRAR NOVO JOGO (NEON AZUL) */}
+                  <div className="bg-gradient-to-br from-blue-900/20 to-zinc-900 rounded-3xl border border-blue-500/30 p-6 md:p-8 shadow-2xl shadow-blue-500/10">
+                      <h3 className="text-xl font-black text-blue-400 mb-6 flex items-center gap-2">➕ Cadastrar Novo Jogo</h3>
                       <form onSubmit={cadastrarJogo} className="space-y-3 flex-1 flex flex-col">
                       <div className="flex gap-2">
                           <input type="text" placeholder="Título do jogo" value={novoJogoTitulo} onChange={e => setNovoJogoTitulo(e.target.value)} className={adminInputClass} required />
-                          <button type="button" onClick={buscarDadosDoJogo} className="bg-amber-500 hover:bg-amber-400 text-zinc-900 font-bold px-4 rounded-lg text-xs whitespace-nowrap transition-colors shadow-lg">✨ Buscar</button>
+                          <button type="button" onClick={buscarDadosDoJogo} className="bg-amber-500 hover:bg-amber-400 text-zinc-900 font-bold px-4 rounded-lg text-xs whitespace-nowrap transition-colors shadow-lg shadow-amber-500/20">✨ Buscar</button>
                       </div>
                       <input type="url" placeholder="URL da Capa" value={novoJogoImagem} onChange={e => setNovoJogoImagem(e.target.value)} className={adminInputClass} />
                       <div className="flex gap-2">
@@ -1495,20 +1496,20 @@ function App() {
                           <input type="number" step="0.01" placeholder="Preço 14 Dias (Ex: 60.00)" value={novoJogoPreco14} onChange={e => setNovoJogoPreco14(e.target.value)} className={adminInputClass} />
                       </div>
                       <textarea placeholder="Descrição" value={novoJogoDescricao} onChange={e => setNovoJogoDescricao(e.target.value)} className={`${adminInputClass} resize-none h-16`} required />
-                      <button type="submit" className="w-full mt-auto py-2.5 bg-blue-600 hover:bg-blue-500 font-bold rounded-lg text-sm transition-colors">Salvar no Catálogo</button>
+                      <button type="submit" className="w-full mt-auto py-2.5 bg-blue-600 hover:bg-blue-500 font-bold rounded-lg text-sm transition-colors shadow-lg shadow-blue-500/20">Salvar no Catálogo</button>
                       </form>
                   </div>
 
-                  {/* 📦 ABASTECER ESTOQUE (CONTAS PSN) */}
-                  <div className="bg-zinc-900/80 rounded-3xl border border-zinc-800 p-6 md:p-8 shadow-2xl">
-                      <h3 className="text-xl font-black text-white mb-6 flex items-center gap-2">📦 Abastecer Estoque</h3>
-                      <input type="text" placeholder="🔍 Filtrar jogo..." value={buscaEstoque} onChange={e => setBuscaEstoque(e.target.value)} className={`${adminInputClass} mb-3`} />
+                  {/* 📦 ABASTECER ESTOQUE (NEON FUCSIA) */}
+                  <div className="bg-gradient-to-br from-fuchsia-900/20 to-zinc-900 rounded-3xl border border-fuchsia-500/30 p-6 md:p-8 shadow-2xl shadow-fuchsia-500/10">
+                      <h3 className="text-xl font-black text-fuchsia-400 mb-6 flex items-center gap-2">📦 Abastecer Estoque</h3>
+                      <input type="text" placeholder="🔍 Filtrar jogo..." value={buscaEstoque} onChange={e => setBuscaEstoque(e.target.value)} className={`${adminInputClass} mb-3 border-fuchsia-500/30 focus:ring-fuchsia-500`} />
                       <form onSubmit={cadastrarConta} className="space-y-3 flex-1 flex flex-col">
                       <select value={novaContaJogoId} onChange={e => setNovaContaJogoId(e.target.value)} className={adminInputClass} required><option value="">Selecione o Jogo...</option>{jogosEstoqueFiltrados.map(j => <option key={j.id} value={j.id}>{j.titulo}</option>)}</select>
                       <input type="email" placeholder="E-mail PSN" value={novaContaEmail} onChange={e => setNovaContaEmail(e.target.value)} className={adminInputClass} required />
                       <input type="text" placeholder="Senha PSN" value={novaContaSenha} onChange={e => setNovaContaSenha(e.target.value)} className={adminInputClass} required />
                       <input type="text" placeholder="Segredo MFA (Opcional)" value={novaContaMfaSecret} onChange={e => setNovaContaMfaSecret(e.target.value)} className={adminInputClass} title="Cole aqui o texto de configuração do App Autenticador da Sony" />
-                      <button type="submit" className="w-full mt-auto py-2.5 bg-purple-600 hover:bg-purple-500 font-bold rounded-lg text-sm transition-colors">Adicionar Conta</button>
+                      <button type="submit" className="w-full mt-auto py-2.5 bg-fuchsia-600 hover:bg-fuchsia-500 font-bold rounded-lg text-sm transition-colors shadow-lg shadow-fuchsia-500/20">Adicionar Conta</button>
                       </form>
                   </div>
 
@@ -1520,7 +1521,7 @@ function App() {
               <div className="flex flex-col gap-6 mb-8">
 
                   {/* 🎮 CATÁLOGO DE JOGOS */}
-                  <details className="group bg-zinc-900/80 rounded-3xl border border-zinc-800 shadow-2xl [&_summary::-webkit-details-marker]:hidden overflow-hidden">
+                  <details className="group bg-zinc-900/80 rounded-3xl border border-zinc-800 border-l-4 border-l-blue-500 shadow-2xl shadow-blue-500/10 [&_summary::-webkit-details-marker]:hidden overflow-hidden">
                       <summary className="flex items-center justify-between p-6 md:p-8 cursor-pointer text-blue-400 font-bold text-lg select-none">
                       <span className="flex items-center gap-2">🎮 Catálogo de Jogos ({jogos.length})</span>
                       <span className="transition duration-300 group-open:-rotate-180 text-blue-500">▼</span>
@@ -1534,9 +1535,9 @@ function App() {
                           {jogosFiltrados.length === 0 ? <p className="text-zinc-500 text-sm">Vazio.</p> : (
                           <ul className="space-y-2">
                               {jogosFiltrados.slice(paginaCatalogo * 50, (paginaCatalogo + 1) * 50).map(jogo => (
-                              <li key={jogo.id} className="flex flex-col md:flex-row justify-between items-start md:items-center bg-zinc-800/50 p-3 rounded-lg border-l-2 border-rose-500 gap-3">
+                              <li key={jogo.id} className="flex flex-col md:flex-row justify-between items-start md:items-center bg-zinc-800/50 p-3 rounded-lg border-l-2 border-blue-500 gap-3">
                                   <div className="flex flex-col leading-tight gap-1 w-full md:w-auto">
-                                  <span className="font-bold text-sm truncate max-w-[200px]">{jogo.titulo}</span>
+                                  <span className="font-bold text-sm text-white truncate max-w-[200px]">{jogo.titulo}</span>
                                   <span className="text-xs text-zinc-400">R$ {jogo.preco_aluguel.toFixed(2)}</span>
                                   {jogo.estoque > 0 ? <span className="text-emerald-400 text-xs">✅ {jogo.estoque} Disponível</span> : <span className="text-rose-400 text-xs">❌ Alugado</span>}
                                   </div>
@@ -1573,7 +1574,7 @@ function App() {
                   </details>
 
                   {/* 🔑 LOCAÇÕES ATIVAS */}
-                  <details className="group bg-zinc-900/80 rounded-3xl border border-zinc-800 shadow-2xl [&_summary::-webkit-details-marker]:hidden overflow-hidden">
+                  <details className="group bg-zinc-900/80 rounded-3xl border border-zinc-800 border-l-4 border-l-emerald-500 shadow-2xl shadow-emerald-500/10 [&_summary::-webkit-details-marker]:hidden overflow-hidden">
                       <summary className="flex items-center justify-between p-6 md:p-8 cursor-pointer text-emerald-400 font-bold text-lg select-none">
                       <span className="flex items-center gap-2">🔑 Locações Ativas ({locacoesAtivasFiltradas.length})</span>
                       <span className="transition duration-300 group-open:-rotate-180 text-emerald-500">▼</span>
@@ -1614,7 +1615,7 @@ function App() {
                   </details>
 
                   {/* 👥 BASE DE CLIENTES */}
-                  <details className="group bg-zinc-900/80 rounded-3xl border border-zinc-800 shadow-2xl [&_summary::-webkit-details-marker]:hidden overflow-hidden">
+                  <details className="group bg-zinc-900/80 rounded-3xl border border-zinc-800 border-l-4 border-l-purple-500 shadow-2xl shadow-purple-500/10 [&_summary::-webkit-details-marker]:hidden overflow-hidden">
                       <summary className="flex items-center justify-between p-6 md:p-8 cursor-pointer text-purple-400 font-bold text-lg select-none">
                       <span className="flex items-center gap-2">👥 Base de Clientes ({todosUsuarios.length})</span>
                       <span className="transition duration-300 group-open:-rotate-180 text-purple-500">▼</span>
@@ -1628,7 +1629,7 @@ function App() {
                           {clientesFiltrados.length === 0 ? <p className="text-zinc-500 text-sm">Vazio.</p> : (
                           <ul className="space-y-3">
                               {clientesFiltrados.slice(paginaClientes * 50, (paginaClientes + 1) * 50).map(u => (
-                              <li key={u.id} className="flex justify-between items-center bg-zinc-800/50 p-3 rounded-lg border border-zinc-700/50">
+                              <li key={u.id} className="flex justify-between items-center bg-zinc-800/50 p-3 rounded-lg border border-zinc-700/50 border-l-2 border-l-purple-500">
                                   <div className="flex flex-col gap-1">
                                   <span className="text-sm font-medium text-white">
                                       {u.nome} {u.is_admin && <span className="ml-2 text-[10px] bg-amber-500/20 text-amber-400 px-2 py-0.5 rounded-full uppercase">Admin</span>}
