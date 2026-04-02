@@ -367,6 +367,10 @@ function App() {
   }
 
   useEffect(() => { carregarDados(); }, [usuarioLogado?.id]) 
+  // Faz a tela rolar para o topo automaticamente ao mudar de aba ou de página no catálogo
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [abaAtual, paginaAtual]);
 
   const salvarConfiguracoesDireto = (novaConfig, msgSucesso) => {
     fetch('https://borajogar-api.onrender.com/admin/configuracoes', {
