@@ -1123,7 +1123,7 @@ function App() {
                       <span className="text-2xl animate-pulse">🚨</span>
                       <div>
                         <h4 className="text-rose-400 font-bold text-sm uppercase tracking-wider mb-1">Evite Bloqueio e Multa de R$ 50,00</h4>
-                        <p className="text-xs text-zinc-300 leading-relaxed">
+                        <p className="text-xs text-zinc-300 leading-relaxed font-medium">
                           É <strong>obrigatório</strong> desativar o "Compartilhamento de Console" ou "PS4 Principal" na sua conta ANTES do tempo de aluguel expirar. O descumprimento gera uma multa automática e deixa seu saldo negativo.
                         </p>
                       </div>
@@ -1153,7 +1153,7 @@ function App() {
                               </div>
                             ) : (
                               /* === BOTAO 2FA AZUL CORRIGIDO === */
-                              <button onClick={() => gerarCodigo2FA(item.locacao_id)} className="w-full bg-blue-600 hover:bg-blue-500 text-sm text-white font-bold py-3.5 rounded-xl transition-all shadow-[0_0_15px_rgba(59,130,246,0.4)] hover:shadow-[0_0_25px_rgba(59,130,246,0.6)] flex items-center justify-center gap-2 border border-blue-400">
+                              <button onClick={() => gerarCodigo2FA(item.locacao_id)} className="w-full bg-emerald-600 hover:bg-emerald-500 text-sm text-white font-bold py-3.5 rounded-xl transition-all shadow-[0_0_15px_rgba(59,130,246,0.4)] hover:shadow-[0_0_25px_rgba(59,130,246,0.6)] flex items-center justify-center gap-2 border border-emerald-400">
                                 🔐 Gerar Código de Acesso (2FA)
                               </button>
                             )}
@@ -1178,12 +1178,12 @@ function App() {
                           </div>
 
                           {/* ================= TUTORIAL DE INSTALAÇÃO (NEON AZUL CHAMATIVO) ================= */}
-                          <details className="mt-4 group/tut bg-gradient-to-r from-blue-900/40 to-zinc-900 rounded-xl border border-blue-500/50 shadow-[0_0_20px_rgba(59,130,246,0.3)] hover:shadow-[0_0_30px_rgba(59,130,246,0.5)] transition-all duration-300 [&_summary::-webkit-details-marker]:hidden overflow-hidden">
-                            <summary className="flex items-center justify-between p-4 cursor-pointer text-blue-400 font-black text-sm md:text-base select-none hover:bg-blue-900/30 transition-colors uppercase tracking-wider">
+                          <details className="mt-4 group/tut bg-gradient-to-r from-emerald-900/40 to-zinc-900 rounded-xl border border-emerald-500/50 shadow-[0_0_20px_rgba(59,130,246,0.3)] hover:shadow-[0_0_30px_rgba(59,130,246,0.5)] transition-all duration-300 [&_summary::-webkit-details-marker]:hidden overflow-hidden">
+                            <summary className="flex items-center justify-between p-4 cursor-pointer text-emerald-400 font-black text-sm md:text-base select-none hover:bg-emerald-900/30 transition-colors uppercase tracking-wider">
                               <span className="flex items-center gap-2 animate-pulse-slow">📖 PASSO A PASSO DE COMO ENTRAR NA CONTA E JOGAR (PS4/PS5)</span>
                               <span className="transition duration-300 group-open/tut:-rotate-180">▼</span>
                             </summary>
-                            <div className="p-4 md:p-6 border-t border-blue-500/30 text-xs md:text-sm text-zinc-300 space-y-4 bg-black/60">
+                            <div className="p-4 md:p-6 border-t border-emerald-500/30 text-xs md:text-sm text-zinc-300 space-y-4 bg-black/60">
                               <p className="text-rose-400 font-black uppercase mb-3 tracking-wider flex items-center gap-2 border-b border-rose-500/30 pb-3">
                                 <span className="text-2xl animate-pulse">⚠️</span> ATENÇÃO: NUNCA ENTRE COMO CONVIDADO!
                               </p>
@@ -1193,11 +1193,11 @@ function App() {
                                 <li>Aceite os termos e selecione <strong>CONFIRMAR</strong>.</li>
                                 <li>Na tela com o QR Code, selecione <strong>INICIAR SESSÃO MANUALMENTE</strong> (canto esquerdo embaixo).</li>
                                 <li>Insira o E-mail e Senha da conta que estão disponíveis acima.</li>
-                                <li>Quando o console pedir o código (2FA), clique no botão azul <strong>"Gerar Código de Acesso (2FA)"</strong> aqui no site.</li>
+                                <li>Quando o console pedir o código (2FA), clique no botão verde <strong>"Gerar Código de Acesso (2FA)"</strong> aqui no site.</li>
                                 <li>Digite o código 2FA (6 dígitos) rapidamente, ele fica ativo por 30 segundos.</li>
                                 <li><strong>NÃO ATIVE MAIS NADA</strong>. Somente selecione OK.</li>
                                 <li>Para jogar na sua conta pessoal e ganhar os troféus, é OBRIGATÓRIO habilitar o compartilhamento:
-                                  <ul className="list-disc pl-4 mt-2.5 text-zinc-400 space-y-2.5 border-l-2 border-zinc-700 ml-1">
+                                  <ul className="list-disc pl-4 mt-2.5 text-zinc-300 space-y-2.5 border-l-2 border-zinc-700 ml-1">
                                     <li><strong>No PS5:</strong> Vá em Configurações &gt; Usuários e contas &gt; Outros &gt; Compartilhamento do console... &gt; <strong>Habilitar</strong>. (Se não estiver habilitado)</li>
                                     <li><strong>No PS4:</strong> Vá em Configurações &gt; Gerenciamento da conta &gt; <strong>Ativar como seu PS4 principal</strong>. (Se não estiver habilitado)</li>
                                     <li className="text-rose-400 font-bold flex items-center gap-2 mt-2 bg-rose-950/30 p-2.5 rounded-lg border border-rose-500/20"><span className="text-lg">⚠️</span> É aqui também, que no final do seu aluguel, você vai DESABILITAR o compartilhamento.</li>
