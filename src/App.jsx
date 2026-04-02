@@ -60,7 +60,6 @@ function App() {
   const [paginaCatalogo, setPaginaCatalogo] = useState(0);
   const [paginaClientes, setPaginaClientes] = useState(0);
 
-  // NOVO: Estado para controlar a edição completa do jogo
   const [modalEdicaoJogo, setModalEdicaoJogo] = useState(null)
   
   const [termoBusca, setTermoBusca] = useState('')
@@ -402,7 +401,6 @@ function App() {
     })
   }
 
-  // NOVO: Função completa para editar o jogo (Substitui o antigo salvarNovoPreco)
   const salvarEdicaoJogo = (e) => {
     e.preventDefault();
     if (!modalEdicaoJogo) return;
@@ -567,7 +565,6 @@ function App() {
     .filter(jogo => {
       if (filtroPlataforma === 'TODAS') return true;
       if (filtroPlataforma === 'PS5') return jogo.plataforma === 'PS5' || jogo.plataforma === 'PS4/PS5';
-      if (filtroPlataforma === 'PS4') return jogo.plataforma === 'PS4' || jogo.plataforma === 'PS4/PS5';
       if (filtroPlataforma === 'PS4/PS5') return jogo.plataforma === 'PS4/PS5';
       return jogo.plataforma === filtroPlataforma;
     })
@@ -652,7 +649,6 @@ function App() {
                   <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1 block">Plataforma</label>
                   <select value={modalEdicaoJogo.plataforma} onChange={e => setModalEdicaoJogo({...modalEdicaoJogo, plataforma: e.target.value})} className={adminInputClass}>
                     <option value="PS5">PS5</option>
-                    <option value="PS4">PS4</option>
                     <option value="PS4/PS5">PS4/PS5</option>
                   </select>
                 </div>
@@ -911,7 +907,6 @@ function App() {
                     <div className="flex bg-zinc-900/80 rounded-xl p-1.5 backdrop-blur-md border border-zinc-700/50 shadow-lg overflow-x-auto scrollbar-hide">
                       <button onClick={() => lidarComFiltroPlataforma('TODAS')} className={`px-5 py-2 rounded-lg text-xs uppercase tracking-wider font-bold transition-all whitespace-nowrap ${filtroPlataforma === 'TODAS' ? 'bg-blue-600 text-white shadow' : 'text-zinc-400 hover:text-white hover:bg-zinc-800'}`}>Todas</button>
                       <button onClick={() => lidarComFiltroPlataforma('PS5')} className={`px-5 py-2 rounded-lg text-xs uppercase tracking-wider font-bold transition-all whitespace-nowrap ${filtroPlataforma === 'PS5' ? 'bg-blue-600 text-white shadow' : 'text-zinc-400 hover:text-white hover:bg-zinc-800'}`}>PS5</button>
-                      <button onClick={() => lidarComFiltroPlataforma('PS4')} className={`px-5 py-2 rounded-lg text-xs uppercase tracking-wider font-bold transition-all whitespace-nowrap ${filtroPlataforma === 'PS4' ? 'bg-blue-600 text-white shadow' : 'text-zinc-400 hover:text-white hover:bg-zinc-800'}`}>PS4</button>
                       <button onClick={() => lidarComFiltroPlataforma('PS4/PS5')} className={`px-5 py-2 rounded-lg text-xs uppercase tracking-wider font-bold transition-all whitespace-nowrap ${filtroPlataforma === 'PS4/PS5' ? 'bg-blue-600 text-white shadow' : 'text-zinc-400 hover:text-white hover:bg-zinc-800'}`}>PS4/PS5</button>
                     </div>
                     
@@ -1232,6 +1227,7 @@ function App() {
                             })()}
                           </div>
 
+                          {/* TUTORIAL DE INSTALAÇÃO VERDE */}
                           <details className="mt-6 group/tut bg-gradient-to-r from-emerald-900/30 to-zinc-900 rounded-2xl border border-emerald-500/40 shadow-[0_0_20px_rgba(16,185,129,0.2)] hover:shadow-[0_0_30px_rgba(16,185,129,0.3)] transition-all duration-300 [&_summary::-webkit-details-marker]:hidden overflow-hidden">
                             <summary className="flex items-center justify-between p-5 cursor-pointer text-emerald-400 font-black text-sm md:text-base select-none hover:bg-emerald-900/30 transition-colors uppercase tracking-wider">
                               <span className="flex items-center gap-2 animate-pulse-slow">📖 PASSO A PASSO DE COMO ENTRAR NA CONTA E JOGAR (PS4/PS5)</span>
@@ -1574,7 +1570,6 @@ function App() {
                       <div className="flex gap-3">
                           <select value={novoJogoPlataforma} onChange={e => setNovoJogoPlataforma(e.target.value)} className={adminInputClass}>
                           <option value="PS5">PS5</option>
-                          <option value="PS4">PS4</option>
                           <option value="PS4/PS5">PS4/PS5</option>
                           </select>
                           <input type="text" placeholder="Tempo (ex: 20h)" value={novoJogoTempo} onChange={e => setNovoJogoTempo(e.target.value)} className={adminInputClass} />
