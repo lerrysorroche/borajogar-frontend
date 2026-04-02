@@ -1152,7 +1152,8 @@ function App() {
                                 {codigosGerados2FA[item.locacao_id]}
                               </div>
                             ) : (
-                              <button onClick={() => gerarCodigo2FA(item.locacao_id)} className="w-full bg-zinc-800 hover:bg-emerald-600 text-sm text-white font-bold py-3.5 rounded-xl transition-all shadow-lg hover:shadow-emerald-500/20 flex items-center justify-center gap-2 border border-zinc-700 hover:border-emerald-500">
+                              /* === BOTAO 2FA AZUL CORRIGIDO === */
+                              <button onClick={() => gerarCodigo2FA(item.locacao_id)} className="w-full bg-blue-600 hover:bg-blue-500 text-sm text-white font-bold py-3.5 rounded-xl transition-all shadow-[0_0_15px_rgba(59,130,246,0.4)] hover:shadow-[0_0_25px_rgba(59,130,246,0.6)] flex items-center justify-center gap-2 border border-blue-400">
                                 🔐 Gerar Código de Acesso (2FA)
                               </button>
                             )}
@@ -1163,11 +1164,8 @@ function App() {
                               <span>{new Date(item.data_fim).toLocaleString()}</span>
                             </div>
                             {(() => {
-                              // O sistema procura o jogo que o cliente está jogando
                               const jogoDetalhes = jogos.find(j => j.titulo === item.jogo);
-                              // Verifica se o jogo existe no catálogo e se tem 1 ou mais pessoas na fila
                               const temFila = jogoDetalhes && jogoDetalhes.tamanho_fila > 0;
-                              
                               if (temFila) {
                                 return (
                                   <button onClick={() => devolverAntecipado(item.locacao_id, item.data_fim)} className="w-full sm:w-auto bg-emerald-900/40 hover:bg-emerald-600 text-emerald-400 hover:text-white font-bold px-6 py-2.5 rounded-xl text-sm transition-all border border-emerald-500/30 shadow-lg flex items-center justify-center gap-2 animate-fade-in">
@@ -1178,33 +1176,36 @@ function App() {
                               return null;
                             })()}
                           </div>
-                          {/* ================= TUTORIAL DE INSTALAÇÃO ================= */}
-                          <details className="mt-4 group/tut bg-zinc-900/50 rounded-xl border border-zinc-700/50 [&_summary::-webkit-details-marker]:hidden overflow-hidden shadow-inner">
-                            <summary className="flex items-center justify-between p-3 cursor-pointer text-blue-400 font-bold text-sm select-none hover:bg-zinc-800/50 transition-colors">
-                              <span className="flex items-center gap-2">📖 Passo a Passo de Instalação (PS4/PS5)</span>
+
+                          {/* ================= TUTORIAL DE INSTALAÇÃO (NEON AZUL CHAMATIVO) ================= */}
+                          <details className="mt-4 group/tut bg-gradient-to-r from-blue-900/40 to-zinc-900 rounded-xl border border-blue-500/50 shadow-[0_0_20px_rgba(59,130,246,0.3)] hover:shadow-[0_0_30px_rgba(59,130,246,0.5)] transition-all duration-300 [&_summary::-webkit-details-marker]:hidden overflow-hidden">
+                            <summary className="flex items-center justify-between p-4 cursor-pointer text-blue-400 font-black text-sm md:text-base select-none hover:bg-blue-900/30 transition-colors uppercase tracking-wider">
+                              <span className="flex items-center gap-2 animate-pulse-slow">📖 PASSO A PASSO DE COMO ENTRAR NA CONTA E JOGAR (PS4/PS5)</span>
                               <span className="transition duration-300 group-open/tut:-rotate-180">▼</span>
                             </summary>
-                            <div className="p-4 md:p-5 border-t border-zinc-700/50 text-xs text-zinc-300 space-y-3 bg-black/40">
-                              <p className="text-rose-400 font-black uppercase mb-1 tracking-wider flex items-center gap-1">
-                                <span className="text-base">⚠️</span> ATENÇÃO: NUNCA ENTRE COMO CONVIDADO!
+                            <div className="p-4 md:p-6 border-t border-blue-500/30 text-xs md:text-sm text-zinc-300 space-y-4 bg-black/60">
+                              <p className="text-rose-400 font-black uppercase mb-3 tracking-wider flex items-center gap-2 border-b border-rose-500/30 pb-3">
+                                <span className="text-2xl animate-pulse">⚠️</span> ATENÇÃO: NUNCA ENTRE COMO CONVIDADO!
                               </p>
-                              <ol className="list-decimal pl-5 space-y-2.5">
-                                <li>Ligue o console. selecione <strong>ADICIONAR USUÁRIO</strong>. (na tela de boas vindas dos usuários)</li>
+                              <ol className="list-decimal pl-5 space-y-3 font-medium">
+                                <li>Ligue o console. Selecione <strong>ADICIONAR USUÁRIO</strong> (na tela de boas vindas dos usuários).</li>
                                 <li>Do lado esquerdo da tela, selecione <strong>VAMOS COMEÇAR</strong>.</li>
                                 <li>Aceite os termos e selecione <strong>CONFIRMAR</strong>.</li>
-                                <li>Na tela com o QR Code, selecione <strong>INICIAR SESSÃO MANUALMENTE</strong>. (canto esquerdo embaixo)</li>
+                                <li>Na tela com o QR Code, selecione <strong>INICIAR SESSÃO MANUALMENTE</strong> (canto esquerdo embaixo).</li>
                                 <li>Insira o E-mail e Senha da conta que estão disponíveis acima.</li>
-                                <li>Quando o console pedir o código (2FA), clique no botão <strong>"Gerar Código de Acesso (2FA)"</strong> aqui no site.</li>
-                                <li>Digite o código 2FA (6 dígitos) rápidamente, ele fica ativo por 30 segundos.</li>
+                                <li>Quando o console pedir o código (2FA), clique no botão azul <strong>"Gerar Código de Acesso (2FA)"</strong> aqui no site.</li>
+                                <li>Digite o código 2FA (6 dígitos) rapidamente, ele fica ativo por 30 segundos.</li>
                                 <li><strong>NÃO ATIVE MAIS NADA</strong>. Somente selecione OK.</li>
                                 <li>Para jogar na sua conta pessoal e ganhar os troféus, é OBRIGATÓRIO habilitar o compartilhamento:
-                                  <ul className="list-disc pl-4 mt-1.5 text-zinc-400 space-y-1 border-l-2 border-zinc-700 ml-1">
+                                  <ul className="list-disc pl-4 mt-2.5 text-zinc-400 space-y-2.5 border-l-2 border-zinc-700 ml-1">
                                     <li><strong>No PS5:</strong> Vá em Configurações &gt; Usuários e contas &gt; Outros &gt; Compartilhamento do console... &gt; <strong>Habilitar</strong>. (Se não estiver habilitado)</li>
                                     <li><strong>No PS4:</strong> Vá em Configurações &gt; Gerenciamento da conta &gt; <strong>Ativar como seu PS4 principal</strong>. (Se não estiver habilitado)</li>
-                                    <li><span className="text-base">⚠️</span> É aqui também, que no final do seu aluguel, você vai DESABILITAR o compartilhamento.</li>
+                                    <li className="text-rose-400 font-bold flex items-center gap-2 mt-2 bg-rose-950/30 p-2.5 rounded-lg border border-rose-500/20"><span className="text-lg">⚠️</span> É aqui também, que no final do seu aluguel, você vai DESABILITAR o compartilhamento.</li>
                                   </ul>
                                 </li>
-                                <li className="text-emerald-400 font-bold mt-2">Vá na Biblioteca da conta, coloque o jogo para baixar, volte para o seu perfil pessoal (a sua conta oficial) e divirta-se!</li>
+                                <li className="text-emerald-400 font-bold mt-5 text-sm bg-emerald-950/30 p-4 rounded-lg border border-emerald-500/30 shadow-inner">
+                                  Vá na Biblioteca da conta, coloque o jogo para baixar, volte para o seu perfil pessoal (a sua conta oficial) e divirta-se!
+                                </li>
                               </ol>
                             </div>
                           </details>
