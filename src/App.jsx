@@ -1155,11 +1155,22 @@ function App() {
                               <span>⏳ Expira:</span>
                               <span>{new Date(item.data_fim).toLocaleString()}</span>
                             </div>
-                            {configSistema.devolucao_dinamica && (
-                              <button onClick={() => devolverAntecipado(item.locacao_id, item.data_fim)} className="w-full sm:w-auto bg-emerald-900/40 hover:bg-emerald-600 text-emerald-400 hover:text-white font-bold px-6 py-2.5 rounded-xl text-sm transition-all border border-emerald-500/30 shadow-lg flex items-center justify-center gap-2">
-                                ♻️ Devolver Antecipado
-                              </button>
-                            )}
+                            {(() => {
+                              // O sistema procura o jogo que o cliente está jogando
+                              const jogoDetalhes = jogos.find(j => j.titulo === item.jogo);
+                              // Verifica se o jogo existe no catálogo e se tem 1 ou mais pessoas na fila
+                              const temFila = jogoDetalhes && jogoDetalhes.tamanho_fila > 0;
+                              
+                              if (temFila) {
+                                return (
+                                  <button onClick={() => devolverAntecipado(item.locacao_id, item.data_fim)} className="w-full sm:w-auto bg-emerald-900/40 hover:bg-emerald-600 text-emerald-400 hover:text-white font-bold px-6 py-2.5 rounded-xl text-sm transition-all border border-emerald-500/30 shadow-lg flex items-center justify-center gap-2 animate-fade-in">
+                                    ♻️ Devolver (Cashback Ativo)
+                                  </button>
+                                )
+                              }
+                              // Se não tem fila, o botão nem é renderizado (desaparece)
+                              return null;
+                            })()}
                           </div>
                         </div>
                       ))}
@@ -1346,16 +1357,7 @@ function App() {
                 <h3 className="text-lg font-bold text-blue-400 mb-6 flex items-center gap-2">⚙️ Configurações Globais do Sistema</h3>
                 
                 <div className="space-y-6">
-                  <div className="flex flex-col sm:flex-row items-center justify-between bg-zinc-950 p-5 rounded-xl border border-zinc-800/50 gap-4">
-                    <div>
-                      <h4 className="text-white font-bold text-base">Devolução Dinâmica (Cashback)</h4>
-                      <p className="text-sm text-zinc-400 mt-1">Permite que clientes devolvam contas antes do prazo e recebam R$ {configSistema.valor_por_dia.toFixed(2)} por cada 24h restantes.</p>
-                    </div>
-                    <button onClick={toggleDevolucao} className={`px-6 py-3 rounded-xl font-black text-sm transition-all shadow-lg w-full sm:w-auto ${configSistema.devolucao_dinamica ? 'bg-emerald-600 text-white shadow-emerald-600/20' : 'bg-zinc-800 text-zinc-400 hover:text-white border border-zinc-700'}`}>
-                      {configSistema.devolucao_dinamica ? '✅ ATIVADO' : '❌ DESATIVADO'}
-                    </button>
-                  </div>
-
+                  
                   <div className="bg-zinc-950 p-5 rounded-xl border border-zinc-800/50 gap-4">
                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 gap-4">
                       <div>
