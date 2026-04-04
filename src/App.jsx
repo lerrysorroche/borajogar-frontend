@@ -137,14 +137,14 @@ function App() {
     return () => clearInterval(intervalId); 
   }, [pixPendente])
 
-  // LÓGICA DO CARROSSEL DE BANNERS (Troca a cada 5 segundos)
+  // LÓGICA DO CARROSSEL DE BANNERS (Troca a cada 8 segundos)
   useEffect(() => {
     const urls = configSistema.banners_url ? configSistema.banners_url.split(',').map(u => u.trim()).filter(u => u) : [];
     if (urls.length <= 1) return; // Se tiver só 1 banner, não precisa rodar o carrossel
 
     const intervalo = setInterval(() => {
       setIndiceBanner(prev => (prev + 1) % urls.length);
-    }, 5000); // 5000 milissegundos = 5 segundos
+    }, 8000); // 8000 milissegundos = 8 segundos
 
     return () => clearInterval(intervalo);
   }, [configSistema.banners_url]);
