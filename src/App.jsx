@@ -922,7 +922,7 @@ function App() {
             <div className="animate-fade-in">
               {/* O CARROSSEL É APLICADO AQUI */}
               <div className="relative rounded-3xl p-8 md:p-14 mb-10 border border-zinc-800 overflow-hidden shadow-2xl flex items-center min-h-[360px] transition-all duration-700" style={{ backgroundImage: `url('${currentBanner}')`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
-                <div className="absolute inset-0 bg-gradient-to-r from-zinc-950 via-zinc-950/90 to-zinc-950/40"></div>
+                <div className="absolute inset-0 bg-gradient-to-r from-zinc-950/80 via-zinc-950/40 to-transparent"></div>
                 <div className="relative z-10 w-full">
                   <span className="inline-block py-1.5 px-4 rounded-full bg-blue-500/20 border border-blue-500/30 text-blue-400 text-[10px] font-bold tracking-wider mb-6 uppercase">CATÁLOGO ATUALIZADO</span>
                   <h1 className="text-3xl md:text-4xl lg:text-5xl font-black text-white mb-6 tracking-tighter leading-tight max-w-2xl">A sua Próxima Aventura <br /><span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400">Começa Aqui</span></h1>
