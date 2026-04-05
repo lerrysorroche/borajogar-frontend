@@ -1971,7 +1971,7 @@ function App() {
 
             <div className="pt-8 border-t border-zinc-800/50 flex flex-col md:flex-row justify-between items-center gap-4 text-[10px] text-zinc-500 font-bold tracking-wide uppercase">
               <p>© 2026 Locadora Bora Jogar. Todos os direitos reservados.</p>
-              <p>CNPJ: 00.000.000/0001-00 • Curitiba, PR</p> 
+              <p>CNPJ: 51.666.811/0001-67 • Curitiba, PR</p> 
             </div>
           </div>
         </footer>
