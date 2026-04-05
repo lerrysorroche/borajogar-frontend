@@ -1928,10 +1928,10 @@ function App() {
                   Sua locadora de jogos digitais next-gen. Alugue os maiores lançamentos de PlayStation de forma automática, rápida e sem sair de casa.
                 </p>
                 <div className="flex gap-4">
-                  <a href="#" target="_blank" rel="noopener noreferrer" className="w-12 h-12 rounded-xl bg-zinc-950 border border-zinc-800 flex items-center justify-center text-zinc-400 hover:text-white hover:border-pink-500 hover:bg-pink-500/10 transition-all shadow-lg text-lg">
+                  <a href="https://www.instagram.com/locadoraborajogar/" target="_blank" rel="noopener noreferrer" className="w-12 h-12 rounded-xl bg-zinc-950 border border-zinc-800 flex items-center justify-center text-zinc-400 hover:text-white hover:border-pink-500 hover:bg-pink-500/10 transition-all shadow-lg text-lg" title="Siga nosso Instagram">
                     📸
                   </a>
-                  <a href={`https://wa.me/${NUMERO_WHATSAPP_SUPORTE}`} target="_blank" rel="noopener noreferrer" className="w-12 h-12 rounded-xl bg-zinc-950 border border-zinc-800 flex items-center justify-center text-zinc-400 hover:text-white hover:border-emerald-500 hover:bg-emerald-500/10 transition-all shadow-lg text-lg">
+                  <a href={`https://wa.me/${NUMERO_WHATSAPP_SUPORTE}`} target="_blank" rel="noopener noreferrer" className="w-12 h-12 rounded-xl bg-zinc-950 border border-zinc-800 flex items-center justify-center text-zinc-400 hover:text-white hover:border-emerald-500 hover:bg-emerald-500/10 transition-all shadow-lg text-lg" title="Fale no WhatsApp">
                     💬
                   </a>
                 </div>
