@@ -573,11 +573,27 @@ function App() {
     window.open(`https://wa.me/${numeroLimpo}?text=${encodeURIComponent(mensagem)}`, '_blank');
   }
 
-  const calcularPrevisao = (dataBaseDeDevolucao, tamanhoFila) => {
-    if (!dataBaseDeDevolucao) return 'Aguardando Estoque';
-    const data = new Date(dataBaseDeDevolucao);
-    data.setDate(data.getDate() + (tamanhoFila * 7));
-    return data.toLocaleDateString();
+  const calcularPrevisao = (dataBaseDeDevolucao, tamanhoFila, dataLancamento = null) => {
+    let dataReferencia;
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0);
+
+    // Se é pré-lançamento, a fila começa a andar a partir do dia de lançamento
+    if (dataLancamento && new Date(dataLancamento + 'T00:00:00') > hoje) {
+      dataReferencia = new Date(dataLancamento + 'T00:00:00');
+    } 
+    // Se já lançou e está alugado, a fila começa a andar da próxima devolução
+    else if (dataBaseDeDevolucao) {
+      dataReferencia = new Date(dataBaseDeDevolucao);
+    } 
+    // Se não tem devolução prevista e não é pré-lançamento, não temos contas cadastradas
+    else {
+      return 'Aguardando Estoque';
+    }
+
+    // Soma 7 dias para cada pessoa na fila e devolve a data calculada
+    dataReferencia.setDate(dataReferencia.getDate() + (tamanhoFila * 7));
+    return dataReferencia.toLocaleDateString();
   }
 
   const lidarComFiltroPlataforma = (plat) => { setFiltroPlataforma(plat); setPaginaAtual(1); }
@@ -1018,7 +1034,7 @@ function App() {
                         {jogo.estoque > 0 && !isEmBreve ? (
                           <span className="bg-emerald-500/90 backdrop-blur-md text-white text-[10px] uppercase tracking-wider font-black px-3 py-1.5 rounded-lg flex items-center gap-1.5 shadow-lg border border-emerald-400/50"><span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>DISPONÍVEL</span>
                         ) : isEmBreve ? (
-                          <span className="bg-purple-600/90 backdrop-blur-md text-white text-[10px] uppercase tracking-widest font-black px-3 py-1.5 rounded-lg shadow-lg border border-purple-500/50">PRÉ-VENDA {dataFormatada && `(${dataFormatada})`}</span>
+                          <span className="bg-purple-600/90 backdrop-blur-md text-white text-[10px] uppercase tracking-widest font-black px-3 py-1.5 rounded-lg shadow-lg border border-purple-500/50">LANÇAMENTO {dataFormatada && `(${dataFormatada})`}</span>
                         ) : (
                           <span className="bg-rose-600/90 backdrop-blur-md text-white text-[10px] uppercase tracking-wider font-black px-3 py-1.5 rounded-lg shadow-lg border border-rose-500/50">ALUGADO</span>
                         )}
@@ -1047,7 +1063,8 @@ function App() {
                           </div>
                         </div>
 
-                        {jogo.estoque === 0 && !isEmBreve && (
+                        {/* 👇 AQUI: Mostra a fila se estiver alugado ou se for lançamento */}
+                        {(jogo.estoque === 0 || isEmBreve) && (
                           <div className="bg-zinc-950 rounded-xl p-4 mb-4 border border-zinc-800/80 shadow-inner">
                             <div className="flex justify-between items-center mb-2">
                               <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">👥 Fila de espera:</span>
@@ -1055,15 +1072,16 @@ function App() {
                             </div>
                             <div className="flex justify-between items-center">
                               <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">⏳ Sua vez em:</span>
-                              <span className="text-xs font-black text-blue-400">{calcularPrevisao(jogo.proxima_devolucao, jogo.tamanho_fila || 0)}</span>
+                              <span className="text-xs font-black text-blue-400">
+                                {calcularPrevisao(jogo.proxima_devolucao, jogo.tamanho_fila || 0, jogo.data_lancamento)}
+                              </span>
                             </div>
                           </div>
                         )}
 
                         {isEmBreve ? (
-                          // 👇 NOVO BOTÃO DE PRÉ-VENDA
                           <button onClick={() => abrirConfirmacao('reserva', jogo.id, tituloLimpo, jogo.preco_aluguel, jogo.preco_aluguel_14 || 0)} className="w-full py-3.5 rounded-xl text-xs font-black uppercase tracking-wide transition-all duration-300 bg-purple-600 hover:bg-purple-500 text-white shadow-lg shadow-purple-600/20">
-                            Reservar Pré-venda
+                            Reservar na Fila
                           </button>
                         ) : (
                           <button onClick={() => abrirConfirmacao(jogo.estoque > 0 ? 'aluguel' : 'reserva', jogo.id, tituloLimpo, jogo.preco_aluguel, jogo.preco_aluguel_14 || 0)} className={`w-full py-3.5 rounded-xl text-xs font-black uppercase tracking-wide transition-all duration-300 ${ jogo.estoque > 0 ? 'bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-500/20' : 'bg-amber-600 hover:bg-amber-500 text-white shadow-lg shadow-amber-600/20'}`}>
@@ -1354,7 +1372,12 @@ function App() {
                             <div className="w-full h-px bg-zinc-800/80 my-1"></div>
                             <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
                               <span className="text-zinc-500 text-[10px] uppercase font-bold tracking-wider w-20">Liberação</span>
-                              <span className="text-blue-400 font-bold text-sm md:text-base tracking-wide">{calcularPrevisao(item.proxima_devolucao, item.pessoas_na_frente)}</span>
+                              <span className="text-blue-400 font-bold text-sm md:text-base tracking-wide">
+                                {(() => {
+                                  const jDetalhes = jogos.find(j => j.titulo === item.jogo);
+                                  return calcularPrevisao(item.proxima_devolucao, item.pessoas_na_frente, jDetalhes?.data_lancamento);
+                                })()}
+                              </span>
                             </div>
                           </div>
                         </div>
