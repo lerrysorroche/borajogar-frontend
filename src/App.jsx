@@ -1110,7 +1110,7 @@ function App() {
               {enqueteOpcoes.length > 0 && (
                 <div className="mb-12 bg-zinc-900/50 border border-zinc-800 rounded-3xl p-6 md:p-8 shadow-xl relative overflow-hidden animate-fade-in">
                   <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-fuchsia-500 to-blue-500"></div>
-                  <h3 className="text-xl md:text-2xl font-black text-white mb-2 tracking-tight">Qual jogo você mais quer jogar no futuro?</h3>
+                  <h3 className="text-xl md:text-2xl font-black text-white mb-2 tracking-tight">QUAL JOGO VOCÊ QUER JOGAR NO FUTURO?</h3>
                   <p className="text-sm text-zinc-400 mb-6 leading-relaxed">Clique em uma das opções e ajude o BORA JOGAR! escolher quais jogos devem entrar no catálogo no futuro!</p>
 
                   <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
