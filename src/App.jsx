@@ -600,12 +600,11 @@ function App() {
   const lidarComFiltroDisp = (disp) => { setFiltroDisponibilidade(disp); setPaginaAtual(1); }
   const lidarComBusca = (e) => { setTermoBusca(e.target.value); setPaginaAtual(1); }
 
-  const idsLancamentos = [...jogos]
-    .sort((a, b) => b.id - a.id)
-    .slice(0, 3)
-    .map(j => j.id);
+  const hojeGlobal = new Date();
+  hojeGlobal.setHours(0, 0, 0, 0);
 
-  const jogosFiltrados = jogos
+  // 1. Filtra todos os jogos baseados na busca, plataforma e disponibilidade
+  const filtradosBase = jogos
     .filter(jogo => jogo.titulo.toLowerCase().includes(termoBusca.toLowerCase()))
     .filter(jogo => {
       if (filtroPlataforma === 'TODAS') return true;
@@ -615,32 +614,70 @@ function App() {
     })
     .filter(jogo => {
       if (filtroDisponibilidade === 'TODOS') return true;
-      if (filtroDisponibilidade === 'DISPONIVEL') return jogo.estoque > 0;
-      return true;
-    })
-    .sort((a, b) => {
-      const aLancamento = idsLancamentos.includes(a.id);
-      const bLancamento = idsLancamentos.includes(b.id);
-
-      if (aLancamento && !bLancamento) return -1;
-      if (!aLancamento && bLancamento) return 1;
-
-      const aDisponivel = a.estoque > 0;
-      const bDisponivel = b.estoque > 0;
-      if (aDisponivel && !bDisponivel) return -1;
-      if (!aDisponivel && bDisponivel) return 1;
-      
-      if (b.popularidade !== a.popularidade) {
-          return b.popularidade - a.popularidade;
+      if (filtroDisponibilidade === 'DISPONIVEL') {
+          const dataLanc = jogo.data_lancamento ? new Date(jogo.data_lancamento + 'T00:00:00') : null;
+          const isFuturo = dataLanc && dataLanc > hojeGlobal;
+          // Se for pré-venda, mostra mesmo no filtro de disponíveis para não esconder os futuros
+          if (isFuturo) return true; 
+          return jogo.estoque > 0;
       }
-      
-      return b.id - a.id;
+      return true;
     });
 
-  const totalPaginas = Math.ceil(jogosFiltrados.length / JOGOS_POR_PAGINA);
+  // 2. Separa os Lançamentos Futuros (Pré-venda) e ordena do mais próximo pro mais distante
+  const jogosFuturos = filtradosBase
+    .filter(j => {
+        const dataLanc = j.data_lancamento ? new Date(j.data_lancamento + 'T00:00:00') : null;
+        return dataLanc && dataLanc > hojeGlobal;
+    })
+    .sort((a, b) => new Date(a.data_lancamento) - new Date(b.data_lancamento)); 
+
+  // 3. Separa os Jogos Normais (Já lançados)
+  const jogosNormais = filtradosBase
+    .filter(j => {
+        const dataLanc = j.data_lancamento ? new Date(j.data_lancamento + 'T00:00:00') : null;
+        return !(dataLanc && dataLanc > hojeGlobal);
+    });
+
+  // 4. Pega os 3 mais recentes dentre os NÓRMAIS (para a tag "🔥 Lançamento")
+  const idsLancamentos = [...jogosNormais]
+    .sort((a, b) => b.id - a.id)
+    .slice(0, 3)
+    .map(j => j.id);
+
+  // 5. Ordena apenas os jogos normais (Lançamentos > Estoque > Popularidade > ID)
+  jogosNormais.sort((a, b) => {
+    const aLancamento = idsLancamentos.includes(a.id);
+    const bLancamento = idsLancamentos.includes(b.id);
+
+    if (aLancamento && !bLancamento) return -1;
+    if (!aLancamento && bLancamento) return 1;
+
+    const aDisponivel = a.estoque > 0;
+    const bDisponivel = b.estoque > 0;
+    if (aDisponivel && !bDisponivel) return -1;
+    if (!aDisponivel && bDisponivel) return 1;
+    
+    if (b.popularidade !== a.popularidade) {
+        return b.popularidade - a.popularidade;
+    }
+    
+    return b.id - a.id;
+  });
+
+  // 6. Paginação (Aplica APENAS aos jogos normais, assim os futuros não "roubam" vagas)
+  const totalPaginas = Math.ceil(jogosNormais.length / JOGOS_POR_PAGINA);
   const indiceUltimoJogo = paginaAtual * JOGOS_POR_PAGINA;
   const indicePrimeiroJogo = indiceUltimoJogo - JOGOS_POR_PAGINA;
-  const jogosDaPagina = jogosFiltrados.slice(indicePrimeiroJogo, indiceUltimoJogo);
+  const normaisDaPagina = jogosNormais.slice(indicePrimeiroJogo, indiceUltimoJogo);
+
+  // 7. Monta a vitrine final: Se for a página 1, gruda os futuros no topo antes dos 12 normais.
+  const jogosDaPagina = paginaAtual === 1 
+    ? [...jogosFuturos, ...normaisDaPagina] 
+    : [...normaisDaPagina];
+
+  // 8. Mantemos a variável global "jogosFiltrados" para o contador de resultados e o Painel Admin continuarem funcionando perfeitamente
+  const jogosFiltrados = [...jogosFuturos, ...jogosNormais];
 
   const jogosEstoqueFiltrados = jogos.filter(jogo => jogo.titulo.toLowerCase().includes(buscaEstoque.toLowerCase()))
   const locacoesAtivasFiltradas = todasLocacoes.filter(loc => loc.status === 'ATIVA').filter(loc => loc.jogo.toLowerCase().includes(buscaLocacao.toLowerCase()) || loc.cliente.toLowerCase().includes(buscaLocacao.toLowerCase()))
