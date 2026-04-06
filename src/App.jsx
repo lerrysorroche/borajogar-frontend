@@ -5,7 +5,7 @@
 import { useState, useEffect } from 'react'
 
 function App() {
-  const NUMERO_WHATSAPP_SUPORTE = "5541995948532"; 
+  const NUMERO_WHATSAPP_SUPORTE = "5541999880882"; 
   const JOGOS_POR_PAGINA = 12; 
 
   const [usuarioLogado, setUsuarioLogado] = useState(() => {
@@ -37,6 +37,12 @@ function App() {
   const [minhasReservas, setMinhasReservas] = useState([]) 
   const [extrato, setExtrato] = useState([]) 
   
+  // ESTADOS DA ENQUETE
+  const [enqueteOpcoes, setEnqueteOpcoes] = useState([])
+  const [meuVoto, setMeuVoto] = useState(null)
+  const [novaOpcaoEnqueteTitulo, setNovaOpcaoEnqueteTitulo] = useState('')
+  const [novaOpcaoEnqueteImagem, setNovaOpcaoEnqueteImagem] = useState('')
+
   const [configSistema, setConfigSistema] = useState({ devolucao_dinamica: false, valor_por_dia: 2.0, anuncio_ativo: false, mensagem_anuncio: "" })
   const [estatisticasAdmin, setEstatisticasAdmin] = useState({ faturamento: 0, total_clientes: 0, locacoes_ativas: 0 })
   const [contasManutencao, setContasManutencao] = useState([])
@@ -51,7 +57,7 @@ function App() {
   const [novoJogoImagem, setNovoJogoImagem] = useState('') 
   const [novoJogoTempo, setNovoJogoTempo] = useState('') 
   const [novoJogoNota, setNovoJogoNota] = useState('')
-  const [novoJogoDataLancamento, setNovoJogoDataLancamento] = useState('') // NOVO CAMPO
+  const [novoJogoDataLancamento, setNovoJogoDataLancamento] = useState('') 
   
   const [novaContaJogoId, setNovaContaJogoId] = useState('')
   const [novaContaEmail, setNovaContaEmail] = useState('')
@@ -138,7 +144,6 @@ function App() {
     return () => clearInterval(intervalId); 
   }, [pixPendente])
 
-  // LÓGICA DO CARROSSEL DE BANNERS (Troca a cada 8 segundos)
   useEffect(() => {
     const urls = configSistema.banners_url ? configSistema.banners_url.split(',').map(u => u.trim()).filter(u => u) : [];
     if (urls.length <= 1) return; 
@@ -279,7 +284,6 @@ function App() {
         const jogoEncontrado = dadosBusca.results[0];
         setNovoJogoImagem(jogoEncontrado.background_image || "");
         
-        // Formata a data de lançamento se existir na API RAWG
         if (jogoEncontrado.released) {
           setNovoJogoDataLancamento(jogoEncontrado.released);
         }
@@ -349,8 +353,67 @@ function App() {
     setUsuarioLogado(null); setAbaAtual('vitrine'); localStorage.removeItem('usuario_locadora'); localStorage.removeItem('token_locadora'); 
   }
 
+  // FUNÇÕES DA ENQUETE
+  const votarEnquete = (opcaoId) => {
+    if (!usuarioLogado) {
+       mostrarToast("Você precisa criar uma conta grátis ou fazer login para votar!", "aviso");
+       return;
+    }
+    fetch('https://borajogar-api.onrender.com/enquete/votar', {
+       method: 'POST', headers: getAuthHeaders(),
+       body: JSON.stringify({ utilizador_id: usuarioLogado.id, opcao_id: opcaoId })
+    }).then(async res => {
+       if (res.ok) {
+           mostrarToast("Voto registrado com sucesso! Obrigado.", "sucesso");
+           setMeuVoto(opcaoId);
+           carregarDados();
+       } else {
+           const data = await res.json();
+           mostrarToast(data.detail, "erro");
+       }
+    });
+  }
+
+  const adicionarOpcaoEnquete = (e) => {
+      e.preventDefault();
+      fetch('https://borajogar-api.onrender.com/admin/enquete', {
+          method: 'POST', headers: getAuthHeaders(),
+          body: JSON.stringify({ titulo: novaOpcaoEnqueteTitulo, url_imagem: novaOpcaoEnqueteImagem })
+      }).then(res => {
+          if (res.ok) {
+              mostrarToast("Opção adicionada à enquete!", "sucesso");
+              setNovaOpcaoEnqueteTitulo(''); setNovaOpcaoEnqueteImagem('');
+              carregarDados();
+          } else { mostrarToast("Erro ao adicionar.", "erro"); }
+      })
+  }
+
+  const removerOpcaoEnquete = (id) => {
+      if(window.confirm("Remover esta opção da enquete?")) {
+          fetch(`https://borajogar-api.onrender.com/admin/enquete/${id}`, { method: 'DELETE', headers: getAuthHeaders() })
+          .then(res => { if(res.ok) carregarDados(); })
+      }
+  }
+
+  const limparEnquete = () => {
+      if(window.confirm("ATENÇÃO: Isso apagará TODOS os jogos da enquete e zerará TODOS os votos. Tem certeza?")) {
+          fetch('https://borajogar-api.onrender.com/admin/enquete', { method: 'DELETE', headers: getAuthHeaders() })
+          .then(res => { if(res.ok) carregarDados(); })
+      }
+  }
+
   const carregarDados = () => {
     fetch('https://borajogar-api.onrender.com/configuracoes').then(res => res.json()).then(dados => setConfigSistema(dados));
+    
+    // Carrega Enquete sempre, independente de login
+    const idUsuarioStr = usuarioLogado ? usuarioLogado.id : 0;
+    fetch(`https://borajogar-api.onrender.com/enquete?usuario_id=${idUsuarioStr}`)
+      .then(res => res.json())
+      .then(dados => {
+         setEnqueteOpcoes(dados.opcoes);
+         setMeuVoto(dados.voto_usuario);
+      });
+
     if (!usuarioLogado) return;
     
     fetch('https://borajogar-api.onrender.com/jogos').then(res => res.json()).then(dados => setJogos(dados))
@@ -426,7 +489,7 @@ function App() {
         url_imagem: novoJogoImagem, 
         tempo_jogo: novoJogoTempo, 
         nota: parseFloat(novoJogoNota) || 0,
-        data_lancamento: novoJogoDataLancamento || null // Envia a data
+        data_lancamento: novoJogoDataLancamento || null 
       })
     }).then(res => {
       if (res.ok) { 
@@ -452,7 +515,7 @@ function App() {
         url_imagem: modalEdicaoJogo.url_imagem,
         tempo_jogo: modalEdicaoJogo.tempo_jogo,
         nota: parseFloat(modalEdicaoJogo.nota) || 0,
-        data_lancamento: modalEdicaoJogo.data_lancamento || null // Envia a data editada
+        data_lancamento: modalEdicaoJogo.data_lancamento || null 
       })
     }).then(async res => {
       if (res.ok) {
@@ -578,20 +641,16 @@ function App() {
     const hoje = new Date();
     hoje.setHours(0, 0, 0, 0);
 
-    // Se é pré-lançamento, a fila começa a andar a partir do dia de lançamento
     if (dataLancamento && new Date(dataLancamento + 'T00:00:00') > hoje) {
       dataReferencia = new Date(dataLancamento + 'T00:00:00');
     } 
-    // Se já lançou e está alugado, a fila começa a andar da próxima devolução
     else if (dataBaseDeDevolucao) {
       dataReferencia = new Date(dataBaseDeDevolucao);
     } 
-    // Se não tem devolução prevista e não é pré-lançamento, não temos contas cadastradas
     else {
       return 'Aguardando Estoque';
     }
 
-    // Soma 7 dias para cada pessoa na fila e devolve a data calculada
     dataReferencia.setDate(dataReferencia.getDate() + (tamanhoFila * 7));
     return dataReferencia.toLocaleDateString();
   }
@@ -603,7 +662,6 @@ function App() {
   const hojeGlobal = new Date();
   hojeGlobal.setHours(0, 0, 0, 0);
 
-  // 1. Filtra todos os jogos baseados na busca, plataforma e disponibilidade
   const filtradosBase = jogos
     .filter(jogo => jogo.titulo.toLowerCase().includes(termoBusca.toLowerCase()))
     .filter(jogo => {
@@ -617,14 +675,12 @@ function App() {
       if (filtroDisponibilidade === 'DISPONIVEL') {
           const dataLanc = jogo.data_lancamento ? new Date(jogo.data_lancamento + 'T00:00:00') : null;
           const isFuturo = dataLanc && dataLanc > hojeGlobal;
-          // Se for pré-venda, mostra mesmo no filtro de disponíveis para não esconder os futuros
           if (isFuturo) return true; 
           return jogo.estoque > 0;
       }
       return true;
     });
 
-  // 2. Separa os Lançamentos Futuros (Pré-venda) e ordena do mais próximo pro mais distante
   const jogosFuturos = filtradosBase
     .filter(j => {
         const dataLanc = j.data_lancamento ? new Date(j.data_lancamento + 'T00:00:00') : null;
@@ -632,20 +688,17 @@ function App() {
     })
     .sort((a, b) => new Date(a.data_lancamento) - new Date(b.data_lancamento)); 
 
-  // 3. Separa os Jogos Normais (Já lançados)
   const jogosNormais = filtradosBase
     .filter(j => {
         const dataLanc = j.data_lancamento ? new Date(j.data_lancamento + 'T00:00:00') : null;
         return !(dataLanc && dataLanc > hojeGlobal);
     });
 
-  // 4. Pega os 3 mais recentes dentre os NÓRMAIS (para a tag "🔥 Lançamento")
   const idsLancamentos = [...jogosNormais]
     .sort((a, b) => b.id - a.id)
     .slice(0, 3)
     .map(j => j.id);
 
-  // 5. Ordena apenas os jogos normais (Lançamentos > Estoque > Popularidade > ID)
   jogosNormais.sort((a, b) => {
     const aLancamento = idsLancamentos.includes(a.id);
     const bLancamento = idsLancamentos.includes(b.id);
@@ -665,18 +718,15 @@ function App() {
     return b.id - a.id;
   });
 
-  // 6. Paginação (Aplica APENAS aos jogos normais, assim os futuros não "roubam" vagas)
   const totalPaginas = Math.ceil(jogosNormais.length / JOGOS_POR_PAGINA);
   const indiceUltimoJogo = paginaAtual * JOGOS_POR_PAGINA;
   const indicePrimeiroJogo = indiceUltimoJogo - JOGOS_POR_PAGINA;
   const normaisDaPagina = jogosNormais.slice(indicePrimeiroJogo, indiceUltimoJogo);
 
-  // 7. Monta a vitrine final: Se for a página 1, gruda os futuros no topo antes dos 12 normais.
   const jogosDaPagina = paginaAtual === 1 
     ? [...jogosFuturos, ...normaisDaPagina] 
     : [...normaisDaPagina];
 
-  // 8. Mantemos a variável global "jogosFiltrados" para o contador de resultados e o Painel Admin continuarem funcionando perfeitamente
   const jogosFiltrados = [...jogosFuturos, ...jogosNormais];
 
   const jogosEstoqueFiltrados = jogos.filter(jogo => jogo.titulo.toLowerCase().includes(buscaEstoque.toLowerCase()))
@@ -841,75 +891,85 @@ function App() {
         </div>
       )}
 
-      {!usuarioLogado ? (
+      {!usuarioLogado && modoLogin && abaAtual !== 'faq' && abaAtual !== 'termos' && abaAtual !== 'privacidade' && !modoEsqueciSenha ? (
         <div className="flex justify-center items-center min-h-screen p-4" style={{ backgroundImage: `url('https://cinesiageek.com.br/wp-content/uploads/2024/09/playstation5.jpeg')`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
           <div className="absolute inset-0 bg-zinc-950/80 backdrop-blur-md"></div>
           <div className="relative z-10 bg-zinc-900 p-8 md:p-10 rounded-3xl border border-zinc-800 w-full max-w-md shadow-2xl animate-fade-in">
             <h2 className="text-3xl font-black text-center text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400 mb-8 tracking-tighter">BORA JOGAR!</h2>
             
-            {modoEsqueciSenha ? (
-              <form onSubmit={solicitarRecuperacaoSenha} className="space-y-5 animate-fade-in">
-                <p className="text-sm text-zinc-400 text-center mb-6 leading-relaxed">
-                  Digite seu e-mail de cadastro. Se ele existir, enviaremos uma senha temporária em instantes.
-                </p>
-                <input type="email" placeholder="Seu E-mail" value={esqueciEmail} onChange={e => setEsqueciEmail(e.target.value)} className={inputClass} required />
-                <button type="submit" className="w-full py-4 bg-amber-600 hover:bg-amber-500 text-white font-bold text-sm uppercase tracking-wide rounded-xl transition-all shadow-lg shadow-amber-500/30">
-                  Recuperar Senha
+            <form onSubmit={entrarNoSistema} className="space-y-5 animate-fade-in">
+              <input type="email" placeholder="Seu E-mail" value={formEmail} onChange={e => setFormEmail(e.target.value)} className={inputClass} required />
+              <input type="password" placeholder="Sua Senha" value={formSenha} onChange={e => setFormSenha(e.target.value)} className={inputClass} required />
+              
+              <div className="flex justify-end">
+                <button type="button" onClick={() => setModoEsqueciSenha(true)} className="text-[10px] font-bold text-zinc-400 hover:text-blue-400 transition-colors uppercase tracking-wider">
+                  Esqueceu a senha?
                 </button>
-                <div className="pt-6 text-center border-t border-zinc-800 mt-8">
-                  <button type="button" onClick={() => setModoEsqueciSenha(false)} className="text-sm font-bold text-zinc-400 hover:text-white uppercase tracking-wider transition-colors">
-                    Voltar para o Login
-                  </button>
-                </div>
-              </form>
-            ) : modoLogin ? (
-              <form onSubmit={entrarNoSistema} className="space-y-5 animate-fade-in">
-                <input type="email" placeholder="Seu E-mail" value={formEmail} onChange={e => setFormEmail(e.target.value)} className={inputClass} required />
-                <input type="password" placeholder="Sua Senha" value={formSenha} onChange={e => setFormSenha(e.target.value)} className={inputClass} required />
-                
-                <div className="flex justify-end">
-                  <button type="button" onClick={() => setModoEsqueciSenha(true)} className="text-[10px] font-bold text-zinc-400 hover:text-blue-400 transition-colors uppercase tracking-wider">
-                    Esqueceu a senha?
-                  </button>
-                </div>
+              </div>
 
-                <button type="submit" className="w-full py-4 bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm uppercase tracking-wide rounded-xl transition-all shadow-lg shadow-blue-500/30">Entrar na Loja</button>
-                
-                <div className="pt-6 text-center border-t border-zinc-800 mt-8">
-                  <p className="text-sm text-zinc-400 leading-relaxed">Ainda não tem conta? <br/>
-                    <button type="button" onClick={() => { setModoLogin(false); setModoEsqueciSenha(false); }} className="mt-3 text-sm font-black text-emerald-400 hover:text-emerald-300 uppercase tracking-wider transition-colors">
-                      CRIE UMA CONTA GRÁTIS
-                    </button>
-                  </p>
-                </div>
-              </form>
-            ) : (
-              <form onSubmit={registrarConta} className="space-y-4 animate-fade-in">
-                <input type="text" placeholder="Nome Completo" value={cadNome} onChange={e => setCadNome(e.target.value)} className={inputClass} required />
-                <input type="email" placeholder="E-mail" value={cadEmail} onChange={e => setCadEmail(e.target.value)} className={inputClass} required />
-                <input type="text" placeholder="WhatsApp (DDD+Número)" value={cadTelefone} onChange={e => setCadTelefone(e.target.value)} className={inputClass} required />
-                <input type="password" placeholder="Crie uma Senha" value={cadSenha} onChange={e => setCadSenha(e.target.value)} className={inputClass} required />
-                <input type="text" placeholder="Código de um Amigo (Opcional)" value={cadCodigoConvite} onChange={e => setCadCodigoConvite(e.target.value.toUpperCase())} className={`${inputClass} border-purple-500/50 bg-purple-950/20 text-purple-100 placeholder-purple-400/50 uppercase`} />
-                
-                <div className="bg-zinc-950/50 border border-zinc-800 p-4 rounded-xl mt-4 shadow-inner">
-                  <p className="text-[11px] text-zinc-400 leading-relaxed text-center">
-                    Ao clicar em "Finalizar Cadastro", você confirma que é maior de idade e declara que leu, compreendeu e concorda integralmente com os nossos <strong className="text-emerald-400">Termos de Uso</strong> e <strong className="text-emerald-400">Política de Privacidade</strong> (disponíveis para leitura no rodapé da plataforma após o acesso).
-                  </p>
-                </div>
-
-                <button type="submit" className="w-full py-4 mt-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm uppercase tracking-wide rounded-xl transition-all shadow-lg shadow-emerald-500/30">Finalizar Cadastro</button>
-                
-                <div className="pt-6 text-center border-t border-zinc-800 mt-6">
-                    <p className="text-sm text-zinc-400 leading-relaxed">Já possui uma conta? <br/>
-                        <button type="button" onClick={() => { setModoLogin(true); setModoEsqueciSenha(false); }} className="mt-3 text-sm font-black text-blue-400 hover:text-blue-300 uppercase tracking-wider transition-colors">
-                            Faça Login aqui
-                        </button>
-                    </p>
-                </div>
-              </form>
-            )}
+              <button type="submit" className="w-full py-4 bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm uppercase tracking-wide rounded-xl transition-all shadow-lg shadow-blue-500/30">Entrar na Loja</button>
+              
+              <div className="pt-6 text-center border-t border-zinc-800 mt-8">
+                <p className="text-sm text-zinc-400 leading-relaxed">Ainda não tem conta? <br/>
+                  <button type="button" onClick={() => { setModoLogin(false); setModoEsqueciSenha(false); }} className="mt-3 text-sm font-black text-emerald-400 hover:text-emerald-300 uppercase tracking-wider transition-colors">
+                    CRIE UMA CONTA GRÁTIS
+                  </button>
+                </p>
+              </div>
+            </form>
           </div>
         </div>
+      ) : !usuarioLogado && !modoLogin && !modoEsqueciSenha && abaAtual !== 'faq' && abaAtual !== 'termos' && abaAtual !== 'privacidade' ? (
+        <div className="flex justify-center items-center min-h-screen p-4" style={{ backgroundImage: `url('https://cinesiageek.com.br/wp-content/uploads/2024/09/playstation5.jpeg')`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
+          <div className="absolute inset-0 bg-zinc-950/80 backdrop-blur-md"></div>
+          <div className="relative z-10 bg-zinc-900 p-8 md:p-10 rounded-3xl border border-zinc-800 w-full max-w-md shadow-2xl animate-fade-in">
+            <h2 className="text-3xl font-black text-center text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400 mb-8 tracking-tighter">BORA JOGAR!</h2>
+            <form onSubmit={registrarConta} className="space-y-4 animate-fade-in">
+              <input type="text" placeholder="Nome Completo" value={cadNome} onChange={e => setCadNome(e.target.value)} className={inputClass} required />
+              <input type="email" placeholder="E-mail" value={cadEmail} onChange={e => setCadEmail(e.target.value)} className={inputClass} required />
+              <input type="text" placeholder="WhatsApp (DDD+Número)" value={cadTelefone} onChange={e => setCadTelefone(e.target.value)} className={inputClass} required />
+              <input type="password" placeholder="Crie uma Senha" value={cadSenha} onChange={e => setCadSenha(e.target.value)} className={inputClass} required />
+              <input type="text" placeholder="Código de um Amigo (Opcional)" value={cadCodigoConvite} onChange={e => setCadCodigoConvite(e.target.value.toUpperCase())} className={`${inputClass} border-purple-500/50 bg-purple-950/20 text-purple-100 placeholder-purple-400/50 uppercase`} />
+              
+              <div className="bg-zinc-950/50 border border-zinc-800 p-4 rounded-xl mt-4 shadow-inner">
+                <p className="text-[11px] text-zinc-400 leading-relaxed text-center">
+                  Ao clicar em "Finalizar Cadastro", você confirma que é maior de idade e declara que leu, compreendeu e concorda integralmente com os nossos <strong className="text-emerald-400">Termos de Uso</strong> e <strong className="text-emerald-400">Política de Privacidade</strong> (disponíveis para leitura no rodapé da plataforma após o acesso).
+                </p>
+              </div>
+
+              <button type="submit" className="w-full py-4 mt-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm uppercase tracking-wide rounded-xl transition-all shadow-lg shadow-emerald-500/30">Finalizar Cadastro</button>
+              
+              <div className="pt-6 text-center border-t border-zinc-800 mt-6">
+                  <p className="text-sm text-zinc-400 leading-relaxed">Já possui uma conta? <br/>
+                      <button type="button" onClick={() => { setModoLogin(true); setModoEsqueciSenha(false); }} className="mt-3 text-sm font-black text-blue-400 hover:text-blue-300 uppercase tracking-wider transition-colors">
+                          Faça Login aqui
+                      </button>
+                  </p>
+              </div>
+            </form>
+          </div>
+        </div>
+      ) : !usuarioLogado && modoEsqueciSenha && abaAtual !== 'faq' && abaAtual !== 'termos' && abaAtual !== 'privacidade' ? (
+          <div className="flex justify-center items-center min-h-screen p-4" style={{ backgroundImage: `url('https://cinesiageek.com.br/wp-content/uploads/2024/09/playstation5.jpeg')`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
+            <div className="absolute inset-0 bg-zinc-950/80 backdrop-blur-md"></div>
+            <div className="relative z-10 bg-zinc-900 p-8 md:p-10 rounded-3xl border border-zinc-800 w-full max-w-md shadow-2xl animate-fade-in">
+              <h2 className="text-3xl font-black text-center text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400 mb-8 tracking-tighter">BORA JOGAR!</h2>
+              <form onSubmit={solicitarRecuperacaoSenha} className="space-y-5 animate-fade-in">
+                  <p className="text-sm text-zinc-400 text-center mb-6 leading-relaxed">
+                    Digite seu e-mail de cadastro. Se ele existir, enviaremos uma senha temporária em instantes.
+                  </p>
+                  <input type="email" placeholder="Seu E-mail" value={esqueciEmail} onChange={e => setEsqueciEmail(e.target.value)} className={inputClass} required />
+                  <button type="submit" className="w-full py-4 bg-amber-600 hover:bg-amber-500 text-white font-bold text-sm uppercase tracking-wide rounded-xl transition-all shadow-lg shadow-amber-500/30">
+                    Recuperar Senha
+                  </button>
+                  <div className="pt-6 text-center border-t border-zinc-800 mt-8">
+                    <button type="button" onClick={() => setModoEsqueciSenha(false)} className="text-sm font-bold text-zinc-400 hover:text-white uppercase tracking-wider transition-colors">
+                      Voltar para o Login
+                    </button>
+                  </div>
+              </form>
+            </div>
+          </div>
       ) : (
 
       <>
@@ -927,37 +987,43 @@ function App() {
               </div>
 
               <div className="flex items-center gap-4">
-                <div className="hidden md:flex items-center space-x-2 mr-2 border-r border-zinc-800 pr-4">
-                  <button onClick={() => setAbaAtual('dashboard')} className={`${navBtnClass} ${abaAtual === 'dashboard' ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/20' : 'text-zinc-400 hover:text-white hover:bg-zinc-800'}`}>🔑 Meus Acessos</button>
-                  
-                  {usuarioLogado.is_admin && (
-                    <button onClick={() => setAbaAtual('admin')} className={`${navBtnClass} ${abaAtual === 'admin' ? 'bg-rose-600 text-white shadow-md shadow-rose-600/20' : 'text-zinc-400 hover:text-white hover:bg-zinc-800'}`}>⚙️ Painel Admin</button>
-                  )}
-                </div>
+                {!usuarioLogado ? (
+                  <button onClick={() => {setAbaAtual('vitrine'); setModoLogin(true); setModoEsqueciSenha(false);}} className="bg-blue-600 hover:bg-blue-500 text-white px-5 py-2 rounded-xl transition-colors text-xs font-bold uppercase tracking-wider">Entrar</button>
+                ) : (
+                  <>
+                    <div className="hidden md:flex items-center space-x-2 mr-2 border-r border-zinc-800 pr-4">
+                      <button onClick={() => setAbaAtual('dashboard')} className={`${navBtnClass} ${abaAtual === 'dashboard' ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/20' : 'text-zinc-400 hover:text-white hover:bg-zinc-800'}`}>🔑 Meus Acessos</button>
+                      
+                      {usuarioLogado.is_admin && (
+                        <button onClick={() => setAbaAtual('admin')} className={`${navBtnClass} ${abaAtual === 'admin' ? 'bg-rose-600 text-white shadow-md shadow-rose-600/20' : 'text-zinc-400 hover:text-white hover:bg-zinc-800'}`}>⚙️ Painel Admin</button>
+                      )}
+                    </div>
 
-                <div className="hidden md:flex bg-zinc-950 border border-zinc-800 px-4 py-2 rounded-xl items-center gap-3 shadow-inner">
-                  <span className="text-[10px] text-zinc-500 uppercase font-bold tracking-wider">Saldo</span>
-                  <span className={`text-sm font-black ${usuarioLogado.saldo < 0 ? 'text-rose-500 animate-pulse' : 'text-emerald-400'}`}>
-                    R$ {(usuarioLogado.saldo || 0).toFixed(2)}
-                  </span>
-                </div>
-                <span className="hidden md:block text-xs text-zinc-400">Olá, <strong className="text-white">{usuarioLogado.nome}</strong></span>
-                <button onClick={sair} className="hidden md:block bg-zinc-800 hover:bg-rose-600 hover:text-white text-zinc-300 px-4 py-2 rounded-xl transition-colors text-xs font-bold uppercase tracking-wider">Sair</button>
+                    <div className="hidden md:flex bg-zinc-950 border border-zinc-800 px-4 py-2 rounded-xl items-center gap-3 shadow-inner">
+                      <span className="text-[10px] text-zinc-500 uppercase font-bold tracking-wider">Saldo</span>
+                      <span className={`text-sm font-black ${usuarioLogado.saldo < 0 ? 'text-rose-500 animate-pulse' : 'text-emerald-400'}`}>
+                        R$ {(usuarioLogado.saldo || 0).toFixed(2)}
+                      </span>
+                    </div>
+                    <span className="hidden md:block text-xs text-zinc-400">Olá, <strong className="text-white">{usuarioLogado.nome}</strong></span>
+                    <button onClick={sair} className="hidden md:block bg-zinc-800 hover:bg-rose-600 hover:text-white text-zinc-300 px-4 py-2 rounded-xl transition-colors text-xs font-bold uppercase tracking-wider">Sair</button>
 
-                <button onClick={() => setMenuMobileAberto(!menuMobileAberto)} className="md:hidden text-zinc-300 hover:text-white p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                  <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    {menuMobileAberto ? (
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    ) : (
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                    )}
-                  </svg>
-                </button>
+                    <button onClick={() => setMenuMobileAberto(!menuMobileAberto)} className="md:hidden text-zinc-300 hover:text-white p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                      <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        {menuMobileAberto ? (
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        ) : (
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                        )}
+                      </svg>
+                    </button>
+                  </>
+                )}
               </div>
             </div>
           </div>
 
-          {menuMobileAberto && (
+          {menuMobileAberto && usuarioLogado && (
             <div className="md:hidden bg-zinc-900 border-b border-zinc-800 absolute w-full left-0 top-16 shadow-2xl animate-fade-in flex flex-col">
               <div className="flex items-center justify-between p-5 border-b border-zinc-800/50 bg-zinc-950/50">
                 <span className="text-sm text-zinc-400">Olá, <strong className="text-white truncate max-w-[120px] inline-block align-bottom">{usuarioLogado.nome}</strong></span>
@@ -1040,6 +1106,43 @@ function App() {
                 </div>
               )}
 
+              {/* 👇 AQUI ESTÁ A NOVA SESSÃO DE ENQUETE */}
+              {enqueteOpcoes.length > 0 && (
+                <div className="mb-12 bg-zinc-900/50 border border-zinc-800 rounded-3xl p-6 md:p-8 shadow-xl relative overflow-hidden animate-fade-in">
+                  <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-fuchsia-500 to-blue-500"></div>
+                  <h3 className="text-xl md:text-2xl font-black text-white mb-2 tracking-tight">Qual jogo você mais quer jogar no futuro?</h3>
+                  <p className="text-sm text-zinc-400 mb-6 leading-relaxed">Clique em uma das opções e ajude o BORA JOGAR! escolher quais jogos devem entrar no catálogo no futuro!</p>
+
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+                    {enqueteOpcoes.map(opcao => {
+                      const isSelected = meuVoto === opcao.id;
+                      return (
+                        <div key={opcao.id} onClick={() => votarEnquete(opcao.id)} className={`relative h-40 md:h-48 rounded-2xl overflow-hidden cursor-pointer transition-all duration-300 group ${isSelected ? 'border-2 border-fuchsia-500 shadow-[0_0_20px_rgba(217,70,239,0.5)] scale-105 z-10' : 'border-2 border-transparent hover:border-zinc-600 opacity-80 hover:opacity-100'}`}>
+                          <img src={opcao.url_imagem} alt={opcao.titulo} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent flex flex-col justify-end p-3">
+                            <span className="text-white font-black text-xs md:text-sm tracking-tight leading-tight drop-shadow-md">{opcao.titulo}</span>
+                          </div>
+                          
+                          {/* Checkmark Neon */}
+                          {isSelected && (
+                            <div className="absolute top-2 right-2 bg-fuchsia-500 text-white rounded-full w-6 h-6 flex items-center justify-center shadow-lg border border-white/20">
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path></svg>
+                            </div>
+                          )}
+
+                          {/* Contador Admin */}
+                          {usuarioLogado?.is_admin && (
+                            <div className="absolute top-2 left-2 bg-black/80 backdrop-blur-md text-fuchsia-400 font-black text-[10px] px-2 py-1 rounded-lg border border-zinc-700">
+                              {opcao.total_votos} votos
+                            </div>
+                          )}
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+              )}
+
               <div className="mb-6 text-xs font-bold text-zinc-500 uppercase tracking-wider">
                 Mostrando <span className="text-white">{jogosFiltrados.length}</span> jogo(s) encontrado(s)
               </div>
@@ -1048,9 +1151,8 @@ function App() {
                 {jogosDaPagina.map(jogo => {
                   const isLancamento = idsLancamentos.includes(jogo.id);
                   
-                  // 👇 NOVA LÓGICA DE PRÉ-VENDA
                   const hoje = new Date();
-                  hoje.setHours(0, 0, 0, 0); // Zera as horas para comparar só o dia
+                  hoje.setHours(0, 0, 0, 0); 
                   const dataLanc = jogo.data_lancamento ? new Date(jogo.data_lancamento + 'T00:00:00') : null;
                   const isEmBreve = dataLanc && dataLanc > hoje;
                   const dataFormatada = dataLanc ? dataLanc.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }) : '';
@@ -1100,7 +1202,6 @@ function App() {
                           </div>
                         </div>
 
-                        {/* 👇 AQUI: Mostra a fila se estiver alugado ou se for lançamento */}
                         {(jogo.estoque === 0 || isEmBreve) && (
                           <div className="bg-zinc-950 rounded-xl p-4 mb-4 border border-zinc-800/80 shadow-inner">
                             <div className="flex justify-between items-center mb-2">
@@ -1674,7 +1775,7 @@ function App() {
               </section>
 
               <div className="flex flex-col gap-8 mb-10">
-                  {/* 🖼️ HERO BANNER */}
+                  {/* 🖼️ HERO BANNER E CONFIGURAÇÕES */}
                   <details className="group bg-zinc-900/80 rounded-3xl border border-zinc-800 border-l-4 border-l-orange-500 shadow-2xl shadow-orange-500/10 [&_summary::-webkit-details-marker]:hidden overflow-hidden">
                       <summary className="flex items-center justify-between p-6 md:p-8 cursor-pointer hover:bg-orange-900/10 transition-colors select-none relative">
                       <span className="flex items-center gap-3 relative z-10 text-lg font-black text-orange-400 tracking-tight">🖼️ Configurações da Vitrine e Banners</span>
@@ -1682,7 +1783,6 @@ function App() {
                       </summary>
                       <div className="px-6 md:px-8 pb-6 md:pb-8 border-t border-zinc-800/50 pt-8">
                           
-                          {/* PARTE 1: FAIXA DE ANÚNCIO (ALERTA) */}
                           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 gap-5">
                               <div>
                               <h4 className="text-white font-bold text-base tracking-tight">📣 Hero Alert (Faixa de Anúncio)</h4>
@@ -1694,7 +1794,6 @@ function App() {
                           </div>
                           <textarea placeholder="Ex: PROMOÇÃO DE FIM DE SEMANA! Recarregue R$ 50..." value={configSistema.mensagem_anuncio} onChange={(e) => setConfigSistema({...configSistema, mensagem_anuncio: e.target.value})} className={`${adminInputClass} resize-none h-16 bg-zinc-950 border-zinc-700 focus:ring-orange-500 text-sm`} />
 
-                          {/* PARTE 2: CARROSSEL DE IMAGENS */}
                           <div className="mt-8 border-t border-zinc-800/50 pt-6">
                             <h4 className="text-white font-bold text-base tracking-tight">🖼️ Banners do Carrossel (Imagens)</h4>
                             <p className="text-xs text-zinc-400 mt-1 mb-4 font-medium">Cole as URLs das imagens que irão ficar trocando no topo do site. <strong className="text-emerald-400">Separe cada URL com uma vírgula.</strong></p>
@@ -1705,6 +1804,48 @@ function App() {
                               <button onClick={salvarConfiguracoesGlobais} className="bg-blue-600 hover:bg-blue-500 text-white font-bold uppercase tracking-wider px-8 py-4 rounded-xl shadow-lg shadow-blue-600/20 transition-colors text-xs">
                               💾 Salvar Configurações
                               </button>
+                          </div>
+                      </div>
+                  </details>
+
+                  {/* 📊 GESTÃO DA ENQUETE (NOVO) */}
+                  <details className="group bg-gradient-to-r from-fuchsia-900/20 to-zinc-900 rounded-3xl border border-fuchsia-500/30 shadow-2xl shadow-fuchsia-500/10 border-l-4 border-l-fuchsia-500 [&_summary::-webkit-details-marker]:hidden overflow-hidden">
+                      <summary className="flex items-center justify-between p-6 md:p-8 cursor-pointer hover:bg-fuchsia-900/10 transition-colors select-none relative">
+                      <span className="flex items-center gap-3 relative z-10 text-lg font-black text-fuchsia-400 tracking-tight">📊 Gestão da Enquete</span>
+                      <span className="transition duration-300 group-open:-rotate-180 text-fuchsia-500 relative z-10 text-lg">▼</span>
+                      </summary>
+                      <div className="px-6 md:px-8 pb-6 md:pb-8 border-t border-fuchsia-500/20 pt-8">
+                          
+                          <div className="flex flex-col lg:flex-row gap-8">
+                              <form onSubmit={adicionarOpcaoEnquete} className="flex flex-col gap-4 flex-1">
+                                  <h4 className="text-white font-bold text-sm tracking-tight mb-2">Adicionar Opção (Máx. Recomendado: 5)</h4>
+                                  <input type="text" placeholder="Título do Jogo" value={novaOpcaoEnqueteTitulo} onChange={e => setNovaOpcaoEnqueteTitulo(e.target.value)} className={adminInputClass} required />
+                                  <input type="url" placeholder="URL da Capa" value={novaOpcaoEnqueteImagem} onChange={e => setNovaOpcaoEnqueteImagem(e.target.value)} className={adminInputClass} required />
+                                  <button type="submit" className="py-3.5 bg-fuchsia-600 hover:bg-fuchsia-500 font-bold uppercase tracking-wider rounded-xl text-xs text-white transition-colors shadow-lg shadow-fuchsia-500/20 mt-2">Salvar Opção</button>
+                              </form>
+
+                              <div className="flex-1 bg-zinc-950/50 p-5 rounded-2xl border border-zinc-800/80">
+                                  <div className="flex justify-between items-center mb-4">
+                                      <h4 className="text-zinc-400 font-bold text-xs uppercase tracking-wider">Opções Atuais</h4>
+                                      <button onClick={limparEnquete} type="button" className="text-rose-400 hover:text-white bg-rose-900/30 hover:bg-rose-600 px-3 py-1.5 rounded-lg text-[10px] uppercase tracking-wider font-bold transition-colors border border-rose-500/30">Limpar Enquete</button>
+                                  </div>
+                                  <div className="flex flex-col gap-3 overflow-y-auto max-h-[200px] pr-2 custom-scrollbar">
+                                      {enqueteOpcoes.length === 0 ? <p className="text-zinc-500 text-xs font-medium">Nenhuma opção cadastrada.</p> : (
+                                          enqueteOpcoes.map(op => (
+                                              <div key={op.id} className="flex justify-between items-center bg-zinc-900 p-3 rounded-xl border border-zinc-800">
+                                                  <div className="flex items-center gap-3">
+                                                      <img src={op.url_imagem} className="w-10 h-10 object-cover rounded-lg border border-zinc-700" alt="capa"/>
+                                                      <div className="flex flex-col">
+                                                          <span className="text-white text-xs font-bold">{op.titulo}</span>
+                                                          <span className="text-fuchsia-400 text-[10px] font-black">{op.total_votos} votos</span>
+                                                      </div>
+                                                  </div>
+                                                  <button onClick={() => removerOpcaoEnquete(op.id)} className="text-zinc-500 hover:text-rose-400 text-lg transition-colors" title="Remover">🗑️</button>
+                                              </div>
+                                          ))
+                                      )}
+                                  </div>
+                              </div>
                           </div>
                       </div>
                   </details>
