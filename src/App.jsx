@@ -51,6 +51,7 @@ function App() {
   const [novoJogoImagem, setNovoJogoImagem] = useState('') 
   const [novoJogoTempo, setNovoJogoTempo] = useState('') 
   const [novoJogoNota, setNovoJogoNota] = useState('')
+  const [novoJogoDataLancamento, setNovoJogoDataLancamento] = useState('') // NOVO CAMPO
   
   const [novaContaJogoId, setNovaContaJogoId] = useState('')
   const [novaContaEmail, setNovaContaEmail] = useState('')
@@ -140,11 +141,11 @@ function App() {
   // LÓGICA DO CARROSSEL DE BANNERS (Troca a cada 8 segundos)
   useEffect(() => {
     const urls = configSistema.banners_url ? configSistema.banners_url.split(',').map(u => u.trim()).filter(u => u) : [];
-    if (urls.length <= 1) return; // Se tiver só 1 banner, não precisa rodar o carrossel
+    if (urls.length <= 1) return; 
 
     const intervalo = setInterval(() => {
       setIndiceBanner(prev => (prev + 1) % urls.length);
-    }, 8000); // 8000 milissegundos = 8 segundos
+    }, 8000); 
 
     return () => clearInterval(intervalo);
   }, [configSistema.banners_url]);
@@ -277,6 +278,12 @@ function App() {
       if (dadosBusca.results && dadosBusca.results.length > 0) {
         const jogoEncontrado = dadosBusca.results[0];
         setNovoJogoImagem(jogoEncontrado.background_image || "");
+        
+        // Formata a data de lançamento se existir na API RAWG
+        if (jogoEncontrado.released) {
+          setNovoJogoDataLancamento(jogoEncontrado.released);
+        }
+
         const resDetalhes = await fetch(`https://api.rawg.io/api/games/${jogoEncontrado.id}?key=${RAWG_API_KEY}`);
         const dadosDetalhes = await resDetalhes.json();
         if (dadosDetalhes.playtime) setNovoJogoTempo(`${dadosDetalhes.playtime}h`); else setNovoJogoTempo("");
@@ -381,7 +388,7 @@ function App() {
   }
 
   useEffect(() => { carregarDados(); }, [usuarioLogado?.id]) 
-  // Faz a tela rolar para o topo automaticamente ao mudar de aba ou de página no catálogo
+  
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [abaAtual, paginaAtual]);
@@ -410,11 +417,21 @@ function App() {
     e.preventDefault()
     fetch('https://borajogar-api.onrender.com/jogos', {
       method: 'POST', headers: getAuthHeaders(),
-      body: JSON.stringify({ titulo: novoJogoTitulo, plataforma: novoJogoPlataforma, preco_aluguel: parseFloat(novoJogoPreco), preco_aluguel_14: parseFloat(novoJogoPreco14) || 0.0, descricao: novoJogoDescricao, url_imagem: novoJogoImagem, tempo_jogo: novoJogoTempo, nota: parseFloat(novoJogoNota) || 0 })
+      body: JSON.stringify({ 
+        titulo: novoJogoTitulo, 
+        plataforma: novoJogoPlataforma, 
+        preco_aluguel: parseFloat(novoJogoPreco), 
+        preco_aluguel_14: parseFloat(novoJogoPreco14) || 0.0, 
+        descricao: novoJogoDescricao, 
+        url_imagem: novoJogoImagem, 
+        tempo_jogo: novoJogoTempo, 
+        nota: parseFloat(novoJogoNota) || 0,
+        data_lancamento: novoJogoDataLancamento || null // Envia a data
+      })
     }).then(res => {
       if (res.ok) { 
         mostrarToast("Jogo cadastrado!", "sucesso"); carregarDados(); 
-        setNovoJogoTitulo(''); setNovoJogoPreco(''); setNovoJogoPreco14(''); setNovoJogoDescricao(''); setNovoJogoImagem(''); setNovoJogoTempo(''); setNovoJogoNota('');
+        setNovoJogoTitulo(''); setNovoJogoPreco(''); setNovoJogoPreco14(''); setNovoJogoDescricao(''); setNovoJogoImagem(''); setNovoJogoTempo(''); setNovoJogoNota(''); setNovoJogoDataLancamento('');
       } else { mostrarToast("Erro ao cadastrar.", "erro") }
     })
   }
@@ -434,7 +451,8 @@ function App() {
         descricao: modalEdicaoJogo.descricao,
         url_imagem: modalEdicaoJogo.url_imagem,
         tempo_jogo: modalEdicaoJogo.tempo_jogo,
-        nota: parseFloat(modalEdicaoJogo.nota) || 0
+        nota: parseFloat(modalEdicaoJogo.nota) || 0,
+        data_lancamento: modalEdicaoJogo.data_lancamento || null // Envia a data editada
       })
     }).then(async res => {
       if (res.ok) {
@@ -555,13 +573,6 @@ function App() {
     window.open(`https://wa.me/${numeroLimpo}?text=${encodeURIComponent(mensagem)}`, '_blank');
   }
 
-  const pedirJogoEmBreve = (jogoNome) => {
-    let numeroLimpo = NUMERO_WHATSAPP_SUPORTE.replace(/\D/g, '');
-    const mensagem = `Olá! Vi o jogo *${jogoNome}* na vitrine da Bora Jogar e quero votar para vocês colocarem no catálogo! Tenho interesse em alugar.`;
-    const url = `https://wa.me/${numeroLimpo}?text=${encodeURIComponent(mensagem)}`;
-    window.open(url, '_blank');
-  }
-
   const calcularPrevisao = (dataBaseDeDevolucao, tamanhoFila) => {
     if (!dataBaseDeDevolucao) return 'Aguardando Estoque';
     const data = new Date(dataBaseDeDevolucao);
@@ -625,13 +636,11 @@ function App() {
   const alugueisAtivos = meusAlugueis.filter(item => item.status === 'ATIVA')
   const historicoAlugueis = meusAlugueis.filter(item => item.status === 'EXPIRADA').slice(0, 5)
 
-  // ==================== DESIGN SYSTEM TIPOGRÁFICO ====================
   const inputClass = "w-full p-3 bg-zinc-900 border border-zinc-700 text-sm font-medium text-white rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all placeholder-zinc-500"
   const navBtnClass = "text-sm font-bold px-4 py-2 rounded-xl transition-all duration-300"
   const adminInputClass = "w-full px-4 py-2.5 text-sm font-medium bg-zinc-950 border border-zinc-800 text-white rounded-xl focus:ring-1 focus:ring-blue-500 focus:outline-none transition-all placeholder-zinc-600"
   const adminCardClass = "bg-zinc-900 p-6 md:p-8 rounded-3xl border border-zinc-800 shadow-2xl flex flex-col"
 
-  // LOGICA PARA CALCULAR QUAL BANNER MOSTRAR
   const bannerUrls = configSistema.banners_url ? configSistema.banners_url.split(',').map(u => u.trim()).filter(u => u) : [];
   const currentBanner = bannerUrls.length > 0 ? bannerUrls[indiceBanner] : 'https://cinesiageek.com.br/wp-content/uploads/2024/09/playstation5.jpeg';
 
@@ -674,12 +683,19 @@ function App() {
                   </select>
                 </div>
                 <div className="w-full">
-                  <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1 block">Nota (Ex: 4.8)</label>
-                  <input type="number" step="0.1" value={modalEdicaoJogo.nota} onChange={e => setModalEdicaoJogo({...modalEdicaoJogo, nota: e.target.value})} className={adminInputClass} />
+                  <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1 block">Data Lançamento (Pré-venda)</label>
+                  <input type="date" value={modalEdicaoJogo.data_lancamento || ''} onChange={e => setModalEdicaoJogo({...modalEdicaoJogo, data_lancamento: e.target.value})} className={adminInputClass} />
                 </div>
+              </div>
+
+              <div className="flex flex-col md:flex-row gap-4">
                 <div className="w-full">
                   <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1 block">Tempo (Ex: 20h)</label>
                   <input type="text" value={modalEdicaoJogo.tempo_jogo} onChange={e => setModalEdicaoJogo({...modalEdicaoJogo, tempo_jogo: e.target.value})} className={adminInputClass} />
+                </div>
+                <div className="w-full">
+                  <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1 block">Nota (Ex: 4.8)</label>
+                  <input type="number" step="0.1" value={modalEdicaoJogo.nota} onChange={e => setModalEdicaoJogo({...modalEdicaoJogo, nota: e.target.value})} className={adminInputClass} />
                 </div>
               </div>
 
@@ -822,7 +838,6 @@ function App() {
                 <input type="password" placeholder="Crie uma Senha" value={cadSenha} onChange={e => setCadSenha(e.target.value)} className={inputClass} required />
                 <input type="text" placeholder="Código de um Amigo (Opcional)" value={cadCodigoConvite} onChange={e => setCadCodigoConvite(e.target.value.toUpperCase())} className={`${inputClass} border-purple-500/50 bg-purple-950/20 text-purple-100 placeholder-purple-400/50 uppercase`} />
                 
-                {/* === AVISO LEGAL E LGPD === */}
                 <div className="bg-zinc-950/50 border border-zinc-800 p-4 rounded-xl mt-4 shadow-inner">
                   <p className="text-[11px] text-zinc-400 leading-relaxed text-center">
                     Ao clicar em "Finalizar Cadastro", você confirma que é maior de idade e declara que leu, compreendeu e concorda integralmente com os nossos <strong className="text-emerald-400">Termos de Uso</strong> e <strong className="text-emerald-400">Política de Privacidade</strong> (disponíveis para leitura no rodapé da plataforma após o acesso).
@@ -920,7 +935,6 @@ function App() {
 
           {abaAtual === 'vitrine' && (
             <div className="animate-fade-in">
-              {/* O CARROSSEL É APLICADO AQUI */}
               <div className="relative rounded-3xl p-8 md:p-14 mb-10 border border-zinc-800 overflow-hidden shadow-2xl flex items-center min-h-[360px] transition-all duration-700" style={{ backgroundImage: `url('${currentBanner}')`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
                 <div className="absolute inset-0 bg-gradient-to-r from-zinc-950/80 via-zinc-950/40 to-transparent"></div>
                 <div className="relative z-10 w-full">
@@ -947,7 +961,6 @@ function App() {
                   </div>
                 </div>
 
-                {/* INDICADORES DO CARROSSEL (BOLINHAS) */}
                 {bannerUrls.length > 1 && (
                   <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-20">
                     {bannerUrls.map((_, idx) => (
@@ -981,8 +994,14 @@ function App() {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
                 {jogosDaPagina.map(jogo => {
                   const isLancamento = idsLancamentos.includes(jogo.id);
-                  const isEmBreve = jogo.titulo.toUpperCase().includes('[BREVE]');
-                  const tituloLimpo = jogo.titulo.replace(/\[BREVE\]/gi, '').trim();
+                  
+                  // 👇 NOVA LÓGICA DE PRÉ-VENDA
+                  const hoje = new Date();
+                  hoje.setHours(0, 0, 0, 0); // Zera as horas para comparar só o dia
+                  const dataLanc = jogo.data_lancamento ? new Date(jogo.data_lancamento + 'T00:00:00') : null;
+                  const isEmBreve = dataLanc && dataLanc > hoje;
+                  const dataFormatada = dataLanc ? dataLanc.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }) : '';
+                  const tituloLimpo = jogo.titulo; 
                   
                   return (
                   <div key={jogo.id} className="bg-zinc-900 rounded-3xl border border-zinc-800 flex flex-col shadow-xl hover:-translate-y-2 hover:border-blue-500/50 transition-all duration-300 group overflow-hidden">
@@ -996,16 +1015,16 @@ function App() {
                           {jogo.tempo_jogo && jogo.tempo_jogo !== '0h' && (<span className="bg-zinc-950/80 backdrop-blur-md text-zinc-300 border border-zinc-700/50 text-[10px] uppercase font-bold px-3 py-1.5 rounded-lg shadow-lg flex items-center gap-1">⏱️ ~{jogo.tempo_jogo}</span>)}
                         </div>
                         
-                        {jogo.estoque > 0 ? (
+                        {jogo.estoque > 0 && !isEmBreve ? (
                           <span className="bg-emerald-500/90 backdrop-blur-md text-white text-[10px] uppercase tracking-wider font-black px-3 py-1.5 rounded-lg flex items-center gap-1.5 shadow-lg border border-emerald-400/50"><span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>DISPONÍVEL</span>
                         ) : isEmBreve ? (
-                          <span className="bg-purple-600/90 backdrop-blur-md text-white text-[10px] uppercase tracking-widest font-black px-3 py-1.5 rounded-lg shadow-lg border border-purple-500/50">EM BREVE</span>
+                          <span className="bg-purple-600/90 backdrop-blur-md text-white text-[10px] uppercase tracking-widest font-black px-3 py-1.5 rounded-lg shadow-lg border border-purple-500/50">PRÉ-VENDA {dataFormatada && `(${dataFormatada})`}</span>
                         ) : (
                           <span className="bg-rose-600/90 backdrop-blur-md text-white text-[10px] uppercase tracking-wider font-black px-3 py-1.5 rounded-lg shadow-lg border border-rose-500/50">ALUGADO</span>
                         )}
                       </div>
 
-                      {isLancamento && (
+                      {isLancamento && !isEmBreve && (
                         <div className="absolute bottom-4 left-4 z-20">
                           <span className="bg-fuchsia-600/90 text-white text-[10px] font-black px-3 py-1.5 rounded-xl border border-fuchsia-400 shadow-[0_0_15px_rgba(192,38,211,0.8)] flex items-center gap-1.5 tracking-widest uppercase backdrop-blur-md">
                             <span className="animate-pulse">🔥</span> Lançamento
@@ -1042,8 +1061,9 @@ function App() {
                         )}
 
                         {isEmBreve ? (
-                          <button onClick={() => pedirJogoEmBreve(tituloLimpo)} className="w-full py-3.5 rounded-xl text-xs font-black uppercase tracking-wide transition-all duration-300 bg-purple-600 hover:bg-purple-500 text-white shadow-lg shadow-purple-600/20 flex items-center justify-center gap-2">
-                            📲 Pedir no WhatsApp
+                          // 👇 NOVO BOTÃO DE PRÉ-VENDA
+                          <button onClick={() => abrirConfirmacao('reserva', jogo.id, tituloLimpo, jogo.preco_aluguel, jogo.preco_aluguel_14 || 0)} className="w-full py-3.5 rounded-xl text-xs font-black uppercase tracking-wide transition-all duration-300 bg-purple-600 hover:bg-purple-500 text-white shadow-lg shadow-purple-600/20">
+                            Reservar Pré-venda
                           </button>
                         ) : (
                           <button onClick={() => abrirConfirmacao(jogo.estoque > 0 ? 'aluguel' : 'reserva', jogo.id, tituloLimpo, jogo.preco_aluguel, jogo.preco_aluguel_14 || 0)} className={`w-full py-3.5 rounded-xl text-xs font-black uppercase tracking-wide transition-all duration-300 ${ jogo.estoque > 0 ? 'bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-500/20' : 'bg-amber-600 hover:bg-amber-500 text-white shadow-lg shadow-amber-600/20'}`}>
@@ -1271,7 +1291,6 @@ function App() {
                             })()}
                           </div>
 
-                          {/* TUTORIAL DE INSTALAÇÃO VERDE */}
                           <details className="mt-6 group/tut bg-gradient-to-r from-emerald-900/30 to-zinc-900 rounded-2xl border border-emerald-500/40 shadow-[0_0_20px_rgba(16,185,129,0.2)] hover:shadow-[0_0_30px_rgba(16,185,129,0.3)] transition-all duration-300 [&_summary::-webkit-details-marker]:hidden overflow-hidden">
                             <summary className="flex items-center justify-between p-5 cursor-pointer text-emerald-400 font-black text-xs md:text-sm select-none hover:bg-emerald-900/30 transition-colors uppercase tracking-wider">
                               <span className="flex items-center gap-2 animate-pulse-slow">📖 PASSO A PASSO DE COMO ENTRAR NA CONTA E JOGAR (PS4/PS5)</span>
@@ -1731,15 +1750,25 @@ function App() {
                           <input type="text" placeholder="Título do jogo" value={novoJogoTitulo} onChange={e => setNovoJogoTitulo(e.target.value)} className={adminInputClass} required />
                           <button type="button" onClick={buscarDadosDoJogo} className="bg-amber-500 hover:bg-amber-400 text-zinc-900 font-bold px-5 rounded-xl text-[10px] uppercase tracking-wider whitespace-nowrap transition-colors shadow-lg shadow-amber-500/20">✨ Buscar</button>
                       </div>
-                      <input type="url" placeholder="URL da Capa" value={novoJogoImagem} onChange={e => setNovoJogoImagem(e.target.value)} className={adminInputClass} />
+                      
+                      <div className="flex flex-col md:flex-row gap-4">
+                        <div className="w-full">
+                            <select value={novoJogoPlataforma} onChange={e => setNovoJogoPlataforma(e.target.value)} className={adminInputClass}>
+                            <option value="PS5">PS5</option>
+                            <option value="PS4/PS5">PS4/PS5</option>
+                            </select>
+                        </div>
+                        <div className="w-full relative">
+                            <label className="absolute -top-2 left-3 bg-zinc-900 px-1 text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Lançamento (Pré-venda)</label>
+                            <input type="date" value={novoJogoDataLancamento} onChange={e => setNovoJogoDataLancamento(e.target.value)} className={adminInputClass} />
+                        </div>
+                      </div>
+
                       <div className="flex gap-3">
-                          <select value={novoJogoPlataforma} onChange={e => setNovoJogoPlataforma(e.target.value)} className={adminInputClass}>
-                          <option value="PS5">PS5</option>
-                          <option value="PS4/PS5">PS4/PS5</option>
-                          </select>
                           <input type="text" placeholder="Tempo (ex: 20h)" value={novoJogoTempo} onChange={e => setNovoJogoTempo(e.target.value)} className={adminInputClass} />
                           <input type="number" step="0.1" placeholder="Nota" value={novoJogoNota} onChange={e => setNovoJogoNota(e.target.value)} className={adminInputClass} />
                       </div>
+                      <input type="url" placeholder="URL da Capa" value={novoJogoImagem} onChange={e => setNovoJogoImagem(e.target.value)} className={adminInputClass} />
                       <div className="flex gap-3">
                           <input type="number" step="0.01" placeholder="Preço 7 Dias (Ex: 35.00)" value={novoJogoPreco} onChange={e => setNovoJogoPreco(e.target.value)} className={adminInputClass} required />
                           <input type="number" step="0.01" placeholder="Preço 14 Dias (Ex: 60.00)" value={novoJogoPreco14} onChange={e => setNovoJogoPreco14(e.target.value)} className={adminInputClass} />
