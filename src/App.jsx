@@ -5,7 +5,7 @@
 import { useState, useEffect } from 'react'
 
 function App() {
-  const NUMERO_WHATSAPP_SUPORTE = "5541999880882"; 
+  const NUMERO_WHATSAPP_SUPORTE = "5541995948532"; 
   const JOGOS_POR_PAGINA = 12; 
 
   const [usuarioLogado, setUsuarioLogado] = useState(() => {
