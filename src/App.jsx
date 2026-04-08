@@ -2104,7 +2104,7 @@ function App() {
                                   </span>
                                   {u.telefone && (
                                     <a 
-                                      href={`https://wa.me/${u.telefone.replace(/\D/g, '').startsWith('55') ? u.telefone.replace(/\D/g, '') : '55' + u.telefone.replace(/\D/g, '')}`} 
+                                      href={`whatsapp://send?phone=${u.telefone.replace(/\D/g, '').startsWith('55') ? u.telefone.replace(/\D/g, '') : '55' + u.telefone.replace(/\D/g, '')}`} 
                                       target="_blank" 
                                       rel="noopener noreferrer" 
                                       className="text-[10px] font-bold text-emerald-400 hover:text-emerald-300 uppercase tracking-wider mt-1 flex items-center gap-1"
