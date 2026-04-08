@@ -2102,6 +2102,16 @@ function App() {
                                   <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">
                                       Saldo: <strong className={`text-xs tracking-normal ml-1 ${u.saldo < 0 ? 'text-rose-400' : 'text-emerald-400'}`}>R$ {parseFloat(u.saldo).toFixed(2)}</strong>
                                   </span>
+                                  {u.telefone && (
+                                    <a 
+                                      href={`https://wa.me/${u.telefone.replace(/\D/g, '').startsWith('55') ? u.telefone.replace(/\D/g, '') : '55' + u.telefone.replace(/\D/g, '')}`} 
+                                      target="_blank" 
+                                      rel="noopener noreferrer" 
+                                      className="text-[10px] font-bold text-emerald-400 hover:text-emerald-300 uppercase tracking-wider mt-1 flex items-center gap-1"
+                                    >
+                                      📱 Chamar no Whats
+                                    </a>
+                                  )}
                                   </div>
                                   {!u.is_admin && (
                                   <div className="flex gap-2 w-full md:w-auto justify-end">
