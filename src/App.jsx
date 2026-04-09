@@ -79,7 +79,7 @@ function App() {
   const [todasLocacoes, setTodasLocacoes] = useState([])
   const [todosUsuarios, setTodosUsuarios] = useState([])
 
-  const [valorRecarga, setValorRecarga] = useState('30')
+  const [valorRecarga, setValorRecarga] = useState('15')
   const [cupomRecarga, setCupomRecarga] = useState('')
   const [listaCupons, setListaCupons] = useState([])
   const [novoCupomCodigo, setNovoCupomCodigo] = useState('')
@@ -105,7 +105,7 @@ function App() {
   const solicitarGeracaoPix = (e) => {
     e.preventDefault();
     const valorReal = parseFloat(valorRecarga);
-    if (isNaN(valorReal) || valorReal < 30) { mostrarToast("O valor mínimo para recarga é de R$ 30,00", "erro"); return; }
+    if (isNaN(valorReal) || valorReal < 15) { mostrarToast("O valor mínimo para recarga é de R$ 15,00", "erro"); return; }
     
     mostrarToast("Gerando código PIX seguro...", "aviso");
 
@@ -135,7 +135,7 @@ function App() {
                 mostrarToast("✅ Pagamento Confirmado! Saldo liberado.", "sucesso");
                 setPixPendente(null); 
                 setCupomRecarga('');
-                setValorRecarga('30');
+                setValorRecarga('15');
                 carregarDados(); 
             }
         }).catch(() => console.log("Aguardando verificação..."));
@@ -1278,9 +1278,9 @@ function App() {
                         <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-2 block">Valor da Recarga (R$)</label>
                         <div className="relative">
                           <span className="absolute left-5 top-1/2 -translate-y-1/2 text-zinc-400 font-black text-base">R$</span>
-                          <input type="number" min="30" step="1" value={valorRecarga} onChange={e => setValorRecarga(e.target.value)} className="w-full pl-14 pr-5 py-4 bg-zinc-950 border border-zinc-800 text-white rounded-2xl focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none font-black text-lg" required />
+                          <input type="number" min="15" step="1" value={valorRecarga} onChange={e => setValorRecarga(e.target.value)} className="w-full pl-14 pr-5 py-4 bg-zinc-950 border border-zinc-800 text-white rounded-2xl focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none font-black text-lg" required />
                         </div>
-                        <span className="text-[10px] font-bold text-zinc-500 mt-2 block">Valor mínimo: R$ 30,00</span>
+                        <span className="text-[10px] font-bold text-zinc-500 mt-2 block">Valor mínimo: R$ 15,00</span>
                       </div>
   
                       <div>
