@@ -1209,23 +1209,41 @@ function App() {
                         )}
 
                         {/* NOVOS BOTÕES DIRETO NA VITRINE */}
-                        <div className="flex gap-2 w-full">
+                        <div className="flex gap-2 w-full mt-2">
                           <button
                             onClick={() => abrirConfirmacao(jogo.estoque > 0 && !isEmBreve ? 'aluguel' : 'reserva', jogo.id, tituloLimpo, jogo.preco_aluguel, jogo.preco_aluguel_14 || 0, 7)}
-                            className={`flex-1 bg-zinc-800 hover:bg-zinc-700 border transition-all rounded-xl p-2.5 flex flex-col items-center justify-center group ${jogo.estoque > 0 && !isEmBreve ? 'border-emerald-500/30 hover:border-emerald-500' : 'border-amber-500/30 hover:border-amber-500'}`}
+                            className={`flex-1 transition-all rounded-xl p-2 flex flex-col items-center justify-center group border ${
+                                jogo.estoque > 0 && !isEmBreve 
+                                ? 'bg-[#39FF14] hover:bg-[#32e612] border-[#39FF14] shadow-[0_0_15px_rgba(57,255,20,0.15)]' // Verde Neon
+                                : 'bg-orange-500 hover:bg-orange-400 border-orange-500 shadow-[0_0_15px_rgba(249,115,22,0.15)]' // Laranja
+                            }`}
                           >
-                            <span className="text-[10px] uppercase tracking-wider text-zinc-400 group-hover:text-zinc-300">{jogo.estoque > 0 && !isEmBreve ? 'Alugar' : 'Reservar'} 7 Dias</span>
-                            <strong className={`text-sm mt-1 ${jogo.estoque > 0 && !isEmBreve ? 'text-emerald-400' : 'text-amber-400'}`}>R$ {jogo.preco_aluguel.toFixed(2)}</strong>
+                            <span className={`text-[10px] uppercase tracking-wider font-black ${jogo.estoque > 0 && !isEmBreve ? 'text-emerald-950' : 'text-orange-950'}`}>
+                                {jogo.estoque > 0 && !isEmBreve ? 'Alugar' : 'Reservar'} 7 Dias
+                            </span>
+                            <strong className="text-sm mt-0.5 font-black text-black">
+                                R$ {jogo.preco_aluguel.toFixed(2)}
+                            </strong>
                           </button>
 
                           {jogo.preco_aluguel_14 > 0 && (
                             <button
                               onClick={() => abrirConfirmacao(jogo.estoque > 0 && !isEmBreve ? 'aluguel' : 'reserva', jogo.id, tituloLimpo, jogo.preco_aluguel, jogo.preco_aluguel_14, 14)}
-                              className={`flex-1 transition-all rounded-xl p-2.5 flex flex-col items-center justify-center shadow-lg group relative border ${jogo.estoque > 0 && !isEmBreve ? 'bg-emerald-600/10 hover:bg-emerald-600/20 border-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.15)]' : 'bg-amber-600/10 hover:bg-amber-600/20 border-amber-500 shadow-[0_0_15px_rgba(245,158,11,0.15)]'}`}
+                              className={`flex-1 transition-all rounded-xl p-2 flex flex-col items-center justify-center shadow-lg group relative border ${
+                                  jogo.estoque > 0 && !isEmBreve 
+                                  ? 'bg-fuchsia-600 hover:bg-fuchsia-500 border-fuchsia-600 shadow-[0_0_15px_rgba(192,38,211,0.2)]' // Rosa/Fúcsia
+                                  : 'bg-orange-300 hover:bg-orange-200 border-orange-300 shadow-[0_0_15px_rgba(253,186,116,0.2)]' // Pêssego/Laranja Claro
+                              }`}
                             >
-                              <span className="absolute -top-2.5 right-2 bg-purple-500 text-white text-[8px] font-black px-1.5 py-0.5 rounded-full uppercase tracking-wider shadow-md">Desconto</span>
-                              <span className={`text-[10px] uppercase tracking-wider group-hover:brightness-125 ${jogo.estoque > 0 && !isEmBreve ? 'text-emerald-400' : 'text-amber-400'}`}>{jogo.estoque > 0 && !isEmBreve ? 'Alugar' : 'Reservar'} 14 Dias</span>
-                              <strong className={`text-sm mt-1 ${jogo.estoque > 0 && !isEmBreve ? 'text-emerald-300' : 'text-amber-300'}`}>R$ {jogo.preco_aluguel_14.toFixed(2)}</strong>
+                              <span className={`absolute -top-2.5 right-2 text-[8px] font-black px-1.5 py-0.5 rounded-full uppercase tracking-wider shadow-md ${jogo.estoque > 0 && !isEmBreve ? 'bg-zinc-950 text-fuchsia-400 border border-fuchsia-500/50' : 'bg-orange-600 text-white'}`}>
+                                PROMOÇÃO
+                              </span>
+                              <span className={`text-[10px] uppercase tracking-wider font-black ${jogo.estoque > 0 && !isEmBreve ? 'text-fuchsia-200' : 'text-orange-900'}`}>
+                                {jogo.estoque > 0 && !isEmBreve ? 'Alugar' : 'Reservar'} 14 Dias
+                              </span>
+                              <strong className={`text-sm mt-0.5 font-black ${jogo.estoque > 0 && !isEmBreve ? 'text-white' : 'text-black'}`}>
+                                R$ {jogo.preco_aluguel_14.toFixed(2)}
+                              </strong>
                             </button>
                           )}
                         </div>
