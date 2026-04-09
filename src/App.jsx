@@ -1209,39 +1209,41 @@ function App() {
                         )}
 
                         {/* NOVOS BOTÕES DIRETO NA VITRINE */}
-                        <div className="flex gap-2 w-full mt-2">
+                        <div className="flex gap-3 w-full mt-3">
+                          {/* Botão 7 Dias */}
                           <button
                             onClick={() => abrirConfirmacao(jogo.estoque > 0 && !isEmBreve ? 'aluguel' : 'reserva', jogo.id, tituloLimpo, jogo.preco_aluguel, jogo.preco_aluguel_14 || 0, 7)}
-                            className={`flex-1 transition-all rounded-xl p-2 flex flex-col items-center justify-center group border ${
+                            className={`flex-1 transition-all rounded-xl p-2.5 flex flex-col items-center justify-center group border ${
                                 jogo.estoque > 0 && !isEmBreve 
-                                ? 'bg-[#39FF14] hover:bg-[#32e612] border-[#39FF14] shadow-[0_0_15px_rgba(57,255,20,0.15)]' // Verde Neon
-                                : 'bg-orange-500 hover:bg-orange-400 border-orange-500 shadow-[0_0_15px_rgba(249,115,22,0.15)]' // Laranja
+                                ? 'bg-emerald-500/90 hover:bg-emerald-400 border-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.5)]' // Emerald (DISPONIVEL match)
+                                : 'bg-amber-500/90 hover:bg-amber-400 border-amber-400 shadow-[0_0_15px_rgba(245,158,11,0.5)]' // Laranja/Dourado
                             }`}
                           >
-                            <span className={`text-[10px] uppercase tracking-wider font-black ${jogo.estoque > 0 && !isEmBreve ? 'text-emerald-950' : 'text-orange-950'}`}>
+                            <span className="text-[10px] uppercase tracking-wider font-bold text-white/80 group-hover:text-white">
                                 {jogo.estoque > 0 && !isEmBreve ? 'Alugar' : 'Reservar'} 7 Dias
                             </span>
-                            <strong className="text-sm mt-0.5 font-black text-black">
+                            <strong className="text-sm mt-0.5 font-black text-white">
                                 R$ {jogo.preco_aluguel.toFixed(2)}
                             </strong>
                           </button>
 
+                          {/* Botão 14 Dias */}
                           {jogo.preco_aluguel_14 > 0 && (
                             <button
                               onClick={() => abrirConfirmacao(jogo.estoque > 0 && !isEmBreve ? 'aluguel' : 'reserva', jogo.id, tituloLimpo, jogo.preco_aluguel, jogo.preco_aluguel_14, 14)}
-                              className={`flex-1 transition-all rounded-xl p-2 flex flex-col items-center justify-center shadow-lg group relative border ${
+                              className={`flex-1 transition-all rounded-xl p-2.5 flex flex-col items-center justify-center group relative border ${
                                   jogo.estoque > 0 && !isEmBreve 
-                                  ? 'bg-fuchsia-600 hover:bg-fuchsia-500 border-fuchsia-600 shadow-[0_0_15px_rgba(192,38,211,0.2)]' // Rosa/Fúcsia
-                                  : 'bg-orange-300 hover:bg-orange-200 border-orange-300 shadow-[0_0_15px_rgba(253,186,116,0.2)]' // Pêssego/Laranja Claro
+                                  ? 'bg-fuchsia-600/90 hover:bg-fuchsia-500 border-fuchsia-400 shadow-[0_0_20px_rgba(192,38,211,0.5)]' // Rosa/Roxo
+                                  : 'bg-orange-500/80 hover:bg-orange-400 border-orange-400 shadow-[0_0_15px_rgba(249,115,22,0.4)]' // Laranja mais claro
                               }`}
                             >
-                              <span className={`absolute -top-2.5 right-2 text-[8px] font-black px-1.5 py-0.5 rounded-full uppercase tracking-wider shadow-md ${jogo.estoque > 0 && !isEmBreve ? 'bg-zinc-950 text-fuchsia-400 border border-fuchsia-500/50' : 'bg-orange-600 text-white'}`}>
-                                PROMOÇÃO
+                              <span className={`absolute -top-2.5 right-2 text-[8px] font-black px-1.5 py-0.5 rounded-full uppercase tracking-wider shadow-lg border bg-zinc-950 ${jogo.estoque > 0 && !isEmBreve ? 'text-fuchsia-400 border-fuchsia-500/50' : 'text-orange-400 border-orange-500/50'}`}>
+                                PROMO
                               </span>
-                              <span className={`text-[10px] uppercase tracking-wider font-black ${jogo.estoque > 0 && !isEmBreve ? 'text-fuchsia-200' : 'text-orange-900'}`}>
+                              <span className="text-[10px] uppercase tracking-wider font-bold text-white/80 group-hover:text-white">
                                 {jogo.estoque > 0 && !isEmBreve ? 'Alugar' : 'Reservar'} 14 Dias
                               </span>
-                              <strong className={`text-sm mt-0.5 font-black ${jogo.estoque > 0 && !isEmBreve ? 'text-white' : 'text-black'}`}>
+                              <strong className="text-sm mt-0.5 font-black text-white">
                                 R$ {jogo.preco_aluguel_14.toFixed(2)}
                               </strong>
                             </button>
