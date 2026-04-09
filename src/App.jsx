@@ -192,10 +192,11 @@ function App() {
     }).catch(() => mostrarToast("Erro de conexão.", "erro"));
   }
 
-  const abrirConfirmacao = (tipo, jogoId, jogoTitulo, preco7, preco14) => {
-    if (usuarioLogado.saldo < preco7) { mostrarToast(`Saldo insuficiente!\nColoque créditos em "Meus Acessos"!`, "erro"); return; }
+  const abrirConfirmacao = (tipo, jogoId, jogoTitulo, preco7, preco14, diasEscolhidosInicial = 7) => {
+    const precoAlvo = diasEscolhidosInicial === 14 ? preco14 : preco7;
+    if (usuarioLogado.saldo < precoAlvo) { mostrarToast(`Saldo insuficiente para ${diasEscolhidosInicial} dias!\nColoque créditos em "Meus Acessos"!`, "erro"); return; }
     if (usuarioLogado.saldo < 0) { mostrarToast(`Você está negativado!`, "erro"); return; }
-    setModalConfirmacao({ visivel: true, tipo, jogoId, jogoTitulo, preco7, preco14, diasEscolhidos: 7 });
+    setModalConfirmacao({ visivel: true, tipo, jogoId, jogoTitulo, preco7, preco14, diasEscolhidos: diasEscolhidosInicial });
   }
 
   const confirmarTransacao = () => {
@@ -1106,7 +1107,6 @@ function App() {
                 </div>
               )}
 
-              {/* 👇 AQUI ESTÁ A NOVA SESSÃO DE ENQUETE */}
               {enqueteOpcoes.length > 0 && (
                 <div className="mb-12 bg-zinc-900/50 border border-zinc-800 rounded-3xl p-6 md:p-8 shadow-xl relative overflow-hidden animate-fade-in">
                   <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-fuchsia-500 to-blue-500"></div>
@@ -1193,15 +1193,6 @@ function App() {
                       <p className="text-xs text-zinc-400 mb-6 line-clamp-4 leading-relaxed font-medium" title={jogo.descricao}>{jogo.descricao}</p>
                       
                       <div className="mt-auto">
-                        <div className="flex items-end justify-between mb-5">
-                          <div>
-                            <div className="text-2xl font-black text-white tracking-tight">R$ {jogo.preco_aluguel.toFixed(2)}</div>
-                            <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider block mt-1">
-                                {jogo.preco_aluguel_14 > 0 ? 'Por 7 ou 14 dias' : 'Por 7 dias'}
-                            </span>
-                          </div>
-                        </div>
-
                         {(jogo.estoque === 0 || isEmBreve) && (
                           <div className="bg-zinc-950 rounded-xl p-4 mb-4 border border-zinc-800/80 shadow-inner">
                             <div className="flex justify-between items-center mb-2">
@@ -1217,15 +1208,27 @@ function App() {
                           </div>
                         )}
 
-                        {isEmBreve ? (
-                          <button onClick={() => abrirConfirmacao('reserva', jogo.id, tituloLimpo, jogo.preco_aluguel, jogo.preco_aluguel_14 || 0)} className="w-full py-3.5 rounded-xl text-xs font-black uppercase tracking-wide transition-all duration-300 bg-purple-600 hover:bg-purple-500 text-white shadow-lg shadow-purple-600/20">
-                            Reservar na Fila
+                        {/* NOVOS BOTÕES DIRETO NA VITRINE */}
+                        <div className="flex gap-2 w-full">
+                          <button
+                            onClick={() => abrirConfirmacao(jogo.estoque > 0 && !isEmBreve ? 'aluguel' : 'reserva', jogo.id, tituloLimpo, jogo.preco_aluguel, jogo.preco_aluguel_14 || 0, 7)}
+                            className={`flex-1 bg-zinc-800 hover:bg-zinc-700 border transition-all rounded-xl p-2.5 flex flex-col items-center justify-center group ${jogo.estoque > 0 && !isEmBreve ? 'border-emerald-500/30 hover:border-emerald-500' : 'border-amber-500/30 hover:border-amber-500'}`}
+                          >
+                            <span className="text-[10px] uppercase tracking-wider text-zinc-400 group-hover:text-zinc-300">{jogo.estoque > 0 && !isEmBreve ? 'Alugar' : 'Reservar'} 7 Dias</span>
+                            <strong className={`text-sm mt-1 ${jogo.estoque > 0 && !isEmBreve ? 'text-emerald-400' : 'text-amber-400'}`}>R$ {jogo.preco_aluguel.toFixed(2)}</strong>
                           </button>
-                        ) : (
-                          <button onClick={() => abrirConfirmacao(jogo.estoque > 0 ? 'aluguel' : 'reserva', jogo.id, tituloLimpo, jogo.preco_aluguel, jogo.preco_aluguel_14 || 0)} className={`w-full py-3.5 rounded-xl text-xs font-black uppercase tracking-wide transition-all duration-300 ${ jogo.estoque > 0 ? 'bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-500/20' : 'bg-amber-600 hover:bg-amber-500 text-white shadow-lg shadow-amber-600/20'}`}>
-                            {jogo.estoque > 0 ? 'Alugar Agora' : 'Reservar na Fila'}
-                          </button>
-                        )}
+
+                          {jogo.preco_aluguel_14 > 0 && (
+                            <button
+                              onClick={() => abrirConfirmacao(jogo.estoque > 0 && !isEmBreve ? 'aluguel' : 'reserva', jogo.id, tituloLimpo, jogo.preco_aluguel, jogo.preco_aluguel_14, 14)}
+                              className={`flex-1 transition-all rounded-xl p-2.5 flex flex-col items-center justify-center shadow-lg group relative border ${jogo.estoque > 0 && !isEmBreve ? 'bg-emerald-600/10 hover:bg-emerald-600/20 border-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.15)]' : 'bg-amber-600/10 hover:bg-amber-600/20 border-amber-500 shadow-[0_0_15px_rgba(245,158,11,0.15)]'}`}
+                            >
+                              <span className="absolute -top-2.5 right-2 bg-purple-500 text-white text-[8px] font-black px-1.5 py-0.5 rounded-full uppercase tracking-wider shadow-md">Desconto</span>
+                              <span className={`text-[10px] uppercase tracking-wider group-hover:brightness-125 ${jogo.estoque > 0 && !isEmBreve ? 'text-emerald-400' : 'text-amber-400'}`}>{jogo.estoque > 0 && !isEmBreve ? 'Alugar' : 'Reservar'} 14 Dias</span>
+                              <strong className={`text-sm mt-1 ${jogo.estoque > 0 && !isEmBreve ? 'text-emerald-300' : 'text-amber-300'}`}>R$ {jogo.preco_aluguel_14.toFixed(2)}</strong>
+                            </button>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
