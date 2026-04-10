@@ -1153,11 +1153,22 @@ function App() {
                     <div className="h-56 w-full bg-zinc-800 relative overflow-hidden">
                       {jogo.url_imagem ? <img src={jogo.url_imagem} alt={tituloLimpo} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out" /> : <div className="w-full h-full flex items-center justify-center bg-zinc-800/80"><span className="text-5xl opacity-50">🎮</span></div>}
                       
+                      {/* ETIQUETAS EM COLUNA (flex-col) */}
                       <div className="absolute top-4 left-4 right-4 flex justify-between items-start pointer-events-none">
                         <div className="flex flex-col gap-2 items-start">
-                          <span className="bg-zinc-950/80 backdrop-blur-md text-white border border-zinc-700/50 text-[10px] uppercase tracking-wider font-bold px-3 py-1.5 rounded-lg shadow-lg">{jogo.plataforma}</span>
-                          {jogo.nota > 0 && (<span className="bg-zinc-950/80 backdrop-blur-md text-amber-400 border border-zinc-700/50 text-[10px] uppercase font-bold px-3 py-1.5 rounded-lg shadow-lg flex items-center gap-1">⭐ {jogo.nota}</span>)}
-                          {jogo.tempo_jogo && jogo.tempo_jogo !== '0h' && (<span className="bg-zinc-950/80 backdrop-blur-md text-zinc-300 border border-zinc-700/50 text-[10px] uppercase font-bold px-3 py-1.5 rounded-lg shadow-lg flex items-center gap-1">⏱️ ~{jogo.tempo_jogo}</span>)}
+                          <span className="bg-zinc-950/80 backdrop-blur-md text-white border border-zinc-700/50 text-[10px] uppercase tracking-wider font-bold px-3 py-1.5 rounded-lg shadow-lg">
+                            {jogo.plataforma}
+                          </span>
+                          {jogo.nota > 0 && (
+                            <span className="bg-zinc-950/80 backdrop-blur-md text-amber-400 border border-zinc-700/50 text-[10px] uppercase font-bold px-3 py-1.5 rounded-lg shadow-lg flex items-center gap-1">
+                              ⭐ {jogo.nota}
+                            </span>
+                          )}
+                          {jogo.tempo_jogo && jogo.tempo_jogo !== '0h' && (
+                            <span className="bg-zinc-950/80 backdrop-blur-md text-zinc-300 border border-zinc-700/50 text-[10px] uppercase font-bold px-3 py-1.5 rounded-lg shadow-lg flex items-center gap-1">
+                              ⏱️ ~{jogo.tempo_jogo}
+                            </span>
+                          )}
                         </div>
                         
                         <div className="flex flex-col items-end">
@@ -1200,7 +1211,7 @@ function App() {
                           </div>
                         )}
 
-                        {/* NOVOS BOTÕES DIRETO NA VITRINE */}
+                        {/* BOTÕES DIRETO NA VITRINE COM NOVAS CORES */}
                         <div className="flex gap-3 w-full mt-3">
                           {/* Botão 7 Dias */}
                           <button
@@ -1556,6 +1567,619 @@ function App() {
               )}
 
             </div>
+          )}
+
+          {abaAtual === 'faq' && (
+            <div className="animate-fade-in max-w-4xl mx-auto py-8">
+              <div className="text-center mb-14">
+                <h2 className="text-3xl md:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-500 mb-6 tracking-tight">Central de Ajuda</h2>
+                <p className="text-sm text-zinc-400 font-medium">Tudo o que você precisa saber para alugar e jogar sem dores de cabeça.</p>
+              </div>
+
+              <div className="space-y-5">
+                <details className="group bg-zinc-900 border border-zinc-800 rounded-3xl [&_summary::-webkit-details-marker]:hidden shadow-xl hover:-translate-y-1 transition-transform duration-300">
+                  <summary className="flex items-center justify-between p-6 md:p-8 cursor-pointer text-white hover:text-purple-400 transition-colors">
+                    <span className="text-base md:text-lg font-bold tracking-tight">🎮 Como funciona o aluguel no BORA JOGAR!?</span>
+                    <span className="transition duration-300 group-open:-rotate-180 text-purple-500 text-lg">▼</span>
+                  </summary>
+                  <div className="px-6 md:px-8 pb-6 md:pb-8 text-zinc-400 text-xs md:text-sm leading-relaxed border-t border-zinc-800/50 pt-6">
+                    É super simples! Você adiciona saldo à sua carteira digital, escolhe o jogo na vitrine e clica em <strong className="text-white">"Alugar Agora"</strong>. O valor é descontado e os dados da conta (E-mail e Senha) aparecem imediatamente na sua aba <strong className="text-emerald-400">🔑 Meus Acessos</strong>. O aluguel dura 7 dias corridos a partir do momento da compra.
+                  </div>
+                </details>
+
+                <details className="group bg-zinc-900 border border-zinc-800 rounded-3xl [&_summary::-webkit-details-marker]:hidden shadow-xl hover:-translate-y-1 transition-transform duration-300">
+                  <summary className="flex items-center justify-between p-6 md:p-8 cursor-pointer text-white hover:text-purple-400 transition-colors">
+                    <span className="text-base md:text-lg font-bold tracking-tight">🕹️ Como eu coloco a conta alugada no meu PlayStation?</span>
+                    <span className="transition duration-300 group-open:-rotate-180 text-purple-500 text-lg">▼</span>
+                  </summary>
+                  <div className="px-6 md:px-8 pb-6 md:pb-8 text-zinc-400 text-xs md:text-sm leading-relaxed border-t border-zinc-800/50 pt-6">
+                    <ol className="list-decimal pl-5 space-y-3 text-zinc-300 font-medium">
+                      <li>Ligue seu console e vá na tela de seleção de usuário.</li>
+                      <li>Selecione <strong className="text-white">"Adicionar Novo Usuário"</strong> (Nunca escolha "Jogar como Convidado").</li>
+                      <li>Clique em <strong className="text-white">"Iniciar Sessão e Jogar"</strong>.</li>
+                      <li>Insira o E-mail e a Senha fornecidos na aba <em>Meus Acessos</em>.</li>
+                      <li>Quando o console pedir o código de verificação (2FA), siga as instruções da próxima pergunta!</li>
+                    </ol>
+                  </div>
+                </details>
+
+                <details className="group bg-zinc-900 border border-zinc-800 rounded-3xl [&_summary::-webkit-details-marker]:hidden shadow-xl hover:-translate-y-1 transition-transform duration-300">
+                  <summary className="flex items-center justify-between p-6 md:p-8 cursor-pointer text-white hover:text-purple-400 transition-colors">
+                    <span className="text-base md:text-lg font-bold tracking-tight">🔐 O videogame pediu um código de verificação (2FA). O que eu faço?</span>
+                    <span className="transition duration-300 group-open:-rotate-180 text-purple-500 text-lg">▼</span>
+                  </summary>
+                  <div className="px-6 md:px-8 pb-6 md:pb-8 text-zinc-400 text-xs md:text-sm leading-relaxed border-t border-zinc-800/50 pt-6">
+                    A segurança vem em primeiro lugar! Na aba <strong className="text-emerald-400">🔑 Meus Acessos</strong>, ao lado da senha do seu jogo, existe um botão verde chamado <strong className="text-white">"Gerar Código de Acesso (2FA)"</strong>.<br/><br/>
+                    Basta clicar nele que um código de 6 dígitos vai aparecer na sua tela. Digite esse código rapidamente no seu PlayStation (ele muda a cada 30 segundos). Você não precisa mandar mensagem pro suporte, o sistema gera o código para você na hora!
+                  </div>
+                </details>
+
+                <details className="group bg-zinc-900 border border-zinc-800 rounded-3xl [&_summary::-webkit-details-marker]:hidden shadow-xl hover:-translate-y-1 transition-transform duration-300">
+                  <summary className="flex items-center justify-between p-6 md:p-8 cursor-pointer text-white hover:text-purple-400 transition-colors">
+                    <span className="text-base md:text-lg font-bold tracking-tight">🏆 Posso jogar na minha conta pessoal e ganhar os troféus?</span>
+                    <span className="transition duration-300 group-open:-rotate-180 text-purple-500 text-lg">▼</span>
+                  </summary>
+                  <div className="px-6 md:px-8 pb-6 md:pb-8 text-zinc-400 text-xs md:text-sm leading-relaxed border-t border-zinc-800/50 pt-6">
+                    <strong className="text-white">Sim, com certeza!</strong> Para isso, logo após fazer o login com a conta alugada no console:
+                    <ul className="list-disc pl-5 mt-4 space-y-3 font-medium text-zinc-300">
+                      <li><strong>No PS5:</strong> Vá em Configurações &gt; Usuários e Contas &gt; Outros &gt; <em>Compartilhamento do console e jogo offline</em> e <strong className="text-emerald-400">ative</strong>.</li>
+                      <li><strong>No PS4:</strong> Vá em Configurações &gt; Gerenciamento da conta &gt; <em>Ativar como seu PS4 principal</em> e <strong className="text-emerald-400">ative</strong>.</li>
+                    </ul>
+                    <div className="mt-4">Depois disso, inicie o download do jogo, troque para a sua conta pessoal (a sua oficial) e jogue normalmente. Os saves e troféus ficarão nela!</div>
+                  </div>
+                </details>
+
+                <details className="group bg-zinc-900 border border-zinc-800 rounded-3xl [&_summary::-webkit-details-marker]:hidden shadow-xl hover:-translate-y-1 transition-transform duration-300">
+                  <summary className="flex items-center justify-between p-6 md:p-8 cursor-pointer text-white hover:text-purple-400 transition-colors">
+                    <span className="text-base md:text-lg font-bold tracking-tight">⏳ E se o jogo que eu quero estiver "Alugado"?</span>
+                    <span className="transition duration-300 group-open:-rotate-180 text-purple-500 text-lg">▼</span>
+                  </summary>
+                  <div className="px-6 md:px-8 pb-6 md:pb-8 text-zinc-400 text-xs md:text-sm leading-relaxed border-t border-zinc-800/50 pt-6">
+                    Não se preocupe, você pode garantir a sua vaga! Clique no botão <strong className="text-amber-400">"Reservar na Fila"</strong>. O valor do jogo será investido e você verá uma data de <em>Previsão de Liberação</em> em "Meus Acessos". <br/><br/>
+                    Nosso sistema inteligente repassa a conta automaticamente para você no exato segundo em que o aluguel do cliente anterior terminar.
+                  </div>
+                </details>
+
+                <details className="group bg-zinc-900 border border-zinc-800 rounded-3xl [&_summary::-webkit-details-marker]:hidden shadow-xl hover:-translate-y-1 transition-transform duration-300">
+                  <summary className="flex items-center justify-between p-6 md:p-8 cursor-pointer text-emerald-400 hover:text-emerald-300 transition-colors">
+                    <span className="text-base md:text-lg font-bold tracking-tight">♻️ Posso devolver um jogo antes do prazo e receber cashback?</span>
+                    <span className="transition duration-300 group-open:-rotate-180 text-emerald-500 text-lg">▼</span>
+                  </summary>
+                  <div className="px-6 md:px-8 pb-6 md:pb-8 text-zinc-300 text-xs md:text-sm leading-relaxed border-t border-emerald-500/30 pt-6">
+                    Nós possuímos um sistema de <strong className="text-white">Devolução Dinâmica</strong>! Essa opção fica ativa automaticamente apenas quando o jogo que você alugou está com <strong className="text-rose-400">alta demanda</strong> (ou seja, quando existem outras pessoas na fila de espera aguardando para jogar).<br/><br/>
+                    Se este for o caso, um botão verde <strong className="text-emerald-400">"♻️ Devolver"</strong> aparecerá ao lado do seu jogo na aba <em>Meus Acessos</em>. Ao fazer a devolução antecipada para agilizar a fila, você ganha uma recompensa: <strong className="text-emerald-400">R$ {configSistema.valor_por_dia.toFixed(2)} de cashback por cada 24 horas (1 dia completo)</strong> que ainda restavam no seu prazo!<br/><br/>
+                    O valor cai direto na sua carteira digital assim que a nossa equipe verificar que a conta foi devidamente desativada do seu console.
+                  </div>
+                </details>
+
+                <details className="group bg-rose-950/20 border border-rose-500/30 rounded-3xl [&_summary::-webkit-details-marker]:hidden shadow-xl hover:-translate-y-1 transition-transform duration-300">
+                  <summary className="flex items-center justify-between p-6 md:p-8 cursor-pointer text-rose-400 hover:text-rose-300 transition-colors">
+                    <span className="text-base md:text-lg font-bold tracking-tight">🚨 O que acontece se eu esquecer de desativar a conta do meu videogame?</span>
+                    <span className="transition duration-300 group-open:-rotate-180 text-rose-500 text-lg">▼</span>
+                  </summary>
+                  <div className="px-6 md:px-8 pb-6 md:pb-8 text-zinc-300 text-xs md:text-sm leading-relaxed border-t border-rose-500/30 pt-6">
+                    Essa é a nossa regra mais rigorosa! Se o seu tempo acabar e você deixar a conta ativada como "Principal" no seu console, isso bloqueia o console e impede que o próximo cliente da fila jogue. <br/><br/>
+                    Neste caso, nosso sistema aplica uma <strong className="text-rose-400">Multa Administrativa Automática de R$ 50,00</strong> direto na sua carteira digital. Se você não tiver saldo, sua conta ficará negativada e bloqueada para alugar jogos. Por isso, coloque sempre um alarme!
+                  </div>
+                </details>
+
+              </div>
+            </div>
+          )}
+
+          {/* ========================================================================= */}
+          {/* PÁGINA: TERMOS DE USO                                                     */}
+          {/* ========================================================================= */}
+          {abaAtual === 'termos' && (
+            <div className="animate-fade-in max-w-4xl mx-auto py-8">
+              <div className="mb-10 border-b border-zinc-800 pb-8">
+                <h2 className="text-3xl md:text-4xl font-black text-white mb-4 tracking-tight">Termos de Uso</h2>
+                <p className="text-sm text-zinc-400 font-medium">Última atualização: Abril de 2026</p>
+              </div>
+
+              <div className="space-y-8 text-zinc-300 text-sm md:text-base leading-relaxed">
+                
+                <section>
+                  <h3 className="text-xl font-bold text-blue-400 mb-3 tracking-tight">1. Objeto e Natureza do Serviço</h3>
+                  <p>A BORA JOGAR! oferece o serviço de locação de licenças de jogos digitais em contas secundárias para os consoles PlayStation 4 e PlayStation 5. O usuário adquire o direito de acessar a conta fornecida, baixar o jogo e jogá-lo em seu perfil pessoal durante o período contratado (7 ou 14 dias).</p>
+                </section>
+
+                <section>
+                  <h3 className="text-xl font-bold text-blue-400 mb-3 tracking-tight">2. Regras de Instalação e Uso</h3>
+                  <ul className="list-disc pl-5 space-y-2 text-zinc-400">
+                    <li>É expressamente <strong className="text-rose-400">PROIBIDO</strong> entrar na conta fornecida utilizando a opção "Jogar como Convidado".</li>
+                    <li>O usuário compromete-se a <strong className="text-white">NÃO ALTERAR</strong> nenhum dado da conta fornecida, incluindo (mas não se limitando a): E-mail, Senha, ID Online, Avatar ou configurações de segurança (2FA). Qualquer tentativa de alteração será registrada pelo sistema da Sony e resultará no banimento permanente do usuário em nossa plataforma e acionamento das medidas legais cabíveis.</li>
+                    <li>O usuário está autorizado a ativar o "Compartilhamento do Console e Jogo Offline" (PS5) ou "Ativar como PS4 Principal" (PS4) para jogar em sua conta pessoal e conquistar seus próprios troféus.</li>
+                  </ul>
+                </section>
+
+                <section>
+                  <h3 className="text-xl font-bold text-rose-400 mb-3 tracking-tight">3. Devolução Obrigatória e Multa por Atraso</h3>
+                  <p>Ao término do período de locação, o usuário perde o direito de acesso ao jogo. É <strong>obrigação exclusiva do usuário</strong> acessar as configurações do seu console e <strong className="text-rose-400">DESATIVAR</strong> o Compartilhamento de Console (PS5) ou a conta como Principal (PS4) antes de excluir o usuário do videogame.</p>
+                  <div className="bg-rose-950/20 border border-rose-500/30 p-4 rounded-xl mt-4">
+                    <strong className="text-rose-400 block mb-1">Cláusula de Multa Administrativa:</strong>
+                    <p className="text-sm text-zinc-400">A não desativação da conta prende a licença no console do usuário, impedindo que o próximo cliente da fila jogue. Caso isso ocorra, o sistema aplicará uma <strong className="text-white">Multa Administrativa Automática de R$ 50,00</strong>. O saldo do usuário ficará negativo e a conta suspensa até a regularização do débito e liberação da licença.</p>
+                  </div>
+                </section>
+
+                <section>
+                  <h3 className="text-xl font-bold text-emerald-400 mb-3 tracking-tight">4. Sistema de Devolução Dinâmica (Cashback)</h3>
+                  <p>Caso o jogo alugado possua fila de espera, o botão "Devolver" ficará ativo no painel do usuário. Ao optar pela devolução antecipada para agilizar a fila, o usuário receberá um reembolso em créditos na carteira digital (Cashback) de acordo com os dias inteiros não utilizados, conforme tabela vigente no site no momento da devolução.</p>
+                </section>
+
+                <section>
+                  <h3 className="text-xl font-bold text-blue-400 mb-3 tracking-tight">5. Fila de Espera (Reservas)</h3>
+                  <p>Ao reservar um jogo indisponível, o valor integral é retido da carteira do usuário. O sistema transferirá as credenciais de acesso automaticamente no exato momento em que a locação do usuário anterior for encerrada. O prazo de 7 ou 14 dias só começa a contar a partir do momento em que a conta é liberada no painel.</p>
+                </section>
+
+                <section>
+                  <h3 className="text-xl font-bold text-blue-400 mb-3 tracking-tight">6. Infrações e Banimentos da Sony</h3>
+                  <p>A BORA JOGAR! não se responsabiliza por banimentos sofridos no console do usuário devido à quebra dos Termos de Serviço da PlayStation Network. Caso o usuário utilize softwares de trapaça (hacks/exploits) ou conduta tóxica que resulte no banimento da nossa conta fornecida, o usuário será cobrado judicialmente pelo valor integral de compra do jogo perdido.</p>
+                </section>
+
+              </div>
+            </div>
+          )}
+
+          {/* ========================================================================= */}
+          {/* PÁGINA: POLÍTICA DE PRIVACIDADE                                           */}
+          {/* ========================================================================= */}
+          {abaAtual === 'privacidade' && (
+            <div className="animate-fade-in max-w-4xl mx-auto py-8">
+              <div className="mb-10 border-b border-zinc-800 pb-8">
+                <h2 className="text-3xl md:text-4xl font-black text-white mb-4 tracking-tight">Política de Privacidade</h2>
+                <p className="text-sm text-zinc-400 font-medium">Última atualização: Abril de 2026</p>
+              </div>
+
+              <div className="space-y-8 text-zinc-300 text-sm md:text-base leading-relaxed">
+                
+                <section>
+                  <p className="text-zinc-400">A sua privacidade é nossa prioridade. Esta política descreve como a BORA JOGAR! coleta, utiliza e protege os seus dados pessoais ao utilizar nossa plataforma, em total conformidade com a Lei Geral de Proteção de Dados (LGPD - Lei nº 13.709/2018).</p>
+                </section>
+
+                <section>
+                  <h3 className="text-xl font-bold text-emerald-400 mb-3 tracking-tight">1. Dados que Coletamos</h3>
+                  <p>Para o funcionamento da plataforma e liberação das locações, coletamos as seguintes informações no momento do seu cadastro:</p>
+                  <ul className="list-disc pl-5 mt-2 space-y-1 text-zinc-400">
+                    <li>Nome Completo</li>
+                    <li>Endereço de E-mail</li>
+                    <li>Número de Telefone (WhatsApp)</li>
+                    <li>Senha (armazenada de forma criptografada e inacessível até mesmo para nossos administradores).</li>
+                  </ul>
+                </section>
+
+                <section>
+                  <h3 className="text-xl font-bold text-emerald-400 mb-3 tracking-tight">2. Como Utilizamos seus Dados</h3>
+                  <p>As informações coletadas são estritamente utilizadas para:</p>
+                  <ul className="list-disc pl-5 mt-2 space-y-1 text-zinc-400">
+                    <li>Criar e gerenciar sua carteira digital dentro da plataforma.</li>
+                    <li>Enviar credenciais de acesso aos jogos alugados.</li>
+                    <li>Notificar via e-mail ou WhatsApp quando a fila de espera do seu jogo favorito andar.</li>
+                    <li>Fornecer suporte técnico e prevenir fraudes ou apropriação indevida das contas da locadora.</li>
+                  </ul>
+                </section>
+
+                <section>
+                  <h3 className="text-xl font-bold text-emerald-400 mb-3 tracking-tight">3. Proteção e Pagamentos</h3>
+                  <p>A BORA JOGAR! <strong className="text-white">NÃO armazena</strong> dados bancários, números de cartão de crédito ou chaves PIX de suas contas pessoais. Todo o processamento financeiro é realizado em ambiente blindado e seguro através da instituição de pagamento parceira oficial (Asaas).</p>
+                </section>
+
+                <section>
+                  <h3 className="text-xl font-bold text-emerald-400 mb-3 tracking-tight">4. Compartilhamento de Dados</h3>
+                  <p>Nós não vendemos, alugamos ou repassamos seus dados pessoais para terceiros ou agências de publicidade sob nenhuma hipótese. Seus dados são mantidos em servidores seguros e acessados apenas pelo sistema automatizado para garantir o seu aluguel.</p>
+                </section>
+
+                <section>
+                  <h3 className="text-xl font-bold text-emerald-400 mb-3 tracking-tight">5. Seus Direitos</h3>
+                  <p>Você tem o direito de solicitar a exclusão da sua conta e de todos os seus dados de nossos servidores a qualquer momento. A exclusão será processada em até 72 horas, desde que não existam locações ativas, pendências de devolução no console ou saldos negativos (multas) em aberto.</p>
+                </section>
+
+              </div>
+            </div>
+          )}
+
+          {abaAtual === 'admin' && usuarioLogado.is_admin && (
+            <div className="animate-fade-in mt-2 max-w-6xl mx-auto">
+              <h2 className="text-2xl md:text-3xl font-black text-white tracking-tight mb-8">Administração do Sistema</h2>
+              
+              <section className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+                <div className="bg-gradient-to-br from-emerald-900/40 to-zinc-900 border border-emerald-500/30 p-8 rounded-3xl shadow-xl shadow-emerald-500/10 relative overflow-hidden hover:-translate-y-1 transition-transform duration-300">
+                  <div className="absolute -right-4 -top-4 text-8xl opacity-5">💰</div>
+                  <h4 className="text-zinc-400 text-[10px] font-bold uppercase tracking-widest mb-3">Faturamento Total</h4>
+                  <span className="text-3xl md:text-4xl font-black text-emerald-400 tracking-tighter">R$ {estatisticasAdmin.faturamento.toFixed(2)}</span>
+                </div>
+                <div className="bg-gradient-to-br from-blue-900/40 to-zinc-900 border border-blue-500/30 p-8 rounded-3xl shadow-xl shadow-blue-500/10 relative overflow-hidden hover:-translate-y-1 transition-transform duration-300">
+                  <div className="absolute -right-4 -top-4 text-8xl opacity-5">👥</div>
+                  <h4 className="text-zinc-400 text-[10px] font-bold uppercase tracking-widest mb-3">Clientes Cadastrados</h4>
+                  <span className="text-3xl md:text-4xl font-black text-blue-400 tracking-tighter">{estatisticasAdmin.total_clientes}</span>
+                </div>
+                <div className="bg-gradient-to-br from-amber-900/40 to-zinc-900 border border-amber-500/30 p-8 rounded-3xl shadow-xl shadow-amber-500/10 relative overflow-hidden hover:-translate-y-1 transition-transform duration-300">
+                  <div className="absolute -right-4 -top-4 text-8xl opacity-5">🎮</div>
+                  <h4 className="text-zinc-400 text-[10px] font-bold uppercase tracking-widest mb-3">Locações Ativas</h4>
+                  <span className="text-3xl md:text-4xl font-black text-amber-400 tracking-tighter">{estatisticasAdmin.locacoes_ativas}</span>
+                </div>
+              </section>
+
+              <div className="flex flex-col gap-8 mb-10">
+                  {/* 🖼️ HERO BANNER E CONFIGURAÇÕES */}
+                  <details className="group bg-zinc-900/80 rounded-3xl border border-zinc-800 border-l-4 border-l-orange-500 shadow-2xl shadow-orange-500/10 [&_summary::-webkit-details-marker]:hidden overflow-hidden">
+                      <summary className="flex items-center justify-between p-6 md:p-8 cursor-pointer hover:bg-orange-900/10 transition-colors select-none relative">
+                      <span className="flex items-center gap-3 relative z-10 text-lg font-black text-orange-400 tracking-tight">🖼️ Configurações da Vitrine e Banners</span>
+                      <span className="transition duration-300 group-open:-rotate-180 text-orange-500 relative z-10 text-lg">▼</span>
+                      </summary>
+                      <div className="px-6 md:px-8 pb-6 md:pb-8 border-t border-zinc-800/50 pt-8">
+                          
+                          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 gap-5">
+                              <div>
+                              <h4 className="text-white font-bold text-base tracking-tight">📣 Hero Alert (Faixa de Anúncio)</h4>
+                              <p className="text-xs text-zinc-400 mt-1 font-medium">Faixa colorida que aparece abaixo dos banners principais.</p>
+                              </div>
+                              <button onClick={toggleAnuncio} className={`px-6 py-3 rounded-xl font-bold text-xs uppercase tracking-wider transition-all shadow-lg w-full sm:w-auto ${configSistema.anuncio_ativo ? 'bg-orange-600 text-white shadow-orange-600/20' : 'bg-zinc-800 text-zinc-400 hover:text-white border border-zinc-700'}`}>
+                              {configSistema.anuncio_ativo ? '✅ FAIXA LIGADA' : '❌ FAIXA DESLIGADA'}
+                              </button>
+                          </div>
+                          <textarea placeholder="Ex: PROMOÇÃO DE FIM DE SEMANA! Recarregue R$ 50..." value={configSistema.mensagem_anuncio} onChange={(e) => setConfigSistema({...configSistema, mensagem_anuncio: e.target.value})} className={`${adminInputClass} resize-none h-16 bg-zinc-950 border-zinc-700 focus:ring-orange-500 text-sm`} />
+
+                          <div className="mt-8 border-t border-zinc-800/50 pt-6">
+                            <h4 className="text-white font-bold text-base tracking-tight">🖼️ Banners do Carrossel (Imagens)</h4>
+                            <p className="text-xs text-zinc-400 mt-1 mb-4 font-medium">Cole as URLs das imagens que irão ficar trocando no topo do site. <strong className="text-emerald-400">Separe cada URL com uma vírgula.</strong></p>
+                            <textarea placeholder="https://imagem1.jpg, https://imagem2.jpg..." value={configSistema.banners_url || ''} onChange={(e) => setConfigSistema({...configSistema, banners_url: e.target.value})} className={`${adminInputClass} resize-none h-24 bg-zinc-950 border-zinc-700 focus:ring-orange-500 text-sm`} />
+                          </div>
+
+                          <div className="flex justify-end mt-6">
+                              <button onClick={salvarConfiguracoesGlobais} className="bg-blue-600 hover:bg-blue-500 text-white font-bold uppercase tracking-wider px-8 py-4 rounded-xl shadow-lg shadow-blue-600/20 transition-colors text-xs">
+                              💾 Salvar Configurações
+                              </button>
+                          </div>
+                      </div>
+                  </details>
+
+                  {/* 📊 GESTÃO DA ENQUETE (NOVO) */}
+                  <details className="group bg-gradient-to-r from-fuchsia-900/20 to-zinc-900 rounded-3xl border border-fuchsia-500/30 shadow-2xl shadow-fuchsia-500/10 border-l-4 border-l-fuchsia-500 [&_summary::-webkit-details-marker]:hidden overflow-hidden">
+                      <summary className="flex items-center justify-between p-6 md:p-8 cursor-pointer hover:bg-fuchsia-900/10 transition-colors select-none relative">
+                      <span className="flex items-center gap-3 relative z-10 text-lg font-black text-fuchsia-400 tracking-tight">📊 Gestão da Enquete</span>
+                      <span className="transition duration-300 group-open:-rotate-180 text-fuchsia-500 relative z-10 text-lg">▼</span>
+                      </summary>
+                      <div className="px-6 md:px-8 pb-6 md:pb-8 border-t border-fuchsia-500/20 pt-8">
+                          
+                          <div className="flex flex-col lg:flex-row gap-8">
+                              <form onSubmit={adicionarOpcaoEnquete} className="flex flex-col gap-4 flex-1">
+                                  <h4 className="text-white font-bold text-sm tracking-tight mb-2">Adicionar Opção (Máx. Recomendado: 5)</h4>
+                                  <input type="text" placeholder="Título do Jogo" value={novaOpcaoEnqueteTitulo} onChange={e => setNovaOpcaoEnqueteTitulo(e.target.value)} className={adminInputClass} required />
+                                  <input type="url" placeholder="URL da Capa" value={novaOpcaoEnqueteImagem} onChange={e => setNovaOpcaoEnqueteImagem(e.target.value)} className={adminInputClass} required />
+                                  <button type="submit" className="py-3.5 bg-fuchsia-600 hover:bg-fuchsia-500 font-bold uppercase tracking-wider rounded-xl text-xs text-white transition-colors shadow-lg shadow-fuchsia-500/20 mt-2">Salvar Opção</button>
+                              </form>
+
+                              <div className="flex-1 bg-zinc-950/50 p-5 rounded-2xl border border-zinc-800/80">
+                                  <div className="flex justify-between items-center mb-4">
+                                      <h4 className="text-zinc-400 font-bold text-xs uppercase tracking-wider">Opções Atuais</h4>
+                                      <button onClick={limparEnquete} type="button" className="text-rose-400 hover:text-white bg-rose-900/30 hover:bg-rose-600 px-3 py-1.5 rounded-lg text-[10px] uppercase tracking-wider font-bold transition-colors border border-rose-500/30">Limpar Enquete</button>
+                                  </div>
+                                  <div className="flex flex-col gap-3 overflow-y-auto max-h-[200px] pr-2 custom-scrollbar">
+                                      {enqueteOpcoes.length === 0 ? <p className="text-zinc-500 text-xs font-medium">Nenhuma opção cadastrada.</p> : (
+                                          enqueteOpcoes.map(op => (
+                                              <div key={op.id} className="flex justify-between items-center bg-zinc-900 p-3 rounded-xl border border-zinc-800">
+                                                  <div className="flex items-center gap-3">
+                                                      <img src={op.url_imagem} className="w-10 h-10 object-cover rounded-lg border border-zinc-700" alt="capa"/>
+                                                      <div className="flex flex-col">
+                                                          <span className="text-white text-xs font-bold">{op.titulo}</span>
+                                                          <span className="text-fuchsia-400 text-[10px] font-black">{op.total_votos} votos</span>
+                                                      </div>
+                                                  </div>
+                                                  <button onClick={() => removerOpcaoEnquete(op.id)} className="text-zinc-500 hover:text-rose-400 text-lg transition-colors" title="Remover">🗑️</button>
+                                              </div>
+                                          ))
+                                      )}
+                                  </div>
+                              </div>
+                          </div>
+                      </div>
+                  </details>
+
+                  {/* 🎫 CUPONS PROMOCIONAIS */}
+                  <details className="group bg-gradient-to-r from-purple-900/20 to-zinc-900 rounded-3xl border border-purple-500/30 shadow-2xl shadow-purple-500/10 [&_summary::-webkit-details-marker]:hidden overflow-hidden">
+                      <summary className="flex items-center justify-between p-6 md:p-8 cursor-pointer hover:bg-purple-900/10 transition-colors select-none relative">
+                      <span className="flex items-center gap-3 relative z-10 text-lg font-black text-purple-400 tracking-tight">🎫 Gerenciar Cupons Promocionais</span>
+                      <span className="transition duration-300 group-open:-rotate-180 text-purple-500 relative z-10 text-lg">▼</span>
+                      </summary>
+                      <div className="px-6 md:px-8 pb-6 md:pb-8 border-t border-purple-500/20 pt-8">
+                          <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+                              <form onSubmit={cadastrarCupom} className="flex flex-col gap-4 lg:col-span-1">
+                              <input type="text" placeholder="Código (Ex: VIP20)" value={novoCupomCodigo} onChange={e => setNovoCupomCodigo(e.target.value.toUpperCase())} className={adminInputClass} required />
+                              <div className="flex gap-3">
+                                  <select value={novoCupomTipo} onChange={e => setNovoCupomTipo(e.target.value)} className={adminInputClass}>
+                                  <option value="PORCENTAGEM">% Porcentagem</option>
+                                  <option value="FIXO">R$ Valor Fixo</option>
+                                  </select>
+                                  <input type="number" step="0.01" placeholder="Valor" value={novoCupomValor} onChange={e => setNovoCupomValor(e.target.value)} className={adminInputClass} required />
+                              </div>
+                              <button type="submit" className="w-full py-3.5 bg-purple-600 hover:bg-purple-500 font-bold uppercase tracking-wider rounded-xl text-xs text-white transition-colors shadow-lg shadow-purple-500/20 mt-2">Criar Cupom</button>
+                              </form>
+
+                              <div className="lg:col-span-2 overflow-y-auto max-h-[200px] pr-3 scrollbar-thin scrollbar-thumb-purple-700 scrollbar-track-transparent">
+                              {listaCupons.length === 0 ? <p className="text-zinc-500 text-sm font-medium">Nenhum cupom ativo.</p> : (
+                                  <table className="w-full text-left text-sm whitespace-nowrap">
+                                  <thead><tr className="text-zinc-400 border-b border-purple-500/30"><th className="pb-3 font-bold uppercase tracking-wider text-[10px]">Código</th><th className="pb-3 font-bold uppercase tracking-wider text-[10px]">Tipo</th><th className="pb-3 font-bold uppercase tracking-wider text-[10px]">Bônus</th><th className="pb-3 text-right font-bold uppercase tracking-wider text-[10px]">Ação</th></tr></thead>
+                                  <tbody>
+                                      {listaCupons.map(c => (
+                                      <tr key={c.id} className="border-b border-purple-500/10 hover:bg-purple-900/20 transition-colors">
+                                          <td className="py-4 font-black text-white tracking-widest text-sm">{c.codigo}</td>
+                                          <td className="py-4 text-zinc-400 text-[10px] font-bold uppercase tracking-wider">{c.tipo}</td>
+                                          <td className="py-4 text-emerald-400 font-black text-sm">{c.tipo === 'FIXO' ? `+ R$ ${c.valor.toFixed(2)}` : `+ ${c.valor}%`}</td>
+                                          <td className="py-4 text-right"><button onClick={() => removerCupom(c.id)} className="text-rose-400 hover:text-white bg-rose-900/30 px-3 py-1.5 rounded-lg text-[10px] uppercase tracking-wider font-bold transition-colors border border-rose-500/30">Excluir</button></td>
+                                      </tr>
+                                      ))}
+                                  </tbody>
+                                  </table>
+                              )}
+                              </div>
+                          </div>
+                      </div>
+                  </details>
+              </div>
+
+              {contasManutencao.length > 0 && (
+                <section className="bg-rose-950/20 border border-rose-500/50 shadow-2xl shadow-rose-500/10 p-8 rounded-3xl mb-10 animate-pulse-slow">
+                  <h3 className="text-xl font-black text-rose-400 tracking-tight mb-4 flex items-center gap-3">🚨 Atenção: Troca de Senha Necessária</h3>
+                  <p className="text-xs md:text-sm text-zinc-300 font-medium mb-8">As locações abaixo terminaram. Você deve entrar na PSN, alterar a senha destas contas e informá-las aqui para que o sistema repasse para o próximo da fila.</p>
+                  
+                  <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                    {contasManutencao.map(conta => (
+                      <div key={conta.conta_psn_id} className="bg-zinc-900 p-6 md:p-8 rounded-3xl border border-rose-500/50 flex flex-col gap-6 shadow-lg">
+                        <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
+                          <div className="flex flex-col gap-1.5">
+                            <strong className="text-white text-lg font-black tracking-tight">{conta.jogo}</strong>
+                            <span className="text-xs font-bold text-zinc-400 tracking-wide">Login: <span className="text-white font-medium select-all">{conta.email_login}</span></span>
+                            <span className="text-xs font-bold text-zinc-500 tracking-wide line-through">Senha Velha: <span className="font-mono">{conta.senha_antiga}</span></span>
+                            
+                            <span className="mt-4 text-[10px] font-bold uppercase tracking-wider text-amber-500 bg-amber-500/10 px-3 py-1.5 rounded-xl border border-amber-500/20 w-max">
+                              Último Cliente: {conta.ultimo_cliente_nome || 'Desconhecido'}
+                            </span>
+
+                            {conta.cashback_pendente > 0 && (
+                              <span className="mt-3 text-[10px] font-bold uppercase tracking-wider text-emerald-400 bg-emerald-400/10 px-3 py-1.5 rounded-xl border border-emerald-500/30 w-max">
+                                💸 Cashback Pendente: R$ {conta.cashback_pendente.toFixed(2)}
+                              </span>
+                            )}
+                          </div>
+                          
+                          <div className="flex flex-col gap-3 w-full sm:w-auto">
+                            {conta.ultimo_cliente_telefone && (
+                              <button onClick={() => cobrarNoWhatsApp(conta.ultimo_cliente_nome, conta.ultimo_cliente_telefone, conta.jogo)} className="bg-emerald-900/40 hover:bg-emerald-600 text-emerald-400 hover:text-white font-bold uppercase tracking-wider px-4 py-2.5 rounded-xl text-[10px] transition-colors border border-emerald-500/30 shadow flex items-center justify-center gap-2">
+                                📱 Cobrar via Whats
+                              </button>
+                            )}
+                            {conta.ultimo_cliente_id && (
+                              <button onClick={() => aplicarMultaCliente(conta.ultimo_cliente_id, conta.ultimo_cliente_nome)} className="bg-rose-900/40 hover:bg-rose-600 text-rose-400 hover:text-white font-bold uppercase tracking-wider px-4 py-2.5 rounded-xl text-[10px] transition-colors border border-rose-500/30 shadow flex items-center justify-center gap-2">
+                                🚨 Aplicar Multa
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                        
+                        <div className="flex flex-col sm:flex-row gap-3 mt-2 pt-6 border-t border-rose-900/50">
+                          <input type="text" placeholder="Digite a NOVA senha para liberar" value={novasSenhasTemp[conta.conta_psn_id] || ''} onChange={(e) => setNovasSenhasTemp({...novasSenhasTemp, [conta.conta_psn_id]: e.target.value})} className="flex-1 px-5 py-3.5 bg-zinc-950 border border-zinc-800 rounded-2xl text-sm font-bold text-white focus:border-rose-500 outline-none"/>
+                          <button onClick={() => confirmarResetSenha(conta.conta_psn_id)} className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold uppercase tracking-wider px-6 py-3.5 rounded-2xl text-xs transition-colors shadow-lg shadow-emerald-600/20 whitespace-nowrap">Liberar Jogo</button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              )}
+
+              <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 mb-10">
+                  
+                  {/* ➕ CADASTRAR NOVO JOGO */}
+                  <div className="bg-gradient-to-br from-blue-900/20 to-zinc-900 rounded-3xl border border-blue-500/30 p-8 shadow-2xl shadow-blue-500/10 flex flex-col">
+                      <h3 className="text-lg font-black text-blue-400 tracking-tight mb-8 flex items-center gap-3">➕ Cadastrar Novo Jogo</h3>
+                      <form onSubmit={cadastrarJogo} className="space-y-4 flex-1 flex flex-col">
+                      <div className="flex gap-3">
+                          <input type="text" placeholder="Título do jogo" value={novoJogoTitulo} onChange={e => setNovoJogoTitulo(e.target.value)} className={adminInputClass} required />
+                          <button type="button" onClick={buscarDadosDoJogo} className="bg-amber-500 hover:bg-amber-400 text-zinc-900 font-bold px-5 rounded-xl text-[10px] uppercase tracking-wider whitespace-nowrap transition-colors shadow-lg shadow-amber-500/20">✨ Buscar</button>
+                      </div>
+                      
+                      <div className="flex flex-col md:flex-row gap-4">
+                        <div className="w-full">
+                            <select value={novoJogoPlataforma} onChange={e => setNovoJogoPlataforma(e.target.value)} className={adminInputClass}>
+                            <option value="PS5">PS5</option>
+                            <option value="PS4/PS5">PS4/PS5</option>
+                            </select>
+                        </div>
+                        <div className="w-full relative">
+                            <label className="absolute -top-2 left-3 bg-zinc-900 px-1 text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Lançamento (Pré-venda)</label>
+                            <input type="date" value={novoJogoDataLancamento} onChange={e => setNovoJogoDataLancamento(e.target.value)} className={adminInputClass} />
+                        </div>
+                      </div>
+
+                      <div className="flex gap-3">
+                          <input type="text" placeholder="Tempo (ex: 20h)" value={novoJogoTempo} onChange={e => setNovoJogoTempo(e.target.value)} className={adminInputClass} />
+                          <input type="number" step="0.1" placeholder="Nota" value={novoJogoNota} onChange={e => setNovoJogoNota(e.target.value)} className={adminInputClass} />
+                      </div>
+                      <input type="url" placeholder="URL da Capa" value={novoJogoImagem} onChange={e => setNovoJogoImagem(e.target.value)} className={adminInputClass} />
+                      <div className="flex gap-3">
+                          <input type="number" step="0.01" placeholder="Preço 7 Dias (Ex: 35.00)" value={novoJogoPreco} onChange={e => setNovoJogoPreco(e.target.value)} className={adminInputClass} required />
+                          <input type="number" step="0.01" placeholder="Preço 14 Dias (Ex: 60.00)" value={novoJogoPreco14} onChange={e => setNovoJogoPreco14(e.target.value)} className={adminInputClass} />
+                      </div>
+                      <textarea placeholder="Descrição curta do jogo..." value={novoJogoDescricao} onChange={e => setNovoJogoDescricao(e.target.value)} className={`${adminInputClass} resize-none h-24`} required />
+                      <button type="submit" className="w-full mt-auto py-4 bg-blue-600 hover:bg-blue-500 text-white font-bold uppercase tracking-wider rounded-xl text-xs transition-colors shadow-lg shadow-blue-500/20">Salvar no Catálogo</button>
+                      </form>
+                  </div>
+
+                  {/* 📦 ABASTECER ESTOQUE */}
+                  <div className="bg-gradient-to-br from-fuchsia-900/20 to-zinc-900 rounded-3xl border border-fuchsia-500/30 p-8 shadow-2xl shadow-fuchsia-500/10 flex flex-col">
+                      <h3 className="text-lg font-black text-fuchsia-400 tracking-tight mb-8 flex items-center gap-3">📦 Abastecer Estoque</h3>
+                      <input type="text" placeholder="🔍 Filtrar jogo na lista abaixo..." value={buscaEstoque} onChange={e => setBuscaEstoque(e.target.value)} className={`${adminInputClass} mb-4 border-fuchsia-500/30 focus:ring-fuchsia-500`} />
+                      <form onSubmit={cadastrarConta} className="space-y-4 flex-1 flex flex-col">
+                      <select value={novaContaJogoId} onChange={e => setNovaContaJogoId(e.target.value)} className={adminInputClass} required><option value="">Selecione o Jogo...</option>{jogosEstoqueFiltrados.map(j => <option key={j.id} value={j.id}>{j.titulo}</option>)}</select>
+                      <input type="email" placeholder="E-mail da Conta PSN" value={novaContaEmail} onChange={e => setNovaContaEmail(e.target.value)} className={adminInputClass} required />
+                      <input type="text" placeholder="Senha da Conta PSN" value={novaContaSenha} onChange={e => setNovaContaSenha(e.target.value)} className={adminInputClass} required />
+                      <input type="text" placeholder="Segredo MFA (Opcional - Texto do Autenticador)" value={novaContaMfaSecret} onChange={e => setNovaContaMfaSecret(e.target.value)} className={adminInputClass} />
+                      <button type="submit" className="w-full mt-auto py-4 bg-fuchsia-600 hover:bg-fuchsia-500 text-white font-bold uppercase tracking-wider rounded-xl text-xs transition-colors shadow-lg shadow-fuchsia-500/20">Adicionar Conta ao Cofre</button>
+                      </form>
+                  </div>
+
+              </div>
+
+              <div className="flex flex-col gap-8 mb-10">
+
+                  <details className="group bg-zinc-900/80 rounded-3xl border border-zinc-800 border-l-4 border-l-blue-500 shadow-2xl shadow-blue-500/10 [&_summary::-webkit-details-marker]:hidden overflow-hidden">
+                      <summary className="flex items-center justify-between p-6 md:p-8 cursor-pointer hover:bg-blue-900/10 transition-colors select-none">
+                      <span className="flex items-center gap-3 text-lg font-black text-blue-400 tracking-tight">🎮 Catálogo de Jogos ({jogos.length})</span>
+                      <span className="transition duration-300 group-open:-rotate-180 text-blue-500 text-lg">▼</span>
+                      </summary>
+                      <div className="px-6 md:px-8 pb-6 md:pb-8 border-t border-zinc-800/50 pt-8">
+                      <div className="mb-6">
+                          <input type="text" placeholder="Pesquisar jogo no catálogo..." value={termoBusca} onChange={e => setTermoBusca(e.target.value)} className={adminInputClass} />
+                      </div>
+                      
+                      <div className="max-h-[600px] overflow-y-auto pr-3 custom-scrollbar">
+                          {jogosFiltrados.length === 0 ? <p className="text-zinc-500 text-sm font-medium">Vazio.</p> : (
+                          <ul className="space-y-3">
+                              {jogosFiltrados.slice(paginaCatalogo * 50, (paginaCatalogo + 1) * 50).map(jogo => (
+                              <li key={jogo.id} className="flex flex-col md:flex-row justify-between items-start md:items-center bg-zinc-950/50 p-4 md:p-5 rounded-2xl border-l-2 border-blue-500 gap-4 shadow-sm hover:bg-zinc-800/50 transition-colors">
+                                  <div className="flex flex-col leading-relaxed gap-1 w-full md:w-auto">
+                                  <span className="font-black text-sm text-white tracking-tight truncate max-w-[300px]">{jogo.titulo}</span>
+                                  <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">R$ {jogo.preco_aluguel.toFixed(2)}</span>
+                                  {jogo.estoque > 0 ? <span className="text-emerald-400 text-[10px] font-bold uppercase tracking-wider mt-1">✅ {jogo.estoque} Disponível</span> : <span className="text-rose-400 text-[10px] font-bold uppercase tracking-wider mt-1">❌ Alugado</span>}
+                                  </div>
+                                  
+                                  <div className="flex gap-2 w-full md:w-auto justify-end">
+                                      <button onClick={() => setModalEdicaoJogo(jogo)} className="text-blue-400 hover:text-white text-[10px] uppercase tracking-wider bg-blue-900/30 hover:bg-blue-600 px-4 py-2 rounded-lg font-bold transition-colors border border-blue-500/30">Editar</button>
+                                      <button onClick={() => removerJogo(jogo.id)} className="text-rose-400 hover:text-white text-[10px] uppercase tracking-wider bg-rose-900/30 hover:bg-rose-600 px-4 py-2 rounded-lg font-bold transition-colors border border-rose-500/30">Excluir</button>
+                                  </div>
+                              </li>
+                              ))}
+                          </ul>
+                          )}
+                      </div>
+
+                      <div className="mt-6 flex justify-between items-center bg-zinc-950 p-4 rounded-2xl border border-zinc-800/80">
+                          <button onClick={() => setPaginaCatalogo(Math.max(0, paginaCatalogo - 1))} disabled={paginaCatalogo === 0} className="px-5 py-2.5 bg-zinc-800 text-white rounded-xl disabled:opacity-50 hover:bg-zinc-700 text-[10px] uppercase tracking-wider font-bold transition-colors">◀ Anterior</button>
+                          <span className="text-zinc-400 text-xs font-bold">Página {paginaCatalogo + 1}</span>
+                          <button onClick={() => setPaginaCatalogo(paginaCatalogo + 1)} disabled={(paginaCatalogo + 1) * 50 >= jogosFiltrados.length} className="px-5 py-2.5 bg-zinc-800 text-white rounded-xl disabled:opacity-50 hover:bg-zinc-700 text-[10px] uppercase tracking-wider font-bold transition-colors">Próxima ▶</button>
+                      </div>
+                      </div>
+                  </details>
+
+                  <details className="group bg-zinc-900/80 rounded-3xl border border-zinc-800 border-l-4 border-l-emerald-500 shadow-2xl shadow-emerald-500/10 [&_summary::-webkit-details-marker]:hidden overflow-hidden">
+                      <summary className="flex items-center justify-between p-6 md:p-8 cursor-pointer hover:bg-emerald-900/10 transition-colors select-none">
+                      <span className="flex items-center gap-3 text-lg font-black text-emerald-400 tracking-tight">🔑 Locações Ativas ({locacoesAtivasFiltradas.length})</span>
+                      <span className="transition duration-300 group-open:-rotate-180 text-emerald-500 text-lg">▼</span>
+                      </summary>
+                      <div className="px-6 md:px-8 pb-6 md:pb-8 border-t border-zinc-800/50 pt-8">
+                      <div className="mb-6">
+                          <input type="text" placeholder="🔍 Buscar locação por jogo ou cliente..." value={buscaLocacao} onChange={e => setBuscaLocacao(e.target.value)} className={adminInputClass} />
+                      </div>
+                      <div className="max-h-[600px] overflow-y-auto pr-3 custom-scrollbar">
+                          {locacoesAtivasFiltradas.length === 0 ? <p className="text-zinc-500 text-sm font-medium">Nenhuma locação ativa.</p> : (
+                          <table className="w-full text-left text-sm whitespace-nowrap">
+                              <thead>
+                              <tr className="text-zinc-500 border-b border-zinc-800">
+                                  <th className="pb-3 font-bold uppercase tracking-wider text-[10px]">Cliente</th>
+                                  <th className="pb-3 font-bold uppercase tracking-wider text-[10px]">Jogo</th>
+                                  <th className="pb-3 font-bold uppercase tracking-wider text-[10px]">Expira</th>
+                                  <th className="pb-3 text-right font-bold uppercase tracking-wider text-[10px]">Ações</th>
+                              </tr>
+                              </thead>
+                              <tbody>
+                              {locacoesAtivasFiltradas.map(loc => (
+                                  <tr key={loc.id} className="border-b border-zinc-800/50 hover:bg-zinc-800/30 transition-colors">
+                                  <td className="py-4 text-zinc-300 text-xs font-medium">{loc.cliente}</td>
+                                  <td className="py-4 font-black text-white text-sm tracking-tight">{loc.jogo}</td>
+                                  <td className="py-4 text-amber-400 text-xs font-bold">{new Date(loc.data_fim).toLocaleDateString()}</td>
+                                  <td className="py-4">
+                                    <div className="flex justify-end gap-2">
+                                      <button onClick={() => avisarLiberacao(loc.cliente, loc.jogo)} className="text-emerald-400 hover:text-white text-[10px] uppercase tracking-wider bg-emerald-900/30 hover:bg-emerald-600 px-3 py-1.5 rounded-lg font-bold transition-colors border border-emerald-500/30 shadow flex items-center gap-1.5" title="Avisar Liberação via WhatsApp">
+                                        <span className="text-sm">📲</span> Avisar
+                                      </button>
+                                      <button onClick={() => revogarLocacao(loc.id)} className="text-rose-400 hover:text-white text-[10px] uppercase tracking-wider bg-rose-900/30 hover:bg-rose-600 px-3 py-1.5 rounded-lg font-bold transition-colors border border-rose-500/30 shadow">
+                                        Revogar
+                                      </button>
+                                    </div>
+                                  </td>
+                                  </tr>
+                              ))}
+                              </tbody>
+                          </table>
+                          )}
+                      </div>
+                      </div>
+                  </details>
+
+                  <details className="group bg-zinc-900/80 rounded-3xl border border-zinc-800 border-l-4 border-l-purple-500 shadow-2xl shadow-purple-500/10 [&_summary::-webkit-details-marker]:hidden overflow-hidden">
+                      <summary className="flex items-center justify-between p-6 md:p-8 cursor-pointer hover:bg-purple-900/10 transition-colors select-none">
+                      <span className="flex items-center gap-3 text-lg font-black text-purple-400 tracking-tight">👥 Base de Clientes ({todosUsuarios.length})</span>
+                      <span className="transition duration-300 group-open:-rotate-180 text-purple-500 text-lg">▼</span>
+                      </summary>
+                      <div className="px-6 md:px-8 pb-6 md:pb-8 border-t border-zinc-800/50 pt-8">
+                      <div className="mb-6">
+                          <input type="text" placeholder="Buscar cliente por nome..." value={buscaCliente} onChange={e => setBuscaCliente(e.target.value)} className={adminInputClass} />
+                      </div>
+
+                      <div className="max-h-[600px] overflow-y-auto pr-3 custom-scrollbar">
+                          {clientesFiltrados.length === 0 ? <p className="text-zinc-500 text-sm font-medium">Vazio.</p> : (
+                          <ul className="space-y-4">
+                              {clientesFiltrados.slice(paginaClientes * 50, (paginaClientes + 1) * 50).map(u => (
+                              <li key={u.id} className="flex flex-col md:flex-row justify-between items-start md:items-center bg-zinc-950/50 p-4 md:p-5 rounded-2xl border border-zinc-800/50 border-l-2 border-l-purple-500 shadow-sm hover:bg-zinc-800/50 transition-colors gap-4">
+                                  <div className="flex flex-col gap-1.5">
+                                  <span className="text-sm font-black text-white tracking-tight">
+                                      {u.nome} {u.is_admin && <span className="ml-2 text-[8px] bg-amber-500/20 text-amber-400 px-2 py-0.5 rounded-md uppercase tracking-wider">Admin</span>}
+                                  </span>
+                                  <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">
+                                      Saldo: <strong className={`text-xs tracking-normal ml-1 ${u.saldo < 0 ? 'text-rose-400' : 'text-emerald-400'}`}>R$ {parseFloat(u.saldo).toFixed(2)}</strong>
+                                  </span>
+                                  {u.telefone && (
+                                    <a 
+                                      href={`whatsapp://send?phone=${u.telefone.replace(/\D/g, '').startsWith('55') ? u.telefone.replace(/\D/g, '') : '55' + u.telefone.replace(/\D/g, '')}`} 
+                                      target="_blank" 
+                                      rel="noopener noreferrer" 
+                                      className="text-[10px] font-bold text-emerald-400 hover:text-emerald-300 uppercase tracking-wider mt-1 flex items-center gap-1"
+                                    >
+                                      📱 Chamar no Whats
+                                    </a>
+                                  )}
+                                  </div>
+                                  {!u.is_admin && (
+                                  <div className="flex gap-2 w-full md:w-auto justify-end">
+                                      <button onClick={() => ajustarSaldoCliente(u.id, u.nome)} className="text-blue-400 hover:text-white text-[10px] uppercase tracking-wider bg-blue-900/30 hover:bg-blue-600 px-3 py-1.5 rounded-lg font-bold transition-colors border border-blue-500/30">
+                                      ⚖️ Ajustar
+                                      </button>
+                                      <button onClick={() => removerUsuario(u.id)} className="text-rose-400 hover:text-white text-[10px] uppercase tracking-wider bg-rose-900/30 hover:bg-rose-600 px-3 py-1.5 rounded-lg font-bold transition-colors border border-rose-500/30">
+                                      Excluir
+                                      </button>
+                                  </div>
+                                  )}
+                              </li>
+                              ))}
+                          </ul>
+                          )}
+                      </div>
+
+                      <div className="mt-6 flex justify-between items-center bg-zinc-950 p-4 rounded-2xl border border-zinc-800/80">
+                          <button onClick={() => setPaginaClientes(Math.max(0, paginaClientes - 1))} disabled={paginaClientes === 0} className="px-5 py-2.5 bg-zinc-800 text-white rounded-xl disabled:opacity-50 hover:bg-zinc-700 text-[10px] uppercase tracking-wider font-bold transition-colors">◀ Anterior</button>
+                          <span className="text-zinc-400 text-xs font-bold">Página {paginaClientes + 1}</span>
+                          <button onClick={() => setPaginaClientes(paginaClientes + 1)} disabled={(paginaClientes + 1) * 50 >= clientesFiltrados.length} className="px-5 py-2.5 bg-zinc-800 text-white rounded-xl disabled:opacity-50 hover:bg-zinc-700 text-[10px] uppercase tracking-wider font-bold transition-colors">Próxima ▶</button>
+                      </div>
+
+                      </div>
+                  </details>
+
+              </div>
+            </div>
+          )}
+
+          {usuarioLogado && (
+            <a
+              href={`https://wa.me/${NUMERO_WHATSAPP_SUPORTE}?text=${encodeURIComponent("Olá! Estou no site BORA JOGAR! e preciso de ajuda com a minha conta.")}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="fixed bottom-6 right-6 z-50 bg-emerald-500 hover:bg-emerald-400 text-white rounded-full p-4 shadow-xl shadow-emerald-500/30 hover:-translate-y-1 transition-all duration-300 flex items-center justify-center group"
+              title="Falar com o Suporte"
+            >
+              <svg viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8">
+                <path d="M12.031 0C5.385 0 .003 5.383.003 12.029c0 2.126.554 4.195 1.606 6.012L0 24l6.115-1.595c1.745.967 3.738 1.477 5.912 1.477 6.648 0 12.03-5.383 12.03-12.028S18.679 0 12.031 0zm-1.026 22.02c-1.803 0-3.568-.485-5.116-1.401l-.367-.217-3.799.992.997-3.705-.238-.378c-.998-1.583-1.523-3.411-1.523-5.281 0-5.618 4.568-10.188 10.19-10.188 5.62 0 10.189 4.57 10.189 10.188 0 5.617-4.569 10.187-10.189 10.187zm5.589-7.616c-.306-.153-1.815-.892-2.095-.994-.28-.102-.485-.153-.689.153-.204.306-.791.994-.969 1.199-.179.204-.357.23-.663.076-.306-.153-1.295-.477-2.468-1.517-.913-.809-1.53-1.808-1.708-2.115-.179-.306-.019-.472.134-.625.138-.138.306-.357.459-.536.153-.178.204-.306.306-.51.102-.204.051-.383-.025-.536-.077-.153-.689-1.658-.944-2.27-.247-.597-.497-.515-.689-.525-.179-.01-.383-.01-.587-.01-.204 0-.536.076-.816.408-.28.332-1.071 1.046-1.071 2.551s1.097 2.96 1.25 3.163c.153.204 2.158 3.296 5.23 4.622.73.316 1.301.505 1.745.648.734.234 1.403.2 1.928.122.587-.087 1.815-.74 2.07-1.454.255-.714.255-1.326.179-1.454-.077-.127-.28-.204-.587-.357z"/>
+              </svg>
+            </a>
           )}
 
         </main>
