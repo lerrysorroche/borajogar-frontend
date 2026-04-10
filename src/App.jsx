@@ -219,21 +219,6 @@ function App() {
     }).catch(() => mostrarToast("Erro de conexão.", "erro"));
   }
 
-    fetch('https://borajogar-api.onrender.com/mudar-senha', {
-      method: 'POST', headers: getAuthHeaders(),
-      body: JSON.stringify({ utilizador_id: usuarioLogado.id, senha_atual: mudarSenhaAtual, nova_senha: mudarSenhaNova })
-    }).then(async res => {
-      const data = await res.json();
-      if (res.ok) {
-        mostrarToast(data.mensagem, "sucesso");
-        setMudarSenhaAtual('');
-        setMudarSenhaNova('');
-      } else {
-        mostrarToast(data.detail, "erro");
-      }
-    }).catch(() => mostrarToast("Erro de conexão.", "erro"));
-  }
-
   const abrirConfirmacao = (tipo, jogoId, jogoTitulo, preco7, preco14, diasEscolhidosInicial = 7) => {
     const precoAlvo = diasEscolhidosInicial === 14 ? preco14 : preco7;
     if (usuarioLogado.saldo < precoAlvo) { mostrarToast(`Saldo insuficiente para ${diasEscolhidosInicial} dias!\nColoque créditos em "Meus Acessos"!`, "erro"); return; }
