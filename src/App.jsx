@@ -838,26 +838,11 @@ function App() {
         <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-fade-in">
           <div className="bg-zinc-900 border border-zinc-700 rounded-3xl p-8 max-w-sm w-full shadow-2xl">
             <h3 className="text-xl font-black text-white mb-2 tracking-tight">
-              {modalConfirmacao.tipo === 'aluguel' ? '🎮 Alugar Jogo' : '⏳ Entrar na Fila'}
+              {modalConfirmacao.tipo === 'aluguel' ? '🎮 Confirmar Aluguel' : '⏳ Confirmar Reserva'}
             </h3>
             <p className="text-sm text-zinc-400 mb-6 leading-relaxed">
-              Escolha por quanto tempo você quer jogar <strong className="text-white">{modalConfirmacao.jogoTitulo}</strong>:
+              Você está prestes a {modalConfirmacao.tipo === 'aluguel' ? 'alugar' : 'reservar'} <strong className="text-white">{modalConfirmacao.jogoTitulo}</strong> por <strong className="text-blue-400">{modalConfirmacao.diasEscolhidos} Dias</strong>.
             </p>
-            
-            <div className="flex gap-3 mb-6">
-                <button onClick={() => setModalConfirmacao({...modalConfirmacao, diasEscolhidos: 7})} className={`flex-1 p-4 rounded-2xl border-2 transition-all text-left ${modalConfirmacao.diasEscolhidos === 7 ? 'border-blue-500 bg-blue-500/10' : 'border-zinc-800 bg-zinc-950 hover:bg-zinc-800'}`}>
-                    <div className="text-xs font-bold text-white mb-1 uppercase tracking-wider">7 Dias</div>
-                    <div className="text-lg font-black text-blue-400 tracking-tight">R$ {modalConfirmacao.preco7.toFixed(2)}</div>
-                </button>
-
-                {modalConfirmacao.preco14 > 0 && (
-                    <button onClick={() => setModalConfirmacao({...modalConfirmacao, diasEscolhidos: 14})} className={`flex-1 p-4 rounded-2xl border-2 transition-all text-left relative ${modalConfirmacao.diasEscolhidos === 14 ? 'border-purple-500 bg-purple-500/10' : 'border-zinc-800 bg-zinc-950 hover:bg-zinc-800'}`}>
-                        <span className="absolute -top-3 right-2 bg-purple-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider">Desconto!</span>
-                        <div className="text-xs font-bold text-white mb-1 uppercase tracking-wider">14 Dias</div>
-                        <div className="text-lg font-black text-purple-400 tracking-tight">R$ {modalConfirmacao.preco14.toFixed(2)}</div>
-                    </button>
-                )}
-            </div>
 
             {(() => {
               const precoAtual = modalConfirmacao.diasEscolhidos === 7 ? modalConfirmacao.preco7 : modalConfirmacao.preco14;
@@ -867,7 +852,12 @@ function App() {
                 <>
                   <div className="bg-zinc-950 rounded-2xl p-5 mb-8 border border-zinc-800 shadow-inner">
                     <div className="flex justify-between items-center mb-3">
-                      <span className="text-xs text-zinc-400 font-bold uppercase tracking-wider">Valor do aluguel:</span>
+                      <span className="text-xs text-zinc-400 font-bold uppercase tracking-wider">Período:</span>
+                      <span className="text-sm text-white font-black">{modalConfirmacao.diasEscolhidos} Dias</span>
+                    </div>
+                    <div className="w-full h-px bg-zinc-800/50 mb-3"></div>
+                    <div className="flex justify-between items-center mb-3">
+                      <span className="text-xs text-zinc-400 font-bold uppercase tracking-wider">Valor a descontar:</span>
                       <span className="text-sm text-rose-400 font-black">- R$ {precoAtual.toFixed(2)}</span>
                     </div>
                     <div className="w-full h-px bg-zinc-800/50 mb-3"></div>
@@ -1215,7 +1205,7 @@ function App() {
                             onClick={() => abrirConfirmacao(jogo.estoque > 0 && !isEmBreve ? 'aluguel' : 'reserva', jogo.id, tituloLimpo, jogo.preco_aluguel, jogo.preco_aluguel_14 || 0, 7)}
                             className={`flex-1 transition-all rounded-xl p-2.5 flex flex-col items-center justify-center group border ${
                                 jogo.estoque > 0 && !isEmBreve 
-                                ? 'bg-emerald-500/90 hover:bg-emerald-400 border-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.5)]' // Emerald (DISPONIVEL match)
+                                ? 'bg-blue-600/90 hover:bg-blue-500 border-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.4)]' // Azul Neon (padrão)
                                 : 'bg-amber-500/90 hover:bg-amber-400 border-amber-400 shadow-[0_0_15px_rgba(245,158,11,0.5)]' // Laranja/Dourado
                             }`}
                           >
@@ -1233,11 +1223,11 @@ function App() {
                               onClick={() => abrirConfirmacao(jogo.estoque > 0 && !isEmBreve ? 'aluguel' : 'reserva', jogo.id, tituloLimpo, jogo.preco_aluguel, jogo.preco_aluguel_14, 14)}
                               className={`flex-1 transition-all rounded-xl p-2.5 flex flex-col items-center justify-center group relative border ${
                                   jogo.estoque > 0 && !isEmBreve 
-                                  ? 'bg-fuchsia-600/90 hover:bg-fuchsia-500 border-fuchsia-400 shadow-[0_0_20px_rgba(192,38,211,0.5)]' // Rosa/Roxo
+                                  ? 'bg-cyan-600/90 hover:bg-cyan-500 border-cyan-400 shadow-[0_0_20px_rgba(6,182,212,0.4)]' // Outro tom de Azul (Cyan Neon)
                                   : 'bg-orange-500/80 hover:bg-orange-400 border-orange-400 shadow-[0_0_15px_rgba(249,115,22,0.4)]' // Laranja mais claro
                               }`}
                             >
-                              <span className={`absolute -top-2.5 right-2 text-[8px] font-black px-1.5 py-0.5 rounded-full uppercase tracking-wider shadow-lg border bg-zinc-950 ${jogo.estoque > 0 && !isEmBreve ? 'text-fuchsia-400 border-fuchsia-500/50' : 'text-orange-400 border-orange-500/50'}`}>
+                              <span className={`absolute -top-2.5 right-2 text-[8px] font-black px-1.5 py-0.5 rounded-full uppercase tracking-wider shadow-lg border bg-zinc-950 ${jogo.estoque > 0 && !isEmBreve ? 'text-cyan-400 border-cyan-500/50' : 'text-orange-400 border-orange-500/50'}`}>
                                 PROMO
                               </span>
                               <span className="text-[10px] uppercase tracking-wider font-bold text-white/80 group-hover:text-white">
