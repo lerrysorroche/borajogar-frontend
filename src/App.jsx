@@ -381,18 +381,6 @@ function App() {
     })
   }
 
-    fetch('https://borajogar-api.onrender.com/usuarios', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ nome: cadNome, email: cadEmail, senha: cadSenha, telefone: cadTelefone, codigo_indicacao: cadCodigoConvite })
-    }).then(async res => {
-      const data = await res.json()
-      if (res.ok) {
-        mostrarToast("Conta criada! Sua carteira já está pronta.", "sucesso")
-        setFormEmail(cadEmail); setFormSenha(cadSenha); setModoLogin(true); setCadNome(''); setCadEmail(''); setCadSenha(''); setCadTelefone(''); setCadCodigoConvite('');
-      } else { mostrarToast(data.detail, "erro") }
-    })
-  }
-
   const entrarNoSistema = (e) => {
     e.preventDefault()
     fetch('https://borajogar-api.onrender.com/login', {
