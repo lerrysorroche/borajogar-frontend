@@ -1173,11 +1173,11 @@ function App() {
                         
                         <div className="flex flex-col items-end">
                           {jogo.estoque > 0 && !isEmBreve ? (
-                            <span className="bg-emerald-500/90 backdrop-blur-md text-white text-[10px] uppercase tracking-wider font-black px-3 py-1.5 rounded-lg flex items-center gap-1.5 shadow-lg border border-emerald-400/50"><span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>DISPONÍVEL</span>
+                            <span className="bg-emerald-500/90 backdrop-blur-md text-white text-[10px] uppercase tracking-wider font-black px-3 py-1.5 rounded-lg flex items-center gap-1.5 shadow-lg border border-emerald-400/50 [text-shadow:1px_1px_0px_black,-1px_-1px_0px_black,1px_-1px_0px_black,-1px_1px_0px_black]"><span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>DISPONÍVEL</span>
                           ) : isEmBreve ? (
-                            <span className="bg-purple-600/90 backdrop-blur-md text-white text-[10px] uppercase tracking-widest font-black px-3 py-1.5 rounded-lg shadow-lg border border-purple-500/50">LANÇAMENTO {dataFormatada && `(${dataFormatada})`}</span>
+                            <span className="bg-purple-600/90 backdrop-blur-md text-white text-[10px] uppercase tracking-widest font-black px-3 py-1.5 rounded-lg shadow-lg border border-purple-500/50 [text-shadow:1px_1px_0px_black,-1px_-1px_0px_black,1px_-1px_0px_black,-1px_1px_0px_black]">LANÇAMENTO {dataFormatada && `(${dataFormatada})`}</span>
                           ) : (
-                            <span className="bg-rose-600/90 backdrop-blur-md text-white text-[10px] uppercase tracking-wider font-black px-3 py-1.5 rounded-lg shadow-lg border border-rose-500/50">ALUGADO</span>
+                            <span className="bg-rose-600/90 backdrop-blur-md text-white text-[10px] uppercase tracking-wider font-black px-3 py-1.5 rounded-lg shadow-lg border border-rose-500/50 [text-shadow:1px_1px_0px_black,-1px_-1px_0px_black,1px_-1px_0px_black,-1px_1px_0px_black]">ALUGADO</span>
                           )}
                         </div>
                       </div>
@@ -1212,6 +1212,7 @@ function App() {
                         )}
 
                         {/* BOTÕES DIRETO NA VITRINE COM NOVAS CORES */}
+                        {/* NOVOS BOTÕES DIRETO NA VITRINE */}
                         <div className="flex gap-3 w-full mt-3">
                           {/* Botão 7 Dias */}
                           <button
@@ -1222,10 +1223,10 @@ function App() {
                                 : 'bg-amber-500/90 hover:bg-amber-400 border-amber-400 shadow-[0_0_15px_rgba(245,158,11,0.5)]' // Laranja/Dourado
                             }`}
                           >
-                            <span className="text-[10px] uppercase tracking-wider font-bold text-white/80 group-hover:text-white">
+                            <span className="text-[10px] uppercase tracking-wider font-black text-white/90 group-hover:text-white transition-colors [text-shadow:1px_1px_0px_black,-1px_-1px_0px_black,1px_-1px_0px_black,-1px_1px_0px_black]">
                                 {jogo.estoque > 0 && !isEmBreve ? 'Alugar' : 'Reservar'} 7 Dias
                             </span>
-                            <strong className="text-sm mt-0.5 font-black text-white">
+                            <strong className="text-xl mt-0.5 font-black text-white tracking-tight [text-shadow:1px_1px_0px_black,-1px_-1px_0px_black,1px_-1px_0px_black,-1px_1px_0px_black]">
                                 R$ {jogo.preco_aluguel.toFixed(2)}
                             </strong>
                           </button>
@@ -1240,13 +1241,13 @@ function App() {
                                   : 'bg-orange-500/80 hover:bg-orange-400 border-orange-400 shadow-[0_0_15px_rgba(249,115,22,0.4)]' // Laranja mais claro
                               }`}
                             >
-                              <span className={`absolute -top-2.5 right-2 text-[8px] font-black px-1.5 py-0.5 rounded-full uppercase tracking-wider shadow-lg border bg-zinc-950 ${jogo.estoque > 0 && !isEmBreve ? 'text-cyan-400 border-cyan-500/50' : 'text-orange-400 border-orange-500/50'}`}>
+                              <span className={`absolute -top-3 right-2 text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider shadow-lg border bg-zinc-950 z-10 ${jogo.estoque > 0 && !isEmBreve ? 'text-cyan-400 border-cyan-500/50' : 'text-orange-400 border-orange-500/50'}`}>
                                 PROMO
                               </span>
-                              <span className="text-[10px] uppercase tracking-wider font-bold text-white/80 group-hover:text-white">
+                              <span className="text-[10px] uppercase tracking-wider font-black text-white/90 group-hover:text-white transition-colors [text-shadow:1px_1px_0px_black,-1px_-1px_0px_black,1px_-1px_0px_black,-1px_1px_0px_black]">
                                 {jogo.estoque > 0 && !isEmBreve ? 'Alugar' : 'Reservar'} 14 Dias
                               </span>
-                              <strong className="text-sm mt-0.5 font-black text-white">
+                              <strong className="text-xl mt-0.5 font-black text-white tracking-tight [text-shadow:1px_1px_0px_black,-1px_-1px_0px_black,1px_-1px_0px_black,-1px_1px_0px_black]">
                                 R$ {jogo.preco_aluguel_14.toFixed(2)}
                               </strong>
                             </button>
