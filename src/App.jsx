@@ -17,6 +17,7 @@ function App() {
   const [modoLogin, setModoLogin] = useState(true) 
   const [toast, setToast] = useState({ visivel: false, mensagem: '', tipo: 'sucesso' })
   const [modalConfirmacao, setModalConfirmacao] = useState({ visivel: false, tipo: '', jogoId: null, jogoTitulo: '', preco7: 0, preco14: 0, diasEscolhidos: 7 })
+  const [modalDescricao, setModalDescricao] = useState(null);
   const [menuMobileAberto, setMenuMobileAberto] = useState(false)
 
   const [formEmail, setFormEmail] = useState('')
@@ -882,6 +883,22 @@ function App() {
         </div>
       )}
 
+      {/* MODAL DE SINOPSE DO JOGO */}
+      {modalDescricao && (
+        <div className="fixed inset-0 z-[250] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-fade-in" onClick={() => setModalDescricao(null)}>
+          <div className="bg-zinc-900 border border-zinc-700 rounded-3xl p-8 max-w-lg w-full shadow-2xl relative" onClick={e => e.stopPropagation()}>
+            <button onClick={() => setModalDescricao(null)} className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-zinc-800 text-zinc-400 hover:bg-zinc-700 hover:text-white transition-colors">✕</button>
+            <h3 className="text-xl font-black text-white mb-4 tracking-tight pr-8 leading-tight">{modalDescricao.titulo}</h3>
+            <div className="max-h-[60vh] overflow-y-auto custom-scrollbar pr-2">
+              <p className="text-sm text-zinc-300 leading-relaxed whitespace-pre-wrap font-medium">{modalDescricao.descricao}</p>
+            </div>
+            <div className="mt-6 pt-4 border-t border-zinc-800">
+              <button onClick={() => setModalDescricao(null)} className="w-full py-3.5 rounded-xl font-bold text-xs bg-zinc-800 text-white hover:bg-zinc-700 uppercase tracking-wide transition-colors">Fechar</button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {!usuarioLogado && modoLogin && abaAtual !== 'faq' && abaAtual !== 'termos' && abaAtual !== 'privacidade' && !modoEsqueciSenha ? (
         <div className="flex justify-center items-center min-h-screen p-4" style={{ backgroundImage: `url('https://cinesiageek.com.br/wp-content/uploads/2024/09/playstation5.jpeg')`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
           <div className="absolute inset-0 bg-zinc-950/80 backdrop-blur-md"></div>
@@ -1193,7 +1210,15 @@ function App() {
                     
                     <div className="p-6 flex flex-col flex-1">
                       <h3 className="text-lg font-black text-white mb-2 tracking-tight group-hover:text-blue-400 transition-colors leading-tight">{tituloLimpo}</h3>
-                      <p className="text-xs text-zinc-400 mb-6 line-clamp-4 leading-relaxed font-medium" title={jogo.descricao}>{jogo.descricao}</p>
+                      <div className="mb-6">
+                        <p className="text-xs text-zinc-400 line-clamp-4 leading-relaxed font-medium" title={jogo.descricao}>{jogo.descricao}</p>
+                        <button 
+                          onClick={() => setModalDescricao(jogo)} 
+                          className="text-[10px] text-blue-400 hover:text-blue-300 font-bold uppercase tracking-wider mt-2 flex items-center gap-1 transition-colors"
+                        >
+                          Ler sinopse completa <span className="text-lg leading-none">›</span>
+                        </button>
+                      </div>
                       
                       <div className="mt-auto">
                         {(jogo.estoque === 0 || isEmBreve) && (
