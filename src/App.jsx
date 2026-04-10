@@ -28,6 +28,18 @@ function App() {
   const [cadTelefone, setCadTelefone] = useState('')
   const [cadCodigoConvite, setCadCodigoConvite] = useState('')
 
+  // Confirmações de Senha
+  const [cadSenhaConfirmacao, setCadSenhaConfirmacao] = useState('')
+  const [mudarSenhaNovaConfirmacao, setMudarSenhaNovaConfirmacao] = useState('')
+
+  // Estados do Olhinho (Mostrar/Ocultar Senha)
+  const [verSenhaLogin, setVerSenhaLogin] = useState(false)
+  const [verSenhaCad, setVerSenhaCad] = useState(false)
+  const [verSenhaCadConf, setVerSenhaCadConf] = useState(false)
+  const [verSenhaAtual, setVerSenhaAtual] = useState(false)
+  const [verSenhaNova, setVerSenhaNova] = useState(false)
+  const [verSenhaNovaConf, setVerSenhaNovaConf] = useState(false)
+
   const [modoEsqueciSenha, setModoEsqueciSenha] = useState(false)
   const [esqueciEmail, setEsqueciEmail] = useState('')
   const [mudarSenhaAtual, setMudarSenhaAtual] = useState('')
@@ -179,12 +191,33 @@ function App() {
   const alterarMinhaSenha = (e) => {
     e.preventDefault();
 
+    if (mudarSenhaNova !== mudarSenhaNovaConfirmacao) {
+      mostrarToast("A nova senha e a confirmação não coincidem.", "erro");
+      return;
+    }
+
     // Trava de Segurança: Mesma regra do cadastro
     const regexSenha = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
     if (!regexSenha.test(mudarSenhaNova)) {
       mostrarToast("A nova senha deve ter no mínimo 8 caracteres, 1 letra maiúscula, 1 número e 1 caractere especial (Ex: @, #, !).", "erro");
       return; 
     }
+
+    fetch('https://borajogar-api.onrender.com/mudar-senha', {
+      method: 'POST', headers: getAuthHeaders(),
+      body: JSON.stringify({ utilizador_id: usuarioLogado.id, senha_atual: mudarSenhaAtual, nova_senha: mudarSenhaNova })
+    }).then(async res => {
+      const data = await res.json();
+      if (res.ok) {
+        mostrarToast(data.mensagem, "sucesso");
+        setMudarSenhaAtual('');
+        setMudarSenhaNova('');
+        setMudarSenhaNovaConfirmacao('');
+      } else {
+        mostrarToast(data.detail, "erro");
+      }
+    }).catch(() => mostrarToast("Erro de conexão.", "erro"));
+  }
 
     fetch('https://borajogar-api.onrender.com/mudar-senha', {
       method: 'POST', headers: getAuthHeaders(),
@@ -324,11 +357,29 @@ function App() {
   const registrarConta = (e) => {
     e.preventDefault()
 
+    if (cadSenha !== cadSenhaConfirmacao) {
+      mostrarToast("As senhas não coincidem. Digite novamente.", "erro");
+      return; 
+    }
+
     const regexSenha = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
     if (!regexSenha.test(cadSenha)) {
       mostrarToast("Sua senha deve ter no mínimo 8 caracteres, 1 letra maiúscula, 1 número e 1 caractere especial (Ex: @, #, !).", "erro");
       return; 
     }
+
+    fetch('https://borajogar-api.onrender.com/usuarios', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nome: cadNome, email: cadEmail, senha: cadSenha, telefone: cadTelefone, codigo_indicacao: cadCodigoConvite })
+    }).then(async res => {
+      const data = await res.json()
+      if (res.ok) {
+        mostrarToast("Conta criada! Sua carteira já está pronta.", "sucesso")
+        setFormEmail(cadEmail); setFormSenha(cadSenha); setModoLogin(true); 
+        setCadNome(''); setCadEmail(''); setCadSenha(''); setCadSenhaConfirmacao(''); setCadTelefone(''); setCadCodigoConvite('');
+      } else { mostrarToast(data.detail, "erro") }
+    })
+  }
 
     fetch('https://borajogar-api.onrender.com/usuarios', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -915,7 +966,13 @@ function App() {
             
             <form onSubmit={entrarNoSistema} className="space-y-5 animate-fade-in">
               <input type="email" placeholder="Seu E-mail" value={formEmail} onChange={e => setFormEmail(e.target.value)} className={inputClass} required />
-              <input type="password" placeholder="Sua Senha" value={formSenha} onChange={e => setFormSenha(e.target.value)} className={inputClass} required />
+              
+              <div className="relative">
+                <input type={verSenhaLogin ? "text" : "password"} placeholder="Sua Senha" value={formSenha} onChange={e => setFormSenha(e.target.value)} className={`${inputClass} pr-12`} required />
+                <button type="button" onClick={() => setVerSenhaLogin(!verSenhaLogin)} className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white transition-colors">
+                  {verSenhaLogin ? '🙈' : '👁️'}
+                </button>
+              </div>
               
               <div className="flex justify-end">
                 <button type="button" onClick={() => setModoEsqueciSenha(true)} className="text-[10px] font-bold text-zinc-400 hover:text-blue-400 transition-colors uppercase tracking-wider">
@@ -944,12 +1001,26 @@ function App() {
               <input type="text" placeholder="Nome Completo" value={cadNome} onChange={e => setCadNome(e.target.value)} className={inputClass} required />
               <input type="email" placeholder="E-mail" value={cadEmail} onChange={e => setCadEmail(e.target.value)} className={inputClass} required />
               <input type="text" placeholder="WhatsApp (DDD+Número)" value={cadTelefone} onChange={e => setCadTelefone(e.target.value)} className={inputClass} required />
-              <input type="password" placeholder="Crie uma Senha" value={cadSenha} onChange={e => setCadSenha(e.target.value)} className={inputClass} required />
+              
+              <div className="relative">
+                <input type={verSenhaCad ? "text" : "password"} placeholder="Crie uma Senha" value={cadSenha} onChange={e => setCadSenha(e.target.value)} className={`${inputClass} pr-12`} required />
+                <button type="button" onClick={() => setVerSenhaCad(!verSenhaCad)} className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white transition-colors">
+                  {verSenhaCad ? '🙈' : '👁️'}
+                </button>
+              </div>
+
+              <div className="relative">
+                <input type={verSenhaCadConf ? "text" : "password"} placeholder="Confirme sua Senha" value={cadSenhaConfirmacao} onChange={e => setCadSenhaConfirmacao(e.target.value)} className={`${inputClass} pr-12`} required />
+                <button type="button" onClick={() => setVerSenhaCadConf(!verSenhaCadConf)} className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white transition-colors">
+                  {verSenhaCadConf ? '🙈' : '👁️'}
+                </button>
+              </div>
+
               <input type="text" placeholder="Código de um Amigo (Opcional)" value={cadCodigoConvite} onChange={e => setCadCodigoConvite(e.target.value.toUpperCase())} className={`${inputClass} border-purple-500/50 bg-purple-950/20 text-purple-100 placeholder-purple-400/50 uppercase`} />
               
               <div className="bg-zinc-950/50 border border-zinc-800 p-4 rounded-xl mt-4 shadow-inner">
                 <p className="text-[11px] text-zinc-400 leading-relaxed text-center">
-                  Ao clicar em "Finalizar Cadastro", você confirma que é maior de idade e declara que leu, compreendeu e concorda integralmente com os nossos <strong className="text-emerald-400">Termos de Uso</strong> e <strong className="text-emerald-400">Política de Privacidade</strong> (disponíveis para leitura no rodapé da plataforma após o acesso).
+                  Ao clicar em "Finalizar Cadastro", você confirma que é maior de idade e declara que leu, compreendeu e concorda integralmente com os nossos <strong className="text-emerald-400">Termos de Uso</strong> e <strong className="text-emerald-400">Política de Privacidade</strong>.
                 </p>
               </div>
 
@@ -1399,17 +1470,32 @@ function App() {
                   <p className="text-xs text-zinc-400 mb-8 max-w-2xl leading-relaxed">
                     Mantenha sua conta segura alterando sua senha regularmente ou troque a senha temporária que enviamos por e-mail.
                   </p>
-                  <form onSubmit={alterarMinhaSenha} className="flex flex-col sm:flex-row gap-5 items-end max-w-3xl">
-                    <div className="w-full">
-                      <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-2 block">Senha Atual</label>
-                      <input type="password" placeholder="Sua senha atual" value={mudarSenhaAtual} onChange={e => setMudarSenhaAtual(e.target.value)} className="w-full px-5 py-3.5 bg-zinc-950 border border-zinc-800 text-sm font-medium text-white rounded-2xl focus:ring-2 focus:ring-rose-500 outline-none" required />
+                  <form onSubmit={alterarMinhaSenha} className="flex flex-col gap-5 items-end max-w-4xl">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 w-full">
+                      <div className="w-full relative">
+                        <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-2 block">Senha Atual (Provisória)</label>
+                        <div className="relative">
+                          <input type={verSenhaAtual ? "text" : "password"} placeholder="Sua senha atual" value={mudarSenhaAtual} onChange={e => setMudarSenhaAtual(e.target.value)} className={`${adminInputClass} pr-12`} required />
+                          <button type="button" onClick={() => setVerSenhaAtual(!verSenhaAtual)} className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white transition-colors">{verSenhaAtual ? '🙈' : '👁️'}</button>
+                        </div>
+                      </div>
+                      <div className="w-full relative">
+                        <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-2 block">Nova Senha</label>
+                        <div className="relative">
+                          <input type={verSenhaNova ? "text" : "password"} placeholder="Sua nova senha" value={mudarSenhaNova} onChange={e => setMudarSenhaNova(e.target.value)} className={`${adminInputClass} pr-12`} required />
+                          <button type="button" onClick={() => setVerSenhaNova(!verSenhaNova)} className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white transition-colors">{verSenhaNova ? '🙈' : '👁️'}</button>
+                        </div>
+                      </div>
+                      <div className="w-full relative">
+                        <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-2 block">Confirme a Nova Senha</label>
+                        <div className="relative">
+                          <input type={verSenhaNovaConf ? "text" : "password"} placeholder="Confirme a senha" value={mudarSenhaNovaConfirmacao} onChange={e => setMudarSenhaNovaConfirmacao(e.target.value)} className={`${adminInputClass} pr-12`} required />
+                          <button type="button" onClick={() => setVerSenhaNovaConf(!verSenhaNovaConf)} className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white transition-colors">{verSenhaNovaConf ? '🙈' : '👁️'}</button>
+                        </div>
+                      </div>
                     </div>
-                    <div className="w-full">
-                      <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-2 block">Nova Senha</label>
-                      <input type="password" placeholder="Sua nova senha" value={mudarSenhaNova} onChange={e => setMudarSenhaNova(e.target.value)} className="w-full px-5 py-3.5 bg-zinc-950 border border-zinc-800 text-sm font-medium text-white rounded-2xl focus:ring-2 focus:ring-rose-500 outline-none" required />
-                    </div>
-                    <button type="submit" className="w-full sm:w-auto bg-rose-600 hover:bg-rose-500 text-white font-bold uppercase tracking-wider px-8 py-3.5 rounded-2xl transition-colors border border-rose-500/50 shadow-lg shadow-rose-600/20 whitespace-nowrap text-xs">
-                      Atualizar
+                    <button type="submit" className="w-full sm:w-auto bg-rose-600 hover:bg-rose-500 text-white font-bold uppercase tracking-wider px-8 py-3.5 rounded-2xl transition-colors border border-rose-500/50 shadow-lg shadow-rose-600/20 whitespace-nowrap text-xs mt-2">
+                      Atualizar Senha
                     </button>
                   </form>
                 </div>
