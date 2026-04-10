@@ -178,6 +178,14 @@ function App() {
 
   const alterarMinhaSenha = (e) => {
     e.preventDefault();
+
+    // Trava de Segurança: Mesma regra do cadastro
+    const regexSenha = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    if (!regexSenha.test(mudarSenhaNova)) {
+      mostrarToast("A nova senha deve ter no mínimo 8 caracteres, 1 letra maiúscula, 1 número e 1 caractere especial (Ex: @, #, !).", "erro");
+      return; 
+    }
+
     fetch('https://borajogar-api.onrender.com/mudar-senha', {
       method: 'POST', headers: getAuthHeaders(),
       body: JSON.stringify({ utilizador_id: usuarioLogado.id, senha_atual: mudarSenhaAtual, nova_senha: mudarSenhaNova })
