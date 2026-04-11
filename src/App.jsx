@@ -1524,7 +1524,7 @@ function App() {
                       </div>
                       
                       <div>
-                        <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-1.5 block">Seu CPF (Exigência do Banco)</label>
+                        <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-1.5 block">Seu CPF (Exigência do Banco Central)</label>
                         <input type="text" placeholder="Apenas números..." value={cpfRecarga} onChange={e => setCpfRecarga(e.target.value)} maxLength="14" className="w-full px-4 py-3 bg-zinc-950 border border-zinc-800 text-white font-bold rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none text-sm placeholder-zinc-600 transition-all" required />
                       </div>
 
