@@ -220,7 +220,7 @@ function App() {
   }
 
   const abrirConfirmacao = (tipo, jogoId, jogoTitulo, preco7, preco14, diasEscolhidosInicial = 7) => {
-    // 🚀 MUDANÇA AQUI: Se não tem conta, manda fazer login/cadastro!
+    // 🚀 MUDANÇA: Se não tem conta, manda fazer login/cadastro na hora de alugar!
     if (!usuarioLogado) {
       mostrarToast("Faça login ou crie uma conta grátis para alugar jogos!", "aviso");
       setModoLogin(true);
@@ -462,10 +462,10 @@ function App() {
          setMeuVoto(dados.voto_usuario);
       });
 
-    // 🚀 MUDANÇA AQUI: Carregar os jogos SEMPRE, mesmo sem estar logado!
+    // 🚀 MUDANÇA: Carrega os jogos SEMPRE, permitindo a vitrine pública!
     fetch('https://borajogar-api.onrender.com/jogos').then(res => res.json()).then(dados => setJogos(dados));
 
-    // Bloqueia o carregamento de dados sensíveis (painel, saldo) se não tiver logado
+    // Bloqueia o carregamento dos dados sensíveis abaixo se não estiver logado
     if (!usuarioLogado) return;
     
     if (usuarioLogado.is_admin) {
