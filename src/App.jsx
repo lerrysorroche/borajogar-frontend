@@ -485,17 +485,14 @@ function App() {
     fetch(`https://borajogar-api.onrender.com/notificacoes/${usuarioLogado.id}`).then(res => res.json()).then(dados => setNotificacoes(dados))
     
     // 🚀 A MÁGICA DA CORREÇÃO DO SALDO ACONTECE AQUI
-    // Toda vez que os dados recarregam (após PIX ou Cancelamento), forçamos o React a atualizar o Saldo Global!
     fetch(`https://borajogar-api.onrender.com/usuarios/${usuarioLogado.id}/saldo`)
       .then(res => res.json())
       .then(data => {
         if (data && data.saldo !== undefined) {
           const saldoReal = parseFloat(data.saldo);
           
-          // 1. Atualiza a memória visual da tela
           setUsuarioLogado(prev => ({ ...prev, saldo: saldoReal }));
           
-          // 2. Atualiza o cookie/cache do navegador para não dar bug se ele der F5
           const userStorage = JSON.parse(localStorage.getItem('usuarioBoraJogar'));
           if (userStorage) {
             userStorage.saldo = saldoReal;
@@ -503,12 +500,6 @@ function App() {
           }
         }
       });
-  }
-
-    fetch(`https://borajogar-api.onrender.com/meus-alugueis/${usuarioLogado.id}`).then(res => res.json()).then(dados => setMeusAlugueis(dados))
-    fetch(`https://borajogar-api.onrender.com/minhas-reservas/${usuarioLogado.id}`).then(res => res.json()).then(dados => setMinhasReservas(dados))
-    fetch(`https://borajogar-api.onrender.com/extrato/${usuarioLogado.id}`).then(res => res.json()).then(dados => setExtrato(dados))
-    fetch(`https://borajogar-api.onrender.com/notificacoes/${usuarioLogado.id}`).then(res => res.json()).then(dados => setNotificacoes(dados)) // 🚀 CARREGA ALERTAS
   }
 
   // 🚀 FUNÇÕES DE AÇÃO DO ALERTA DE FILA
