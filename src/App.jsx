@@ -84,7 +84,7 @@ function App() {
   const [indiceBanner, setIndiceBanner] = useState(0);
 
   const [modalEdicaoJogo, setModalEdicaoJogo] = useState(null)
-  const [modalEdicaoCliente, setModalEdicaoCliente] = useState(null) // 🚀 NOVO ESTADO AQUI
+  const [modalEdicaoCliente, setModalEdicaoCliente] = useState(null)
   
   const [termoBusca, setTermoBusca] = useState('')
   const [buscaEstoque, setBuscaEstoque] = useState('')
@@ -93,17 +93,19 @@ function App() {
   const [ordenacaoClientes, setOrdenacaoClientes] = useState('recentes')
   const [filtroSaldoClientes, setFiltroSaldoClientes] = useState('todos')
 
-  // 🚀 NOVOS ESTADOS AQUI:
   const [buscaManutencao, setBuscaManutencao] = useState('')
   const [ordenacaoLocacoes, setOrdenacaoLocacoes] = useState('expira_breve')
   const [ordenacaoManutencao, setOrdenacaoManutencao] = useState('urgente')
+  const [todasReservas, setTodasReservas] = useState([])
+  const [buscaReservaAdmin, setBuscaReservaAdmin] = useState('')
+  const [ordenacaoReservaAdmin, setOrdenacaoReservaAdmin] = useState('antigas')
 
   const [todasLocacoes, setTodasLocacoes] = useState([])
   const [todosUsuarios, setTodosUsuarios] = useState([])
 
   const [valorRecarga, setValorRecarga] = useState('15')
   const [cupomRecarga, setCupomRecarga] = useState('')
-  const [cpfRecarga, setCpfRecarga] = useState('') // 🚀 NOVO CAMPO DE CPF
+  const [cpfRecarga, setCpfRecarga] = useState('')
   const [listaCupons, setListaCupons] = useState([])
   const [novoCupomCodigo, setNovoCupomCodigo] = useState('')
   const [novoCupomTipo, setNovoCupomTipo] = useState('PORCENTAGEM')
@@ -484,6 +486,7 @@ function App() {
     
     if (usuarioLogado.is_admin) {
       fetch('https://borajogar-api.onrender.com/admin/locacoes', { headers: getAuthHeaders() }).then(res => res.ok ? res.json() : []).then(dados => setTodasLocacoes(dados))
+      fetch('https://borajogar-api.onrender.com/admin/reservas', { headers: getAuthHeaders() }).then(res => res.ok ? res.json() : []).then(dados => setTodasReservas(dados)) // 🚀 PUXA AS RESERVAS PRO ADMIN
       fetch('https://borajogar-api.onrender.com/admin/estatisticas', { headers: getAuthHeaders() }).then(res => res.ok ? res.json() : {faturamento: 0, total_clientes: 0, locacoes_ativas: 0}).then(dados => setEstatisticasAdmin(dados))
       fetch('https://borajogar-api.onrender.com/admin/manutencao', { headers: getAuthHeaders() }).then(res => res.ok ? res.json() : []).then(dados => setContasManutencao(dados))
       fetch('https://borajogar-api.onrender.com/admin/cupons', { headers: getAuthHeaders() }).then(res => res.ok ? res.json() : []).then(dados => setListaCupons(dados))
@@ -838,6 +841,27 @@ function App() {
       if (ordenacaoLocacoes === 'az_jogo') return a.jogo.localeCompare(b.jogo);
       return 0;
     });
+
+  const reservasAdminFiltradas = todasReservas
+    .filter(res => res.jogo.toLowerCase().includes(buscaReservaAdmin.toLowerCase()) || res.cliente.toLowerCase().includes(buscaReservaAdmin.toLowerCase()))
+    .sort((a, b) => {
+        if(ordenacaoReservaAdmin === 'antigas') return new Date(a.data_solicitacao) - new Date(b.data_solicitacao);
+        if(ordenacaoReservaAdmin === 'recentes') return new Date(b.data_solicitacao) - new Date(a.data_solicitacao);
+        if(ordenacaoReservaAdmin === 'az_cliente') return a.cliente.localeCompare(b.cliente);
+        return 0;
+    });
+
+  const cancelarReservaAdmin = (reservaId, nomeCliente, tituloJogo) => {
+    if(window.confirm(`Tem certeza que deseja CANCELAR a reserva de ${tituloJogo} do cliente ${nomeCliente}? O valor será devolvido à carteira dele.`)) {
+      fetch(`https://borajogar-api.onrender.com/admin/reservas/${reservaId}/cancelar`, {
+        method: 'POST', headers: getAuthHeaders()
+      }).then(async res => {
+        const data = await res.json();
+        if(res.ok) { mostrarToast(data.mensagem, "sucesso"); carregarDados(); }
+        else { mostrarToast(data.detail, "erro"); }
+      })
+    }
+  }
 
   const contasManutencaoFiltradas = contasManutencao
     .filter(c => c.jogo.toLowerCase().includes(buscaManutencao.toLowerCase()) || (c.ultimo_cliente_nome && c.ultimo_cliente_nome.toLowerCase().includes(buscaManutencao.toLowerCase())))
@@ -2507,6 +2531,52 @@ function App() {
                           </table>
                           )}
                       </div>
+                      </div>
+                  </details>
+
+                  {/* ⏳ RESERVAS PENDENTES (NOVO BLOCO ADMIN) */}
+                  <details className="group bg-zinc-900/80 rounded-3xl border border-zinc-800 border-l-4 border-l-amber-500 shadow-2xl shadow-amber-500/10 [&_summary::-webkit-details-marker]:hidden overflow-hidden mt-8">
+                      <summary className="flex items-center justify-between p-6 md:p-8 cursor-pointer hover:bg-amber-900/10 transition-colors select-none">
+                      <span className="flex items-center gap-3 text-lg font-black text-amber-400 tracking-tight">⏳ Fila de Espera Global ({reservasAdminFiltradas.length})</span>
+                      <span className="transition duration-300 group-open:-rotate-180 text-amber-500 text-lg">▼</span>
+                      </summary>
+                      <div className="px-6 md:px-8 pb-6 md:pb-8 border-t border-zinc-800/50 pt-8">
+                        <div className="mb-6 flex flex-col md:flex-row gap-4 bg-zinc-950 p-4 rounded-2xl border border-zinc-800/80 shadow-inner">
+                            <input type="text" placeholder="🔍 Buscar reserva por jogo ou cliente..." value={buscaReservaAdmin} onChange={e => setBuscaReservaAdmin(e.target.value)} className={`${adminInputClass} flex-1`} />
+                            <select value={ordenacaoReservaAdmin} onChange={e => setOrdenacaoReservaAdmin(e.target.value)} className="bg-zinc-900 border border-amber-500/30 text-zinc-300 text-sm font-bold rounded-xl px-3 py-2.5 focus:ring-2 focus:ring-amber-500 outline-none w-full md:w-56 cursor-pointer hover:border-amber-400 transition-colors">
+                                <option value="antigas">⏳ Mais Antigas</option>
+                                <option value="recentes">🆕 Mais Recentes</option>
+                                <option value="az_cliente">👤 Cliente (A-Z)</option>
+                            </select>
+                        </div>
+                        <div className="max-h-[600px] overflow-y-auto pr-3 custom-scrollbar">
+                            {reservasAdminFiltradas.length === 0 ? <p className="text-zinc-500 text-sm font-medium">Nenhuma reserva pendente.</p> : (
+                                <table className="w-full text-left text-sm whitespace-nowrap">
+                                    <thead>
+                                        <tr className="text-zinc-500 border-b border-zinc-800">
+                                            <th className="pb-3 font-bold uppercase tracking-wider text-[10px]">Cliente</th>
+                                            <th className="pb-3 font-bold uppercase tracking-wider text-[10px]">Jogo</th>
+                                            <th className="pb-3 font-bold uppercase tracking-wider text-[10px]">Data da Reserva</th>
+                                            <th className="pb-3 text-right font-bold uppercase tracking-wider text-[10px]">Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {reservasAdminFiltradas.map(reserva => (
+                                            <tr key={reserva.id} className="border-b border-zinc-800/50 hover:bg-zinc-800/30 transition-colors">
+                                                <td className="py-4 text-zinc-300 text-xs font-medium">{reserva.cliente}</td>
+                                                <td className="py-4 font-black text-white text-sm tracking-tight">{reserva.jogo}</td>
+                                                <td className="py-4 text-amber-400 text-xs font-bold">{new Date(reserva.data_solicitacao).toLocaleString()}</td>
+                                                <td className="py-4 text-right">
+                                                    <button onClick={() => cancelarReservaAdmin(reserva.id, reserva.cliente, reserva.jogo)} className="text-rose-400 hover:text-white text-[10px] uppercase tracking-wider bg-rose-900/30 hover:bg-rose-600 px-3 py-1.5 rounded-lg font-bold transition-colors border border-rose-500/30 shadow">
+                                                        Cancelar e Estornar
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            )}
+                        </div>
                       </div>
                   </details>
 
