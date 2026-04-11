@@ -6,26 +6,26 @@ export default {
   ],
   theme: {
     extend: {
-      // 🚀 Adicionando a Fonte Space Mono
+      // 🚀 Fonte Space Mono
       fontFamily: {
         'mono-tech': ['"Space Mono"', 'monospace'],
       },
-      // 🚀 Criando a Animação de Flicker (Neon piscando)
+      // 🚀 Animação de Flicker Corrigida (Usando drop-shadow para textos com degradê)
       keyframes: {
         flicker: {
-          '0%, 18%, 22%, 25%, 38%, 100%': { 
-            opacity: 1,
-            textShadow: '0 0 10px #60a5fa, 0 0 20px #34d399, 0 0 40px #34d399',
+          '0%, 19.999%, 22%, 62.999%, 64%, 64.999%, 70%, 100%': { 
+            opacity: '1',
+            filter: 'drop-shadow(0 0 8px rgba(52, 211, 153, 0.6)) drop-shadow(0 0 15px rgba(96, 165, 250, 0.4))'
           },
-          '20%, 24%, 35%': { 
-            opacity: 0.2,
-            textShadow: 'none',
+          '20%, 21.999%, 63%, 63.999%, 65%, 69.999%': { 
+            opacity: '0.4',
+            filter: 'none'
           },
         }
       },
       animation: {
-        'neon-flicker': 'flicker 3s infinite alernate', // Animação sutil e contínua
-        'fade-in': 'fadeIn 0.5s ease-in-out',
+        // Trocamos para 'linear' para o piscar ficar mais "seco" e mecânico, tipo mal contato
+        'neon-flicker': 'flicker 4s infinite linear', 
       }
     },
   },
