@@ -1494,59 +1494,57 @@ function App() {
               <h2 className="text-2xl font-black text-white tracking-tight mb-8">Meu Painel de Controle</h2>
               
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-                <section className="bg-gradient-to-br from-cyan-900/20 to-zinc-900 p-8 rounded-3xl border border-cyan-500/30 shadow-2xl shadow-cyan-500/10 flex flex-col h-auto lg:h-[540px] relative overflow-hidden hover:-translate-y-1 transition-transform duration-300">
+                <section className="bg-gradient-to-br from-cyan-900/20 to-zinc-900 p-6 md:p-8 rounded-3xl border border-cyan-500/30 shadow-2xl shadow-cyan-500/10 flex flex-col h-auto lg:h-[540px] relative overflow-hidden hover:-translate-y-1 transition-transform duration-300">
                   <div className="absolute -right-8 -top-8 text-9xl opacity-5 pointer-events-none">💸</div>
-                  <h3 className="text-lg font-black text-cyan-400 mb-3 tracking-tight flex items-center gap-2">💰 Adicionar Saldo via PIX</h3>
-                  <p className="text-xs text-zinc-400 mb-8 leading-relaxed">Recarregue sua carteira instantaneamente para alugar jogos sem filas.</p>
+                  <h3 className="text-lg font-black text-cyan-400 mb-2 tracking-tight flex items-center gap-2">💰 Adicionar Saldo via PIX</h3>
+                  <p className="text-xs text-zinc-400 mb-4 leading-relaxed">Recarregue sua carteira instantaneamente para alugar jogos sem filas.</p>
                   
                   {pixPendente ? (
-                    <div className="flex flex-col items-center justify-center animate-fade-in z-10 bg-zinc-950 p-8 rounded-3xl border border-cyan-500/30 shadow-inner">
-                        <img src={`data:image/png;base64,${pixPendente.qr_code}`} alt="QR Code PIX" className="w-56 h-56 rounded-2xl border border-zinc-800 p-2 mb-6 bg-white shadow-lg" />
-                        <p className="text-xs font-medium text-zinc-400 mb-5 text-center leading-relaxed">Escaneie o QR Code ou copie o código abaixo para pagar no app do seu banco. <strong className="text-cyan-400 block mt-2 text-sm font-bold animate-pulse">Aguardando pagamento...</strong></p>
+                    <div className="flex flex-col items-center justify-center animate-fade-in z-10 bg-zinc-950 p-6 rounded-2xl border border-cyan-500/30 shadow-inner mt-auto mb-auto">
+                        <img src={`data:image/png;base64,${pixPendente.qr_code}`} alt="QR Code PIX" className="w-40 h-40 rounded-xl border border-zinc-800 p-2 mb-4 bg-white shadow-lg" />
+                        <p className="text-[11px] font-medium text-zinc-400 mb-4 text-center leading-relaxed">Escaneie o QR Code ou copie o código abaixo. <strong className="text-cyan-400 block mt-1 text-xs font-bold animate-pulse">Aguardando pagamento...</strong></p>
                         
-                        <div className="flex gap-3 w-full">
-                            <button onClick={() => { navigator.clipboard.writeText(pixPendente.copia_cola); mostrarToast("PIX Copiado!", "sucesso"); }} className="flex-1 bg-zinc-800 hover:bg-zinc-700 text-white font-bold py-3.5 rounded-xl text-xs uppercase tracking-wide transition-colors border border-zinc-700">
+                        <div className="flex gap-2 w-full">
+                            <button onClick={() => { navigator.clipboard.writeText(pixPendente.copia_cola); mostrarToast("PIX Copiado!", "sucesso"); }} className="flex-1 bg-zinc-800 hover:bg-zinc-700 text-white font-bold py-3 rounded-xl text-[10px] uppercase tracking-wide transition-colors border border-zinc-700">
                                 📋 Copiar Código
                             </button>
-                            <button onClick={() => setPixPendente(null)} className="bg-rose-900/30 hover:bg-rose-900/80 text-rose-400 font-bold px-5 rounded-xl text-xs uppercase tracking-wide transition-colors border border-rose-500/30">
+                            <button onClick={() => setPixPendente(null)} className="bg-rose-900/30 hover:bg-rose-900/80 text-rose-400 font-bold px-4 rounded-xl text-[10px] uppercase tracking-wide transition-colors border border-rose-500/30">
                                 Cancelar
                             </button>
                         </div>
                     </div>
                   ) : (
-                    <form onSubmit={solicitarGeracaoPix} className="flex flex-col gap-5 mt-auto relative z-10">
+                    <form onSubmit={solicitarGeracaoPix} className="flex flex-col gap-3 mt-auto relative z-10">
                       <div>
-                        <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-2 block">Valor da Recarga (R$)</label>
+                        <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-1.5 block">Valor da Recarga (R$)</label>
                         <div className="relative">
-                          <span className="absolute left-5 top-1/2 -translate-y-1/2 text-zinc-400 font-black text-base">R$</span>
-                          <input type="number" min="15" step="1" value={valorRecarga} onChange={e => setValorRecarga(e.target.value)} className="w-full pl-14 pr-5 py-4 bg-zinc-950 border border-zinc-800 text-white rounded-2xl focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none font-black text-lg" required />
+                          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 font-black text-base">R$</span>
+                          <input type="number" min="15" step="1" value={valorRecarga} onChange={e => setValorRecarga(e.target.value)} className="w-full pl-12 pr-4 py-3 bg-zinc-950 border border-zinc-800 text-white rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none font-black text-base transition-all" required />
                         </div>
-                        <span className="text-[10px] font-bold text-zinc-500 mt-2 block">Valor mínimo: R$ 15,00</span>
                       </div>
                       
-                      {/* 🚀 NOVO CAMPO DE CPF AQUI */}
                       <div>
-                        <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-2 block">Seu CPF (Exigência do Banco Central)</label>
-                        <input type="text" placeholder="Apenas números..." value={cpfRecarga} onChange={e => setCpfRecarga(e.target.value)} maxLength="14" className="w-full px-5 py-4 bg-zinc-950 border border-zinc-800 text-white font-bold rounded-2xl focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none text-sm placeholder-zinc-600" required />
+                        <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-1.5 block">Seu CPF (Exigência do Banco)</label>
+                        <input type="text" placeholder="Apenas números..." value={cpfRecarga} onChange={e => setCpfRecarga(e.target.value)} maxLength="14" className="w-full px-4 py-3 bg-zinc-950 border border-zinc-800 text-white font-bold rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none text-sm placeholder-zinc-600 transition-all" required />
                       </div>
 
                       <div>
-                        <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-2 block">Cupom Promocional</label>
-                        <input type="text" placeholder="Ex: BORA20" value={cupomRecarga} onChange={e => setCupomRecarga(e.target.value.toUpperCase())} className="w-full px-5 py-4 bg-zinc-950 border border-zinc-800 text-white font-bold rounded-2xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none uppercase placeholder:normal-case placeholder-zinc-600 text-sm" />
+                        <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-1.5 block">Cupom Promocional</label>
+                        <input type="text" placeholder="Ex: BORA20" value={cupomRecarga} onChange={e => setCupomRecarga(e.target.value.toUpperCase())} className="w-full px-4 py-3 bg-zinc-950 border border-zinc-800 text-white font-bold rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none uppercase placeholder:normal-case placeholder-zinc-600 text-sm transition-all" />
                       </div>
   
-                      <button type="submit" className="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-black uppercase tracking-wider py-4 px-6 rounded-2xl transition-all shadow-lg shadow-cyan-600/20 mt-3 flex items-center justify-center gap-2 text-sm">
-                        <span>Gerar PIX</span> <span className="text-lg">⚡</span>
+                      <button type="submit" className="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-black uppercase tracking-wider py-3.5 px-6 rounded-xl transition-all shadow-lg shadow-cyan-600/20 mt-1 flex items-center justify-center gap-2 text-xs">
+                        <span>Gerar PIX</span> <span className="text-base">⚡</span>
                       </button>
 
-                      <div className="mt-6 pt-5 border-t border-zinc-800/50 flex flex-col items-center gap-2 opacity-80">
-                        <div className="flex items-center gap-2 text-zinc-400 text-[10px] uppercase tracking-widest font-bold">
+                      <div className="mt-3 pt-3 border-t border-zinc-800/50 flex flex-col items-center gap-1 opacity-80">
+                        <div className="flex items-center gap-2 text-zinc-400 text-[9px] uppercase tracking-widest font-bold">
                           <span>🔒 Pagamento 100% Seguro</span>
                           <span className="text-zinc-700">•</span>
-                          <span>🪙 Aceitamos PIX</span>
+                          <span>🪙 PIX</span>
                         </div>
-                        <div className="text-[10px] text-zinc-500 flex items-center gap-1 font-medium text-center mt-1">
-                          Transação blindada e processada por <strong className="text-white">Asaas Instituição de Pagamento S.A.</strong>
+                        <div className="text-[9px] text-zinc-500 flex items-center gap-1 font-medium text-center">
+                          Processado por <strong className="text-white">Asaas Instituição de Pagamento</strong>
                         </div>
                       </div>
                     </form>
