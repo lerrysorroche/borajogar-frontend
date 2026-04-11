@@ -1193,6 +1193,16 @@ function App() {
                         R$ {(usuarioLogado.saldo || 0).toFixed(2)}
                       </span>
                     </div>
+                    
+                    {/* 🚀 SINO DE NOTIFICAÇÃO NEON */}
+                    <button onClick={() => {setAbaAtual('dashboard'); window.scrollTo(0,0);}} className="hidden md:flex relative items-center justify-center w-10 h-10 rounded-xl bg-zinc-900 border border-zinc-800 hover:border-orange-500/50 hover:bg-orange-500/10 transition-all group">
+                      <span className="text-lg grayscale group-hover:grayscale-0 transition-all">🔔</span>
+                      <span className="absolute -top-1 -right-1 flex h-3 w-3">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-3 w-3 bg-orange-500 border border-zinc-900"></span>
+                      </span>
+                    </button>
+
                     <span className="hidden md:block text-xs text-zinc-400">Olá, <strong className="text-white">{usuarioLogado.nome}</strong></span>
                     <button onClick={sair} className="hidden md:block bg-zinc-800 hover:bg-rose-600 hover:text-white text-zinc-300 px-4 py-2 rounded-xl transition-colors text-xs font-bold uppercase tracking-wider">Sair</button>
 
@@ -1509,7 +1519,67 @@ function App() {
 
           {abaAtual === 'dashboard' && (
             <div className="animate-fade-in max-w-5xl mx-auto space-y-8">
-              <h2 className="text-2xl font-black text-white tracking-tight mb-8">Meu Painel de Controle</h2>
+              
+              {/* 🚀 CABEÇALHO DO PERFIL CYBERPUNK */}
+              <div className="bg-gradient-to-r from-purple-900/20 via-zinc-900 to-zinc-900 border border-purple-500/30 rounded-3xl p-6 md:p-8 flex flex-col md:flex-row items-center gap-6 shadow-2xl relative overflow-hidden">
+                <div className="absolute -left-10 -top-10 w-40 h-40 bg-purple-600/10 blur-3xl rounded-full pointer-events-none"></div>
+                
+                {/* Avatar Automático DiceBear */}
+                <div className="relative">
+                  <div className="w-24 h-24 rounded-2xl bg-zinc-950 border-2 border-purple-500/50 shadow-[0_0_15px_rgba(168,85,247,0.3)] p-1 overflow-hidden flex items-center justify-center">
+                    <img src={`https://api.dicebear.com/7.x/bottts/svg?seed=${usuarioLogado.nome}&colors=purple,green,orange`} alt="Avatar" className="w-full h-full object-cover" />
+                  </div>
+                  {historicoAlugueis.length > 0 && (
+                    <div className="absolute -bottom-3 -right-3 bg-zinc-950 rounded-full p-1">
+                      <div className="bg-emerald-500 w-6 h-6 rounded-full flex items-center justify-center shadow-[0_0_10px_rgba(16,185,129,0.5)] border border-emerald-300">
+                        <span className="text-[10px]">✨</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex-1 text-center md:text-left z-10">
+                  <h2 className="text-2xl md:text-3xl font-black text-white tracking-tight leading-none mb-2">{usuarioLogado.nome}</h2>
+                  <p className="text-sm font-mono-tech text-zinc-400 mb-4">{usuarioLogado.email}</p>
+                  
+                  <div className="flex flex-wrap items-center justify-center md:justify-start gap-3">
+                    <span className="bg-zinc-950 border border-zinc-800 text-zinc-300 px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5">
+                      🎮 {historicoAlugueis.length} Locações
+                    </span>
+                    {historicoAlugueis.length > 0 ? (
+                      <span className="bg-purple-900/40 text-purple-400 border border-purple-500/50 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5 shadow-[0_0_10px_rgba(168,85,247,0.2)] animate-pulse-slow">
+                        🏆 Rank: Veterano
+                      </span>
+                    ) : (
+                      <span className="bg-zinc-800 text-zinc-500 border border-zinc-700 px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider">
+                        🌱 Rank: Novato
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* 🚀 ALERTA DE ALTERAÇÃO DE FILA (EXEMPLO VISUAL) */}
+              <div className="bg-orange-950/30 border border-orange-500/40 rounded-3xl p-6 md:p-8 shadow-[0_0_20px_rgba(249,115,22,0.1)] flex flex-col gap-4 animate-fade-in relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-1 h-full bg-orange-500"></div>
+                <div className="flex items-start gap-4">
+                  <span className="text-3xl animate-bounce">⚠️</span>
+                  <div>
+                    <h3 className="text-orange-400 font-black text-lg tracking-tight uppercase mb-1">Atualização na sua Reserva</h3>
+                    <p className="text-sm text-zinc-300 leading-relaxed font-medium">
+                      Devido à prioridade de clientes Veteranos (Rank 1), a data prevista para a liberação do seu jogo <strong className="text-white">Resident Evil Requiem</strong> foi alterada para <strong className="text-orange-400">11/05/2026</strong>.
+                    </p>
+                  </div>
+                </div>
+                <div className="flex flex-col sm:flex-row gap-3 mt-2 pl-0 sm:pl-12">
+                  <button className="flex-1 bg-orange-600 hover:bg-orange-500 text-white font-bold uppercase tracking-wider py-3 px-6 rounded-xl text-xs transition-colors shadow-lg shadow-orange-600/20">
+                    👍 Entendi, manter reserva
+                  </button>
+                  <button className="flex-1 bg-zinc-900 hover:bg-zinc-800 text-zinc-300 font-bold uppercase tracking-wider py-3 px-6 rounded-xl border border-zinc-700 text-xs transition-colors">
+                    💸 Cancelar e Estornar Crédito
+                  </button>
+                </div>
+              </div>
               
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
                 <section className="bg-gradient-to-br from-cyan-900/20 to-zinc-900 p-6 md:p-8 rounded-3xl border border-cyan-500/30 shadow-2xl shadow-cyan-500/10 flex flex-col h-auto lg:h-[540px] relative overflow-hidden hover:-translate-y-1 transition-transform duration-300">
