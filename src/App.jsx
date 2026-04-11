@@ -1514,7 +1514,7 @@ function App() {
                               <span className="text-xs font-black text-amber-400">{jogo.tamanho_fila || 0} pessoa(s)</span>
                             </div>
                             <div className="flex justify-between items-center">
-                              <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">⏳ Sua vez em:</span>
+                              <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">⏳ Próxima vaga em:</span>
                               <span className="text-xs font-black text-blue-400">
                                 {calcularPrevisao(jogo.proxima_devolucao, jogo.tamanho_fila || 0, jogo.data_lancamento)}
                               </span>
