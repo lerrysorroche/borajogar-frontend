@@ -949,7 +949,7 @@ function App() {
 
       {abaAtual === 'login' && !usuarioLogado && modoLogin && !modoEsqueciSenha ? (
         <div className="flex justify-center items-center min-h-screen p-4 transition-all duration-1000 ease-in-out" style={{ backgroundImage: `url('${currentBanner}')`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
-          <div className="absolute inset-0 bg-zinc-950/80 backdrop-blur-md"></div>
+          <div className="absolute inset-0 bg-zinc-950/80 backdrop-blur"></div>
           <div className="relative z-10 bg-zinc-900 p-8 md:p-10 rounded-3xl border border-zinc-800 w-full max-w-md shadow-2xl animate-fade-in">
             <h2 className="text-3xl font-black text-center text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400 mb-8 tracking-tighter">BORA JOGAR!</h2>
             
@@ -983,7 +983,7 @@ function App() {
         </div>
       ) : abaAtual === 'login' && !usuarioLogado && !modoLogin && !modoEsqueciSenha ? (
         <div className="flex justify-center items-center min-h-screen p-4 transition-all duration-1000 ease-in-out" style={{ backgroundImage: `url('${currentBanner}')`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
-          <div className="absolute inset-0 bg-zinc-950/80 backdrop-blur-md"></div>
+          <div className="absolute inset-0 bg-zinc-950/80 backdrop-blur"></div>
           <div className="relative z-10 bg-zinc-900 p-8 md:p-10 rounded-3xl border border-zinc-800 w-full max-w-md shadow-2xl animate-fade-in">
             <h2 className="text-3xl font-black text-center text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400 mb-8 tracking-tighter">BORA JOGAR!</h2>
             <form onSubmit={registrarConta} className="space-y-4 animate-fade-in">
@@ -1027,7 +1027,7 @@ function App() {
         </div>
       ) : abaAtual === 'login' && !usuarioLogado && modoEsqueciSenha ? (
           <div className="flex justify-center items-center min-h-screen p-4 transition-all duration-1000 ease-in-out" style={{ backgroundImage: `url('${currentBanner}')`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
-            <div className="absolute inset-0 bg-zinc-950/80 backdrop-blur-md"></div>
+            <div className="absolute inset-0 bg-zinc-950/80 backdrop-blur"></div>
             <div className="relative z-10 bg-zinc-900 p-8 md:p-10 rounded-3xl border border-zinc-800 w-full max-w-md shadow-2xl animate-fade-in">
               <h2 className="text-3xl font-black text-center text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400 mb-8 tracking-tighter">BORA JOGAR!</h2>
               <form onSubmit={solicitarRecuperacaoSenha} className="space-y-5 animate-fade-in">
