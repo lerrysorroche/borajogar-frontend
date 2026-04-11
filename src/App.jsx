@@ -838,6 +838,7 @@ function App() {
   const historicoAlugueis = meusAlugueis.filter(item => item.status === 'EXPIRADA').slice(0, 5)
 
   const inputClass = "w-full p-3 bg-zinc-900 border border-zinc-700 text-sm font-medium text-white rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all placeholder-zinc-500"
+  const subtitleCyberClass = "text-[11px] font-mono-tech font-bold text-center mb-10 tracking-[0.2em] uppercase bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent animate-neon-flicker block select-none";
   const navBtnClass = "text-sm font-bold px-4 py-2 rounded-xl transition-all duration-300"
   const adminInputClass = "w-full px-4 py-2.5 text-sm font-medium bg-zinc-950 border border-zinc-800 text-white rounded-xl focus:ring-1 focus:ring-blue-500 focus:outline-none transition-all placeholder-zinc-600"
   const adminCardClass = "bg-zinc-900 p-6 md:p-8 rounded-3xl border border-zinc-800 shadow-2xl flex flex-col"
@@ -1048,7 +1049,7 @@ function App() {
           <div className="absolute inset-0 bg-zinc-950/80 backdrop-blur"></div>
           <div className="relative z-10 bg-zinc-900 p-8 md:p-10 rounded-3xl border border-zinc-800 w-full max-w-md shadow-2xl animate-fade-in">
             <h2 className="text-3xl font-black text-center text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400 mb-8 tracking-tighter">BORA JOGAR!</h2>
-            <h4 className="mt-3 text-base text-zinc-400 uppercase leading-relaxed text-center">A sua Próxima Aventura Começa Aqui!</h4><br></br>
+            <span className={subtitleCyberClass}>A sua Próxima Aventura Começa Aqui!</span>
             
             <form onSubmit={entrarNoSistema} className="space-y-5 animate-fade-in">
               <input type="email" placeholder="Seu E-mail" value={formEmail} onChange={e => setFormEmail(e.target.value)} className={inputClass} required />
@@ -1083,7 +1084,7 @@ function App() {
           <div className="absolute inset-0 bg-zinc-950/80 backdrop-blur"></div>
           <div className="relative z-10 bg-zinc-900 p-8 md:p-10 rounded-3xl border border-zinc-800 w-full max-w-md shadow-2xl animate-fade-in">
             <h2 className="text-3xl font-black text-center text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400 mb-8 tracking-tighter">BORA JOGAR!</h2>
-            <h4 className="mt-3 text-base text-zinc-400 uppercase leading-relaxed text-center">A sua Próxima Aventura Começa Aqui!</h4><br></br>
+            <span className={subtitleCyberClass}>A sua Próxima Aventura Começa Aqui!</span>
             <form onSubmit={registrarConta} className="space-y-4 animate-fade-in">
               <input type="text" placeholder="Nome Completo" value={cadNome} onChange={e => setCadNome(e.target.value)} className={inputClass} required />
               <input type="email" placeholder="E-mail" value={cadEmail} onChange={e => setCadEmail(e.target.value)} className={inputClass} required />
@@ -1128,7 +1129,7 @@ function App() {
             <div className="absolute inset-0 bg-zinc-950/80 backdrop-blur"></div>
             <div className="relative z-10 bg-zinc-900 p-8 md:p-10 rounded-3xl border border-zinc-800 w-full max-w-md shadow-2xl animate-fade-in">
               <h2 className="text-3xl font-black text-center text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400 mb-8 tracking-tighter">BORA JOGAR!</h2>
-              <h4 className="mt-3 text-base text-zinc-400 uppercase leading-relaxed text-center">A sua Próxima Aventura Começa Aqui!</h4><br></br>
+              <span className={subtitleCyberClass}>A sua Próxima Aventura Começa Aqui!</span>
               <form onSubmit={solicitarRecuperacaoSenha} className="space-y-5 animate-fade-in">
                   <p className="text-sm text-zinc-400 text-center mb-6 leading-relaxed">
                     Digite seu e-mail de cadastro. Se ele existir, enviaremos uma senha temporária em instantes.
