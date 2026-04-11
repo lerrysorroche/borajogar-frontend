@@ -591,7 +591,8 @@ function App() {
         nome: modalEdicaoCliente.nome,
         email: modalEdicaoCliente.email,
         telefone: modalEdicaoCliente.telefone,
-        saldo: parseFloat(modalEdicaoCliente.saldo)
+        saldo: parseFloat(modalEdicaoCliente.saldo),
+        motivo_ajuste: modalEdicaoCliente.motivo_ajuste || "Ajuste Administrativo" // 🚀 Envia o motivo
       })
     }).then(async res => {
       if (res.ok) {
@@ -919,9 +920,17 @@ function App() {
                 </div>
               </div>
 
-              <div>
-                <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1 block">Saldo na Carteira (R$)</label>
-                <input type="number" step="0.01" value={modalEdicaoCliente.saldo} onChange={e => setModalEdicaoCliente({...modalEdicaoCliente, saldo: e.target.value})} className={adminInputClass} required />
+              <div className="flex flex-col md:flex-row gap-4">
+                <div className="w-full">
+                  <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1 block">Saldo na Carteira (R$)</label>
+                  <input type="number" step="0.01" value={modalEdicaoCliente.saldo} onChange={e => setModalEdicaoCliente({...modalEdicaoCliente, saldo: e.target.value})} className={adminInputClass} required />
+                </div>
+                
+                {/* 🚀 NOVO CAMPO: Motivo do Ajuste */}
+                <div className="w-full">
+                  <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1 block">Motivo (Aparecerá no Extrato)</label>
+                  <input type="text" placeholder="Ex: Bônus, Correção..." value={modalEdicaoCliente.motivo_ajuste || ''} onChange={e => setModalEdicaoCliente({...modalEdicaoCliente, motivo_ajuste: e.target.value})} className={adminInputClass} />
+                </div>
               </div>
 
               <div className="flex gap-3 mt-4 pt-4 border-t border-zinc-800">
