@@ -468,9 +468,9 @@ function App() {
 
   const carregarDados = () => {
     // ====================================================================
-    // 🚀 1. DADOS PÚBLICOS (Carrega para TODOS, logados ou visitantes)
+    // 🚀 1. DADOS PÚBLICOS (Garante que sempre receba um Array)
     // ====================================================================
-    fetch('https://borajogar-api.onrender.com/jogos').then(res => res.ok ? res.json() : []).then(dados => setJogos(dados));
+    fetch('https://borajogar-api.onrender.com/jogos').then(res => res.ok ? res.json() : []).then(dados => setJogos(Array.isArray(dados) ? dados : []));
     fetch('https://borajogar-api.onrender.com/configuracoes').then(res => res.ok ? res.json() : {}).then(dados => setConfigSistema(dados));
     
     let urlEnquete = 'https://borajogar-api.onrender.com/enquete';
@@ -481,7 +481,7 @@ function App() {
     });
 
     // ====================================================================
-    // 🚀 2. TRAVA DE SEGURANÇA (Visitantes param por aqui)
+    // 🚀 2. TRAVA DE SEGURANÇA 
     // ====================================================================
     if (!usuarioLogado) return;
     
@@ -489,24 +489,24 @@ function App() {
     // 🚀 3. DADOS DE ADMIN
     // ====================================================================
     if (usuarioLogado.is_admin) {
-      fetch('https://borajogar-api.onrender.com/admin/locacoes', { headers: getAuthHeaders() }).then(res => res.ok ? res.json() : []).then(dados => setTodasLocacoes(dados))
-      fetch('https://borajogar-api.onrender.com/admin/reservas', { headers: getAuthHeaders() }).then(res => res.ok ? res.json() : []).then(dados => setTodasReservas(dados))
+      fetch('https://borajogar-api.onrender.com/admin/locacoes', { headers: getAuthHeaders() }).then(res => res.ok ? res.json() : []).then(dados => setTodasLocacoes(Array.isArray(dados) ? dados : []))
+      fetch('https://borajogar-api.onrender.com/admin/reservas', { headers: getAuthHeaders() }).then(res => res.ok ? res.json() : []).then(dados => setTodasReservas(Array.isArray(dados) ? dados : []))
       fetch('https://borajogar-api.onrender.com/admin/estatisticas', { headers: getAuthHeaders() }).then(res => res.ok ? res.json() : {faturamento: 0, total_clientes: 0, locacoes_ativas: 0}).then(dados => setEstatisticasAdmin(dados))
-      fetch('https://borajogar-api.onrender.com/usuarios', { headers: getAuthHeaders() }).then(res => res.ok ? res.json() : []).then(dados => setTodosUsuarios(dados))
-      fetch('https://borajogar-api.onrender.com/admin/manutencao', { headers: getAuthHeaders() }).then(res => res.ok ? res.json() : []).then(dados => setContasManutencao(dados))
+      fetch('https://borajogar-api.onrender.com/usuarios', { headers: getAuthHeaders() }).then(res => res.ok ? res.json() : []).then(dados => setTodosUsuarios(Array.isArray(dados) ? dados : []))
+      fetch('https://borajogar-api.onrender.com/admin/manutencao', { headers: getAuthHeaders() }).then(res => res.ok ? res.json() : []).then(dados => setContasManutencao(Array.isArray(dados) ? dados : []))
     }
     
     // ====================================================================
     // 🚀 4. DADOS DO CLIENTE
     // ====================================================================
-    fetch(`https://borajogar-api.onrender.com/meus-alugueis/${usuarioLogado.id}`).then(res => res.json()).then(dados => setMeusAlugueis(dados))
-    fetch(`https://borajogar-api.onrender.com/minhas-reservas/${usuarioLogado.id}`).then(res => res.json()).then(dados => setMinhasReservas(dados))
-    fetch(`https://borajogar-api.onrender.com/extrato/${usuarioLogado.id}`).then(res => res.json()).then(dados => setExtrato(dados))
-    fetch(`https://borajogar-api.onrender.com/notificacoes/${usuarioLogado.id}`).then(res => res.json()).then(dados => setNotificacoes(dados))
+    fetch(`https://borajogar-api.onrender.com/meus-alugueis/${usuarioLogado.id}`).then(res => res.ok ? res.json() : []).then(dados => setMeusAlugueis(Array.isArray(dados) ? dados : []))
+    fetch(`https://borajogar-api.onrender.com/minhas-reservas/${usuarioLogado.id}`).then(res => res.ok ? res.json() : []).then(dados => setMinhasReservas(Array.isArray(dados) ? dados : []))
+    fetch(`https://borajogar-api.onrender.com/extrato/${usuarioLogado.id}`).then(res => res.ok ? res.json() : []).then(dados => setExtrato(Array.isArray(dados) ? dados : []))
+    fetch(`https://borajogar-api.onrender.com/notificacoes/${usuarioLogado.id}`).then(res => res.ok ? res.json() : []).then(dados => setNotificacoes(Array.isArray(dados) ? dados : []))
     
     // 🚀 CORREÇÃO DO SALDO GLOBAL
     fetch(`https://borajogar-api.onrender.com/usuarios/${usuarioLogado.id}/saldo`)
-      .then(res => res.json())
+      .then(res => res.ok ? res.json() : null)
       .then(data => {
         if (data && data.saldo !== undefined) {
           const saldoReal = parseFloat(data.saldo);
@@ -518,7 +518,7 @@ function App() {
             localStorage.setItem('usuarioBoraJogar', JSON.stringify(userStorage));
           }
         }
-      });
+      }).catch(err => console.log("Aguardando backend..."));
   }
 
   // 🚀 FUNÇÕES DE AÇÃO DO ALERTA DE FILA
@@ -796,8 +796,12 @@ function App() {
     if (aDisponivel && !bDisponivel) return -1;
     if (!aDisponivel && bDisponivel) return 1;
     
-    if (b.popularidade !== a.popularidade) {
-        return b.popularidade - a.popularidade;
+    // 🚀 BLINDAGEM: Garante que undefined vire 0 na matemática
+    const popA = a.popularidade || 0;
+    const popB = b.popularidade || 0;
+    
+    if (popB !== popA) {
+        return popB - popA;
     }
     
     return b.id - a.id;
