@@ -102,6 +102,7 @@ function App() {
 
   const [valorRecarga, setValorRecarga] = useState('15')
   const [cupomRecarga, setCupomRecarga] = useState('')
+  const [cpfRecarga, setCpfRecarga] = useState('') // 🚀 NOVO CAMPO DE CPF
   const [listaCupons, setListaCupons] = useState([])
   const [novoCupomCodigo, setNovoCupomCodigo] = useState('')
   const [novoCupomTipo, setNovoCupomTipo] = useState('PORCENTAGEM')
@@ -128,11 +129,15 @@ function App() {
     const valorReal = parseFloat(valorRecarga);
     if (isNaN(valorReal) || valorReal < 15) { mostrarToast("O valor mínimo para recarga é de R$ 15,00", "erro"); return; }
     
+    // 🚀 VALIDAÇÃO SIMPLES DO CPF
+    const cpfLimpo = cpfRecarga.replace(/\D/g, '');
+    if (cpfLimpo.length !== 11) { mostrarToast("Por favor, digite um CPF válido com 11 números.", "erro"); return; }
+    
     mostrarToast("Gerando código PIX seguro...", "aviso");
 
     fetch('https://borajogar-api.onrender.com/recarga/gerar-pix', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ utilizador_id: usuarioLogado.id, valor: valorReal, cupom: cupomRecarga })
+      body: JSON.stringify({ utilizador_id: usuarioLogado.id, valor: valorReal, cupom: cupomRecarga, cpf: cpfLimpo }) // 🚀 ENVIANDO O CPF
     }).then(async res => {
       const data = await res.json()
       if (res.ok) { 
@@ -1518,7 +1523,13 @@ function App() {
                         </div>
                         <span className="text-[10px] font-bold text-zinc-500 mt-2 block">Valor mínimo: R$ 15,00</span>
                       </div>
-  
+                      
+                      {/* 🚀 NOVO CAMPO DE CPF AQUI */}
+                      <div>
+                        <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-2 block">Seu CPF (Exigência do Banco Central)</label>
+                        <input type="text" placeholder="Apenas números..." value={cpfRecarga} onChange={e => setCpfRecarga(e.target.value)} maxLength="14" className="w-full px-5 py-4 bg-zinc-950 border border-zinc-800 text-white font-bold rounded-2xl focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none text-sm placeholder-zinc-600" required />
+                      </div>
+
                       <div>
                         <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-2 block">Cupom Promocional</label>
                         <input type="text" placeholder="Ex: BORA20" value={cupomRecarga} onChange={e => setCupomRecarga(e.target.value.toUpperCase())} className="w-full px-5 py-4 bg-zinc-950 border border-zinc-800 text-white font-bold rounded-2xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none uppercase placeholder:normal-case placeholder-zinc-600 text-sm" />
