@@ -2180,7 +2180,7 @@ function App() {
           {abaAtual === 'admin' && usuarioLogado.is_admin && (
             <div className="animate-fade-in mt-2 max-w-6xl mx-auto">
               <h2 className="text-2xl md:text-3xl font-black text-white tracking-tight mb-8">Administração do Sistema</h2>
-              
+              {/* 📊 BLOCOS ESTATISTICAS DO SISTEMA */}
               <section className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
                 <div className="bg-gradient-to-br from-emerald-900/40 to-zinc-900 border border-emerald-500/30 p-8 rounded-3xl shadow-xl shadow-emerald-500/10 relative overflow-hidden hover:-translate-y-1 transition-transform duration-300">
                   <div className="absolute -right-4 -top-4 text-8xl opacity-5">💰</div>
@@ -2200,7 +2200,7 @@ function App() {
               </section>
 
               <div className="flex flex-col gap-8 mb-10">
-                  {/* 🖼️ HERO BANNER E CONFIGURAÇÕES */}
+                  {/* 🖼️ BLOCO CONFIGURAÇÕES DA VITRINE E BANNERS */}
                   <details className="group bg-zinc-900/80 rounded-3xl border border-zinc-800 border-l-4 border-l-orange-500 shadow-2xl shadow-orange-500/10 [&_summary::-webkit-details-marker]:hidden overflow-hidden">
                       <summary className="flex items-center justify-between p-6 md:p-8 cursor-pointer hover:bg-orange-900/10 transition-colors select-none relative">
                       <span className="flex items-center gap-3 relative z-10 text-lg font-black text-orange-400 tracking-tight">🖼️ Configurações da Vitrine e Banners</span>
@@ -2233,7 +2233,7 @@ function App() {
                       </div>
                   </details>
 
-                  {/* 📊 GESTÃO DA ENQUETE (NOVO) */}
+                  {/* 📊 BLOCO GESTÃO DA ENQUETE */}
                   <details className="group bg-gradient-to-r from-fuchsia-900/20 to-zinc-900 rounded-3xl border border-fuchsia-500/30 shadow-2xl shadow-fuchsia-500/10 border-l-4 border-l-fuchsia-500 [&_summary::-webkit-details-marker]:hidden overflow-hidden">
                       <summary className="flex items-center justify-between p-6 md:p-8 cursor-pointer hover:bg-fuchsia-900/10 transition-colors select-none relative">
                       <span className="flex items-center gap-3 relative z-10 text-lg font-black text-fuchsia-400 tracking-tight">📊 Gestão da Enquete</span>
@@ -2275,7 +2275,7 @@ function App() {
                       </div>
                   </details>
 
-                  {/* 🎫 CUPONS PROMOCIONAIS */}
+                  {/* 🎫 BLOCO CUPONS PROMOCIONAIS */}
                   <details className="group bg-gradient-to-r from-purple-900/20 to-zinc-900 rounded-3xl border border-purple-500/30 shadow-2xl shadow-purple-500/10 [&_summary::-webkit-details-marker]:hidden overflow-hidden">
                       <summary className="flex items-center justify-between p-6 md:p-8 cursor-pointer hover:bg-purple-900/10 transition-colors select-none relative">
                       <span className="flex items-center gap-3 relative z-10 text-lg font-black text-purple-400 tracking-tight">🎫 Gerenciar Cupons Promocionais</span>
@@ -2317,6 +2317,7 @@ function App() {
                   </details>
               </div>
 
+              {/* 🚨 BLOCO MANUTENÇÃO DE CONTAS */}
               {contasManutencao.length > 0 && (
                 <section className="bg-rose-950/20 border border-rose-500/50 shadow-2xl shadow-rose-500/10 p-8 rounded-3xl mb-10 animate-pulse-slow">
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
@@ -2386,7 +2387,7 @@ function App() {
 
               <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 mb-10">
                   
-                  {/* ➕ CADASTRAR NOVO JOGO */}
+                  {/* ➕ BLOCO CADASTRAR NOVO JOGO */}
                   <div className="bg-gradient-to-br from-blue-900/20 to-zinc-900 rounded-3xl border border-blue-500/30 p-8 shadow-2xl shadow-blue-500/10 flex flex-col">
                       <h3 className="text-lg font-black text-blue-400 tracking-tight mb-8 flex items-center gap-3">➕ Cadastrar Novo Jogo</h3>
                       <form onSubmit={cadastrarJogo} className="space-y-4 flex-1 flex flex-col">
@@ -2422,7 +2423,7 @@ function App() {
                       </form>
                   </div>
 
-                  {/* 📦 ABASTECER ESTOQUE */}
+                  {/* 📦 BLOCO ABASTECER ESTOQUE */}
                   <div className="bg-gradient-to-br from-fuchsia-900/20 to-zinc-900 rounded-3xl border border-fuchsia-500/30 p-8 shadow-2xl shadow-fuchsia-500/10 flex flex-col">
                       <h3 className="text-lg font-black text-fuchsia-400 tracking-tight mb-8 flex items-center gap-3">📦 Abastecer Estoque</h3>
                       <input type="text" placeholder="🔍 Filtrar jogo na lista abaixo..." value={buscaEstoque} onChange={e => setBuscaEstoque(e.target.value)} className={`${adminInputClass} mb-4 border-fuchsia-500/30 focus:ring-fuchsia-500`} />
@@ -2439,6 +2440,7 @@ function App() {
 
               <div className="flex flex-col gap-8 mb-10">
 
+                  {/* 🎮 BLOCO CATALOGO DE JOGOS */}
                   <details className="group bg-zinc-900/80 rounded-3xl border border-zinc-800 border-l-4 border-l-blue-500 shadow-2xl shadow-blue-500/10 [&_summary::-webkit-details-marker]:hidden overflow-hidden">
                       <summary className="flex items-center justify-between p-6 md:p-8 cursor-pointer hover:bg-blue-900/10 transition-colors select-none">
                       <span className="flex items-center gap-3 text-lg font-black text-blue-400 tracking-tight">🎮 Catálogo de Jogos ({jogos.length})</span>
@@ -2478,26 +2480,23 @@ function App() {
                       </div>
                   </details>
 
+                  {/* 🔑 BLOCO LOCAÇÕES ATIVAS */}
                   <details className="group bg-zinc-900/80 rounded-3xl border border-zinc-800 border-l-4 border-l-emerald-500 shadow-2xl shadow-emerald-500/10 [&_summary::-webkit-details-marker]:hidden overflow-hidden">
                       <summary className="flex items-center justify-between p-6 md:p-8 cursor-pointer hover:bg-emerald-900/10 transition-colors select-none">
                       <span className="flex items-center gap-3 text-lg font-black text-emerald-400 tracking-tight">🔑 Locações Ativas ({locacoesAtivasFiltradas.length})</span>
                       <span className="transition duration-300 group-open:-rotate-180 text-emerald-500 text-lg">▼</span>
                       </summary>
                       <div className="px-6 md:px-8 pb-6 md:pb-8 border-t border-zinc-800/50 pt-8">
-                      <div className="mb-6 flex flex-col gap-4">
-                          <input type="text" placeholder="🔍 Buscar locação por jogo ou cliente..." value={buscaLocacao} onChange={e => setBuscaLocacao(e.target.value)} className={adminInputClass} />
-                          <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between bg-zinc-950 p-4 rounded-2xl border border-zinc-800/80 shadow-inner">
-                            <div className="flex flex-col gap-1 w-full md:w-auto">
-                              <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Ordenar por:</label>
-                              <select value={ordenacaoLocacoes} onChange={e => setOrdenacaoLocacoes(e.target.value)} className="bg-zinc-900 border border-emerald-500/30 text-zinc-300 text-sm font-bold rounded-xl px-3 py-2.5 focus:ring-2 focus:ring-emerald-500 outline-none w-full md:w-56 cursor-pointer hover:border-emerald-400 transition-colors">
-                                <option value="expira_breve">⏳ Expira mais Rápido</option>
-                                <option value="expira_longe">📅 Demora a Expirar</option>
-                                <option value="az_cliente">👤 Cliente (A-Z)</option>
+                      {/* 🚀 BARRA DE BUSCA E FILTRO - LOCAÇÕES ATIVAS */}
+                        <div className="mb-6 flex flex-col md:flex-row gap-4 bg-zinc-950 p-4 rounded-2xl border border-zinc-800/80 shadow-inner">
+                            <input type="text" placeholder="🔍 Buscar locação por jogo ou cliente..." value={buscaLocacao} onChange={e => setBuscaLocacao(e.target.value)} className={`${adminInputClass} flex-1`} />
+                            <select value={ordenacaoLocacoes} onChange={e => setOrdenacaoLocacoes(e.target.value)} className="bg-zinc-900 border border-emerald-500/30 text-zinc-300 text-sm font-bold rounded-xl px-3 py-2.5 focus:ring-2 focus:ring-emerald-500 outline-none w-full md:w-56 cursor-pointer hover:border-emerald-400 transition-colors">
+                                <option value="expira_breve">⏳ Expira em Breve</option>
+                                <option value="recentes">🆕 Mais Recentes</option>
                                 <option value="az_jogo">🎮 Jogo (A-Z)</option>
-                              </select>
-                            </div>
-                          </div>
-                      </div>
+                                <option value="az_cliente">👤 Cliente (A-Z)</option>
+                            </select>
+                        </div>
                       <div className="max-h-[600px] overflow-y-auto pr-3 custom-scrollbar">
                           {locacoesAtivasFiltradas.length === 0 ? <p className="text-zinc-500 text-sm font-medium">Nenhuma locação ativa.</p> : (
                           <table className="w-full text-left text-sm whitespace-nowrap">
@@ -2534,8 +2533,8 @@ function App() {
                       </div>
                   </details>
 
-                  {/* ⏳ RESERVAS PENDENTES (NOVO BLOCO ADMIN) */}
-                  <details className="group bg-zinc-900/80 rounded-3xl border border-zinc-800 border-l-4 border-l-amber-500 shadow-2xl shadow-amber-500/10 [&_summary::-webkit-details-marker]:hidden overflow-hidden mt-8">
+                  {/* ⏳ BLOCO FILA DE ESPERA GLOBAL */}
+                  <details className="group bg-zinc-900/80 rounded-3xl border border-zinc-800 border-l-4 border-l-amber-500 shadow-2xl shadow-amber-500/10 [&_summary::-webkit-details-marker]:hidden overflow-hidden">
                       <summary className="flex items-center justify-between p-6 md:p-8 cursor-pointer hover:bg-amber-900/10 transition-colors select-none">
                       <span className="flex items-center gap-3 text-lg font-black text-amber-400 tracking-tight">⏳ Fila de Espera Global ({reservasAdminFiltradas.length})</span>
                       <span className="transition duration-300 group-open:-rotate-180 text-amber-500 text-lg">▼</span>
@@ -2580,36 +2579,43 @@ function App() {
                       </div>
                   </details>
 
+                  {/* 👥 BLOCO BASE DE CLIENTES */}
                   <details className="group bg-zinc-900/80 rounded-3xl border border-zinc-800 border-l-4 border-l-purple-500 shadow-2xl shadow-purple-500/10 [&_summary::-webkit-details-marker]:hidden overflow-hidden">
                       <summary className="flex items-center justify-between p-6 md:p-8 cursor-pointer hover:bg-purple-900/10 transition-colors select-none">
                       <span className="flex items-center gap-3 text-lg font-black text-purple-400 tracking-tight">👥 Base de Clientes ({todosUsuarios.length})</span>
                       <span className="transition duration-300 group-open:-rotate-180 text-purple-500 text-lg">▼</span>
                       </summary>
                       <div className="px-6 md:px-8 pb-6 md:pb-8 border-t border-zinc-800/50 pt-8">
-                      <div className="mb-6 flex flex-col gap-4">
-                          <input type="text" placeholder="🔍 Buscar cliente por nome ou e-mail..." value={buscaCliente} onChange={e => {setBuscaCliente(e.target.value); setPaginaClientes(0);}} className={adminInputClass} />
+                      
+                      {/* 🚀 BARRA DE BUSCA E FILTROS UNIFICADA */}
+                      <div className="mb-6 flex flex-col lg:flex-row gap-4 bg-zinc-950 p-4 rounded-2xl border border-zinc-800/80 shadow-inner items-center">
+                          <input 
+                            type="text" 
+                            placeholder="🔍 Buscar cliente por nome ou e-mail..." 
+                            value={buscaCliente} 
+                            onChange={e => {setBuscaCliente(e.target.value); setPaginaClientes(0);}} 
+                            className={`${adminInputClass} flex-1 w-full`} 
+                          />
                           
-                          <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between bg-zinc-950 p-4 rounded-2xl border border-zinc-800/80 shadow-inner">
-                            <div className="flex flex-col gap-1 w-full md:w-auto">
-                              <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Ordenar por:</label>
-                              <select value={ordenacaoClientes} onChange={e => {setOrdenacaoClientes(e.target.value); setPaginaClientes(0);}} className="bg-zinc-900 border border-purple-500/30 text-zinc-300 text-sm font-bold rounded-xl px-3 py-2.5 focus:ring-2 focus:ring-purple-500 outline-none w-full md:w-56 cursor-pointer hover:border-purple-400 transition-colors">
+                          <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
+                              <select 
+                                value={ordenacaoClientes} 
+                                onChange={e => {setOrdenacaoClientes(e.target.value); setPaginaClientes(0);}} 
+                                className="bg-zinc-900 border border-purple-500/30 text-zinc-300 text-sm font-bold rounded-xl px-3 py-2.5 focus:ring-2 focus:ring-purple-500 outline-none w-full sm:w-48 cursor-pointer hover:border-purple-400 transition-colors"
+                              >
                                 <option value="recentes">⏰ Mais Recentes</option>
                                 <option value="antigos">🕰️ Mais Antigos</option>
                                 <option value="maior_saldo">💰 Maior Saldo</option>
                                 <option value="menor_saldo">📉 Menor Saldo</option>
-                                <option value="az">🔤 Ordem Alfabética (A-Z)</option>
-                                <option value="za">🔠 Ordem Alfabética (Z-A)</option>
+                                <option value="az">🔤 Ordem (A-Z)</option>
+                                <option value="za">🔠 Ordem (Z-A)</option>
                               </select>
-                            </div>
 
-                            <div className="flex flex-col gap-1 w-full md:w-auto">
-                              <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Filtrar Saldo:</label>
-                              <div className="flex bg-zinc-900 rounded-xl p-1 border border-zinc-700/50 shadow-inner w-full md:w-auto overflow-x-auto">
-                                <button onClick={() => {setFiltroSaldoClientes('todos'); setPaginaClientes(0);}} className={`flex-1 md:flex-none px-4 py-2 rounded-lg text-[10px] uppercase tracking-wider font-bold transition-all ${filtroSaldoClientes === 'todos' ? 'bg-purple-600 text-white shadow-md' : 'text-zinc-400 hover:text-white hover:bg-zinc-800'}`}>Todos</button>
-                                <button onClick={() => {setFiltroSaldoClientes('positivo'); setPaginaClientes(0);}} className={`flex-1 md:flex-none px-4 py-2 rounded-lg text-[10px] uppercase tracking-wider font-bold transition-all ${filtroSaldoClientes === 'positivo' ? 'bg-emerald-600 text-white shadow-md' : 'text-zinc-400 hover:text-white hover:bg-zinc-800'}`}>Positivos</button>
-                                <button onClick={() => {setFiltroSaldoClientes('negativo'); setPaginaClientes(0);}} className={`flex-1 md:flex-none px-4 py-2 rounded-lg text-[10px] uppercase tracking-wider font-bold transition-all ${filtroSaldoClientes === 'negativo' ? 'bg-rose-600 text-white shadow-md' : 'text-zinc-400 hover:text-white hover:bg-zinc-800'}`}>Negativados</button>
+                              <div className="flex bg-zinc-900 rounded-xl p-1 border border-zinc-700/50 shadow-inner w-full sm:w-auto">
+                                <button onClick={() => {setFiltroSaldoClientes('todos'); setPaginaClientes(0);}} className={`flex-1 sm:flex-none px-4 py-2 rounded-lg text-[10px] uppercase tracking-wider font-bold transition-all ${filtroSaldoClientes === 'todos' ? 'bg-purple-600 text-white shadow-md' : 'text-zinc-400 hover:text-white hover:bg-zinc-800'}`}>Todos</button>
+                                <button onClick={() => {setFiltroSaldoClientes('positivo'); setPaginaClientes(0);}} className={`flex-1 sm:flex-none px-4 py-2 rounded-lg text-[10px] uppercase tracking-wider font-bold transition-all ${filtroSaldoClientes === 'positivo' ? 'bg-emerald-600 text-white shadow-md' : 'text-zinc-400 hover:text-white hover:bg-zinc-800'}`}>Positivos</button>
+                                <button onClick={() => {setFiltroSaldoClientes('negativo'); setPaginaClientes(0);}} className={`flex-1 sm:flex-none px-4 py-2 rounded-lg text-[10px] uppercase tracking-wider font-bold transition-all ${filtroSaldoClientes === 'negativo' ? 'bg-rose-600 text-white shadow-md' : 'text-zinc-400 hover:text-white hover:bg-zinc-800'}`}>Negativados</button>
                               </div>
-                            </div>
                           </div>
                       </div>
 
@@ -2664,7 +2670,6 @@ function App() {
 
                       </div>
                   </details>
-
               </div>
             </div>
           )}
