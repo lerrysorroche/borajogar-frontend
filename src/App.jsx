@@ -2147,45 +2147,46 @@ function App() {
                   ) : (
                     <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
                       {contasManutencaoFiltradas.map(conta => (
-                      <div key={conta.conta_psn_id} className="bg-zinc-900 p-6 md:p-8 rounded-3xl border border-rose-500/50 flex flex-col gap-6 shadow-lg">
-                        <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
-                          <div className="flex flex-col gap-1.5">
-                            <strong className="text-white text-lg font-black tracking-tight">{conta.jogo}</strong>
-                            <span className="text-xs font-bold text-zinc-400 tracking-wide">Login: <span className="text-white font-medium select-all">{conta.email_login}</span></span>
-                            <span className="text-xs font-bold text-zinc-500 tracking-wide line-through">Senha Velha: <span className="font-mono">{conta.senha_antiga}</span></span>
-                            
-                            <span className="mt-4 text-[10px] font-bold uppercase tracking-wider text-amber-500 bg-amber-500/10 px-3 py-1.5 rounded-xl border border-amber-500/20 w-max">
-                              Último Cliente: {conta.ultimo_cliente_nome || 'Desconhecido'}
-                            </span>
-
-                            {conta.cashback_pendente > 0 && (
-                              <span className="mt-3 text-[10px] font-bold uppercase tracking-wider text-emerald-400 bg-emerald-400/10 px-3 py-1.5 rounded-xl border border-emerald-500/30 w-max">
-                                💸 Cashback Pendente: R$ {conta.cashback_pendente.toFixed(2)}
+                        <div key={conta.conta_psn_id} className="bg-zinc-900 p-6 md:p-8 rounded-3xl border border-rose-500/50 flex flex-col gap-6 shadow-lg">
+                          <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
+                            <div className="flex flex-col gap-1.5">
+                              <strong className="text-white text-lg font-black tracking-tight">{conta.jogo}</strong>
+                              <span className="text-xs font-bold text-zinc-400 tracking-wide">Login: <span className="text-white font-medium select-all">{conta.email_login}</span></span>
+                              <span className="text-xs font-bold text-zinc-500 tracking-wide line-through">Senha Velha: <span className="font-mono">{conta.senha_antiga}</span></span>
+                              
+                              <span className="mt-4 text-[10px] font-bold uppercase tracking-wider text-amber-500 bg-amber-500/10 px-3 py-1.5 rounded-xl border border-amber-500/20 w-max">
+                                Último Cliente: {conta.ultimo_cliente_nome || 'Desconhecido'}
                               </span>
-                            )}
+
+                              {conta.cashback_pendente > 0 && (
+                                <span className="mt-3 text-[10px] font-bold uppercase tracking-wider text-emerald-400 bg-emerald-400/10 px-3 py-1.5 rounded-xl border border-emerald-500/30 w-max">
+                                  💸 Cashback Pendente: R$ {conta.cashback_pendente.toFixed(2)}
+                                </span>
+                              )}
+                            </div>
+                            
+                            <div className="flex flex-col gap-3 w-full sm:w-auto">
+                              {conta.ultimo_cliente_telefone && (
+                                <button onClick={() => cobrarNoWhatsApp(conta.ultimo_cliente_nome, conta.ultimo_cliente_telefone, conta.jogo)} className="bg-emerald-900/40 hover:bg-emerald-600 text-emerald-400 hover:text-white font-bold uppercase tracking-wider px-4 py-2.5 rounded-xl text-[10px] transition-colors border border-emerald-500/30 shadow flex items-center justify-center gap-2">
+                                  📱 Cobrar via Whats
+                                </button>
+                              )}
+                              {conta.ultimo_cliente_id && (
+                                <button onClick={() => aplicarMultaCliente(conta.ultimo_cliente_id, conta.ultimo_cliente_nome)} className="bg-rose-900/40 hover:bg-rose-600 text-rose-400 hover:text-white font-bold uppercase tracking-wider px-4 py-2.5 rounded-xl text-[10px] transition-colors border border-rose-500/30 shadow flex items-center justify-center gap-2">
+                                  🚨 Aplicar Multa
+                                </button>
+                              )}
+                            </div>
                           </div>
                           
-                          <div className="flex flex-col gap-3 w-full sm:w-auto">
-                            {conta.ultimo_cliente_telefone && (
-                              <button onClick={() => cobrarNoWhatsApp(conta.ultimo_cliente_nome, conta.ultimo_cliente_telefone, conta.jogo)} className="bg-emerald-900/40 hover:bg-emerald-600 text-emerald-400 hover:text-white font-bold uppercase tracking-wider px-4 py-2.5 rounded-xl text-[10px] transition-colors border border-emerald-500/30 shadow flex items-center justify-center gap-2">
-                                📱 Cobrar via Whats
-                              </button>
-                            )}
-                            {conta.ultimo_cliente_id && (
-                              <button onClick={() => aplicarMultaCliente(conta.ultimo_cliente_id, conta.ultimo_cliente_nome)} className="bg-rose-900/40 hover:bg-rose-600 text-rose-400 hover:text-white font-bold uppercase tracking-wider px-4 py-2.5 rounded-xl text-[10px] transition-colors border border-rose-500/30 shadow flex items-center justify-center gap-2">
-                                🚨 Aplicar Multa
-                              </button>
-                            )}
+                          <div className="flex flex-col sm:flex-row gap-3 mt-2 pt-6 border-t border-rose-900/50">
+                            <input type="text" placeholder="Digite a NOVA senha para liberar" value={novasSenhasTemp[conta.conta_psn_id] || ''} onChange={(e) => setNovasSenhasTemp({...novasSenhasTemp, [conta.conta_psn_id]: e.target.value})} className="flex-1 px-5 py-3.5 bg-zinc-950 border border-zinc-800 rounded-2xl text-sm font-bold text-white focus:border-rose-500 outline-none"/>
+                            <button onClick={() => confirmarResetSenha(conta.conta_psn_id)} className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold uppercase tracking-wider px-6 py-3.5 rounded-2xl text-xs transition-colors shadow-lg shadow-emerald-600/20 whitespace-nowrap">Liberar Jogo</button>
                           </div>
                         </div>
-                        
-                        <div className="flex flex-col sm:flex-row gap-3 mt-2 pt-6 border-t border-rose-900/50">
-                          <input type="text" placeholder="Digite a NOVA senha para liberar" value={novasSenhasTemp[conta.conta_psn_id] || ''} onChange={(e) => setNovasSenhasTemp({...novasSenhasTemp, [conta.conta_psn_id]: e.target.value})} className="flex-1 px-5 py-3.5 bg-zinc-950 border border-zinc-800 rounded-2xl text-sm font-bold text-white focus:border-rose-500 outline-none"/>
-                          <button onClick={() => confirmarResetSenha(conta.conta_psn_id)} className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold uppercase tracking-wider px-6 py-3.5 rounded-2xl text-xs transition-colors shadow-lg shadow-emerald-600/20 whitespace-nowrap">Liberar Jogo</button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                      ))}
+                    </div>
+                  )}
                 </section>
               )}
 
