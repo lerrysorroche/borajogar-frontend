@@ -1428,6 +1428,18 @@ function App() {
                   const ehJogoVIP = isLancamento || isEmBreve;
                   const isVeterano = usuarioLogado ? (usuarioLogado.is_admin || totalAlugueis >= 1) : false;
                   const bloqueadoParaUsuario = ehJogoVIP && usuarioLogado && !isVeterano;
+
+                  // 🚀 VERIFICA SE O USUÁRIO JÁ RESERVOU ESTE JOGO
+                  const minhaReservaAtiva = minhasReservas.find(res => res.jogo === tituloLimpo);
+                  
+                  // 🚀 MATEMÁTICA DE DATAS PÚBLICAS (Para quem não reservou ainda)
+                  let dataVagaGlobal = isEmBreve ? new Date(dataLanc) : new Date();
+                  if (jogo.proxima_devolucao) {
+                      const pd = new Date(jogo.proxima_devolucao);
+                      if (pd > dataVagaGlobal) dataVagaGlobal = pd;
+                  }
+                  dataVagaGlobal.setDate(dataVagaGlobal.getDate() + (jogo.fila_dias_espera || 0));
+                  const dataVagaGlobalStr = dataVagaGlobal.toLocaleDateString('pt-BR');
                   
                   return (
                   <div key={jogo.id} className={`bg-zinc-900 rounded-3xl border ${bloqueadoParaUsuario ? 'border-zinc-800/50 opacity-90 grayscale-[20%]' : 'border-zinc-800'} flex flex-col shadow-xl hover:-translate-y-2 hover:border-blue-500/50 transition-all duration-300 group overflow-hidden`}>
@@ -1500,16 +1512,26 @@ function App() {
                           </div>
                         )}
 
-                        {/* 🚀 BOTÕES COM TRAVA DE HIERARQUIA VIP */}
+                        {/* 🚀 LÓGICA DE EXIBIÇÃO: RESERVADO vs BOTÕES DE COMPRA */}
                         <div className="flex gap-3 w-full mt-3">
-                          {bloqueadoParaUsuario ? (
+                          {minhaReservaAtiva ? (
+                            <div className="flex-1 transition-all rounded-xl p-3 flex flex-col items-center justify-center border bg-emerald-950/40 border-emerald-500/30 shadow-[0_0_15px_rgba(16,185,129,0.15)] group relative overflow-hidden h-[76px]">
+                                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-500 to-cyan-500"></div>
+                                <span className="text-[10px] uppercase tracking-widest font-bold text-emerald-500 mb-1 flex items-center gap-1">
+                                    ✅ Já Reservado
+                                </span>
+                                <strong className="text-sm font-black text-white tracking-tight text-center">
+                                    Sua vez em: <span className="text-emerald-400">{minhaReservaAtiva.data_estimada_str}</span>
+                                </strong>
+                            </div>
+                          ) : bloqueadoParaUsuario ? (
                             <button
-                              onClick={() => mostrarToast("🚨 Acesso Restrito! Este lançamento é exclusivo para clientes Nível 1. Complete pelo menos 1 aluguel para desbloquear.", "aviso")}
-                              className="flex-1 transition-all rounded-xl p-3 flex flex-col items-center justify-center border bg-zinc-950/80 border-rose-500/20 shadow-inner hover:bg-rose-950/30 group/lock"
+                              onClick={() => mostrarToast("🚨 Acesso Restrito! Este lançamento é exclusivo para clientes com Rank Membro ou superior. Complete pelo menos 1 aluguel para desbloquear.", "aviso")}
+                              className="flex-1 transition-all rounded-xl p-3 flex flex-col items-center justify-center border bg-zinc-950/80 border-rose-500/20 shadow-inner hover:bg-rose-950/30 group/lock h-[76px]"
                             >
                               <span className="text-[10px] uppercase tracking-widest font-bold text-zinc-500 mb-1 group-hover/lock:text-rose-400 transition-colors">Acesso Restrito</span>
                               <strong className="text-sm font-black text-rose-500 tracking-tight flex items-center gap-2 uppercase">
-                                🔒 Requer Nível 1
+                                🔒 Requer Rank
                               </strong>
                             </button>
                           ) : (
@@ -1517,7 +1539,7 @@ function App() {
                               {/* Botão 7 Dias */}
                               <button
                                 onClick={() => abrirConfirmacao(jogo.estoque > 0 && !isEmBreve ? 'aluguel' : 'reserva', jogo.id, tituloLimpo, jogo.preco_aluguel, jogo.preco_aluguel_14 || 0, 7)}
-                                className={`flex-1 transition-all rounded-xl p-2.5 flex flex-col items-center justify-center group border ${
+                                className={`flex-1 transition-all rounded-xl p-2.5 flex flex-col items-center justify-center group border h-[76px] ${
                                     jogo.estoque > 0 && !isEmBreve 
                                     ? 'bg-blue-600/90 hover:bg-blue-500 border-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.4)]' 
                                     : 'bg-amber-500/90 hover:bg-amber-400 border-amber-400 shadow-[0_0_15px_rgba(245,158,11,0.5)]' 
@@ -1526,7 +1548,7 @@ function App() {
                                 <span className="text-[10px] uppercase tracking-wider font-black text-white/90 group-hover:text-white transition-colors [text-shadow:1px_1px_0px_black,-1px_-1px_0px_black,1px_-1px_0px_black,-1px_1px_0px_black]">
                                     {jogo.estoque > 0 && !isEmBreve ? 'Alugar' : 'Reservar'} 7 Dias
                                 </span>
-                                <strong className="text-xl mt-0.5 font-black text-white tracking-tight [text-shadow:1px_1px_0px_black,-1px_-1px_0px_black,1px_-1px_0px_black,-1px_1px_0px_black]">
+                                <strong className="text-lg mt-0.5 font-black text-white tracking-tight [text-shadow:1px_1px_0px_black,-1px_-1px_0px_black,1px_-1px_0px_black,-1px_1px_0px_black]">
                                     R$ {jogo.preco_aluguel.toFixed(2)}
                                 </strong>
                               </button>
@@ -1535,7 +1557,7 @@ function App() {
                               {jogo.preco_aluguel_14 > 0 && (
                                 <button
                                   onClick={() => abrirConfirmacao(jogo.estoque > 0 && !isEmBreve ? 'aluguel' : 'reserva', jogo.id, tituloLimpo, jogo.preco_aluguel, jogo.preco_aluguel_14, 14)}
-                                  className={`flex-1 transition-all rounded-xl p-2.5 flex flex-col items-center justify-center group relative border ${
+                                  className={`flex-1 transition-all rounded-xl p-2.5 flex flex-col items-center justify-center group relative border h-[76px] ${
                                       jogo.estoque > 0 && !isEmBreve 
                                       ? 'bg-cyan-600/90 hover:bg-cyan-500 border-cyan-400 shadow-[0_0_20px_rgba(6,182,212,0.4)]'
                                       : 'bg-orange-500/80 hover:bg-orange-400 border-orange-400 shadow-[0_0_15px_rgba(249,115,22,0.4)]'
@@ -1545,9 +1567,9 @@ function App() {
                                     PROMO
                                   </span>
                                   <span className="text-[10px] uppercase tracking-wider font-black text-white/90 group-hover:text-white transition-colors [text-shadow:1px_1px_0px_black,-1px_-1px_0px_black,1px_-1px_0px_black,-1px_1px_0px_black]">
-                                    {jogo.estoque > 0 && !isEmBreve ? 'Alugar' : 'Reservar'} 14 Dias
+                                    {jogo.estoque > 0 && !isEmBreve ? 'Alugar' : 'Reservar'} 14 D
                                   </span>
-                                  <strong className="text-xl mt-0.5 font-black text-white tracking-tight [text-shadow:1px_1px_0px_black,-1px_-1px_0px_black,1px_-1px_0px_black,-1px_1px_0px_black]">
+                                  <strong className="text-lg mt-0.5 font-black text-white tracking-tight [text-shadow:1px_1px_0px_black,-1px_-1px_0px_black,1px_-1px_0px_black,-1px_1px_0px_black]">
                                     R$ {jogo.preco_aluguel_14.toFixed(2)}
                                   </strong>
                                 </button>
