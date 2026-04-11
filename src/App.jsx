@@ -89,6 +89,13 @@ function App() {
   const [buscaEstoque, setBuscaEstoque] = useState('')
   const [buscaLocacao, setBuscaLocacao] = useState('')
   const [buscaCliente, setBuscaCliente] = useState('')
+  const [ordenacaoClientes, setOrdenacaoClientes] = useState('recentes')
+  const [filtroSaldoClientes, setFiltroSaldoClientes] = useState('todos')
+
+  // 🚀 NOVOS ESTADOS AQUI:
+  const [buscaManutencao, setBuscaManutencao] = useState('')
+  const [ordenacaoLocacoes, setOrdenacaoLocacoes] = useState('expira_breve')
+  const [ordenacaoManutencao, setOrdenacaoManutencao] = useState('urgente')
 
   const [todasLocacoes, setTodasLocacoes] = useState([])
   const [todosUsuarios, setTodosUsuarios] = useState([])
@@ -791,11 +798,41 @@ function App() {
   const jogosFiltrados = [...jogosFuturos, ...jogosNormais];
 
   const jogosEstoqueFiltrados = jogos.filter(jogo => jogo.titulo.toLowerCase().includes(buscaEstoque.toLowerCase()))
-  const locacoesAtivasFiltradas = todasLocacoes.filter(loc => loc.status === 'ATIVA').filter(loc => loc.jogo.toLowerCase().includes(buscaLocacao.toLowerCase()) || loc.cliente.toLowerCase().includes(buscaLocacao.toLowerCase()))
+  const locacoesAtivasFiltradas = todasLocacoes
+    .filter(loc => loc.status === 'ATIVA')
+    .filter(loc => loc.jogo.toLowerCase().includes(buscaLocacao.toLowerCase()) || loc.cliente.toLowerCase().includes(buscaLocacao.toLowerCase()))
+    .sort((a, b) => {
+      if (ordenacaoLocacoes === 'expira_breve') return new Date(a.data_fim) - new Date(b.data_fim);
+      if (ordenacaoLocacoes === 'expira_longe') return new Date(b.data_fim) - new Date(a.data_fim);
+      if (ordenacaoLocacoes === 'az_cliente') return a.cliente.localeCompare(b.cliente);
+      if (ordenacaoLocacoes === 'az_jogo') return a.jogo.localeCompare(b.jogo);
+      return 0;
+    });
+
+  const contasManutencaoFiltradas = contasManutencao
+    .filter(c => c.jogo.toLowerCase().includes(buscaManutencao.toLowerCase()) || (c.ultimo_cliente_nome && c.ultimo_cliente_nome.toLowerCase().includes(buscaManutencao.toLowerCase())))
+    .sort((a, b) => {
+      if (ordenacaoManutencao === 'urgente') return (b.cashback_pendente || 0) - (a.cashback_pendente || 0);
+      if (ordenacaoManutencao === 'az_jogo') return a.jogo.localeCompare(b.jogo);
+      return 0;
+    });
   
   const clientesFiltrados = todosUsuarios
-    .filter(u => u.nome.toLowerCase().includes(buscaCliente.toLowerCase()))
-    .sort((a, b) => a.nome.localeCompare(b.nome));
+    .filter(u => u.nome.toLowerCase().includes(buscaCliente.toLowerCase()) || u.email.toLowerCase().includes(buscaCliente.toLowerCase()))
+    .filter(u => {
+      if (filtroSaldoClientes === 'positivo') return u.saldo > 0;
+      if (filtroSaldoClientes === 'negativo') return u.saldo < 0;
+      return true;
+    })
+    .sort((a, b) => {
+      if (ordenacaoClientes === 'az') return a.nome.localeCompare(b.nome);
+      if (ordenacaoClientes === 'za') return b.nome.localeCompare(a.nome);
+      if (ordenacaoClientes === 'recentes') return b.id - a.id;
+      if (ordenacaoClientes === 'antigos') return a.id - b.id;
+      if (ordenacaoClientes === 'maior_saldo') return b.saldo - a.saldo;
+      if (ordenacaoClientes === 'menor_saldo') return a.saldo - b.saldo;
+      return 0;
+    });
 
   const alugueisAtivos = meusAlugueis.filter(item => item.status === 'ATIVA')
   const historicoAlugueis = meusAlugueis.filter(item => item.status === 'EXPIRADA').slice(0, 5)
@@ -2088,11 +2125,28 @@ function App() {
 
               {contasManutencao.length > 0 && (
                 <section className="bg-rose-950/20 border border-rose-500/50 shadow-2xl shadow-rose-500/10 p-8 rounded-3xl mb-10 animate-pulse-slow">
-                  <h3 className="text-xl font-black text-rose-400 tracking-tight mb-4 flex items-center gap-3">🚨 Atenção: Troca de Senha Necessária</h3>
-                  <p className="text-xs md:text-sm text-zinc-300 font-medium mb-8">As locações abaixo terminaram. Você deve entrar na PSN, alterar a senha destas contas e informá-las aqui para que o sistema repasse para o próximo da fila.</p>
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+                    <div>
+                      <h3 className="text-xl font-black text-rose-400 tracking-tight mb-2 flex items-center gap-3">🚨 Atenção: Troca de Senha Necessária</h3>
+                      <p className="text-xs md:text-sm text-zinc-300 font-medium">As locações abaixo terminaram. Altere a senha na PSN e informe aqui para liberar a conta.</p>
+                    </div>
+                  </div>
+
+                  <div className="mb-8 flex flex-col md:flex-row gap-4 bg-rose-950/30 p-4 rounded-2xl border border-rose-500/20 shadow-inner">
+                    <input type="text" placeholder="🔍 Buscar por jogo ou último cliente..." value={buscaManutencao} onChange={e => setBuscaManutencao(e.target.value)} className={`${adminInputClass} border-rose-500/30 focus:ring-rose-500 flex-1`} />
+                    <div className="flex flex-col gap-1 w-full md:w-auto">
+                      <select value={ordenacaoManutencao} onChange={e => setOrdenacaoManutencao(e.target.value)} className="bg-zinc-900 border border-rose-500/30 text-zinc-300 text-sm font-bold rounded-xl px-3 py-2.5 focus:ring-2 focus:ring-rose-500 outline-none w-full md:w-56 cursor-pointer hover:border-rose-400 transition-colors h-full">
+                        <option value="urgente">⚠️ Mais Urgentes (Cashback)</option>
+                        <option value="az_jogo">🎮 Jogo (A-Z)</option>
+                      </select>
+                    </div>
+                  </div>
                   
-                  <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-                    {contasManutencao.map(conta => (
+                  {contasManutencaoFiltradas.length === 0 ? (
+                    <p className="text-zinc-500 text-sm font-medium text-center py-8">Nenhuma conta em manutenção no momento.</p>
+                  ) : (
+                    <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                      {contasManutencaoFiltradas.map(conta => (
                       <div key={conta.conta_psn_id} className="bg-zinc-900 p-6 md:p-8 rounded-3xl border border-rose-500/50 flex flex-col gap-6 shadow-lg">
                         <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
                           <div className="flex flex-col gap-1.5">
@@ -2235,8 +2289,19 @@ function App() {
                       <span className="transition duration-300 group-open:-rotate-180 text-emerald-500 text-lg">▼</span>
                       </summary>
                       <div className="px-6 md:px-8 pb-6 md:pb-8 border-t border-zinc-800/50 pt-8">
-                      <div className="mb-6">
+                      <div className="mb-6 flex flex-col gap-4">
                           <input type="text" placeholder="🔍 Buscar locação por jogo ou cliente..." value={buscaLocacao} onChange={e => setBuscaLocacao(e.target.value)} className={adminInputClass} />
+                          <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between bg-zinc-950 p-4 rounded-2xl border border-zinc-800/80 shadow-inner">
+                            <div className="flex flex-col gap-1 w-full md:w-auto">
+                              <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Ordenar por:</label>
+                              <select value={ordenacaoLocacoes} onChange={e => setOrdenacaoLocacoes(e.target.value)} className="bg-zinc-900 border border-emerald-500/30 text-zinc-300 text-sm font-bold rounded-xl px-3 py-2.5 focus:ring-2 focus:ring-emerald-500 outline-none w-full md:w-56 cursor-pointer hover:border-emerald-400 transition-colors">
+                                <option value="expira_breve">⏳ Expira mais Rápido</option>
+                                <option value="expira_longe">📅 Demora a Expirar</option>
+                                <option value="az_cliente">👤 Cliente (A-Z)</option>
+                                <option value="az_jogo">🎮 Jogo (A-Z)</option>
+                              </select>
+                            </div>
+                          </div>
                       </div>
                       <div className="max-h-[600px] overflow-y-auto pr-3 custom-scrollbar">
                           {locacoesAtivasFiltradas.length === 0 ? <p className="text-zinc-500 text-sm font-medium">Nenhuma locação ativa.</p> : (
@@ -2280,8 +2345,31 @@ function App() {
                       <span className="transition duration-300 group-open:-rotate-180 text-purple-500 text-lg">▼</span>
                       </summary>
                       <div className="px-6 md:px-8 pb-6 md:pb-8 border-t border-zinc-800/50 pt-8">
-                      <div className="mb-6">
-                          <input type="text" placeholder="Buscar cliente por nome..." value={buscaCliente} onChange={e => setBuscaCliente(e.target.value)} className={adminInputClass} />
+                      <div className="mb-6 flex flex-col gap-4">
+                          <input type="text" placeholder="🔍 Buscar cliente por nome ou e-mail..." value={buscaCliente} onChange={e => {setBuscaCliente(e.target.value); setPaginaClientes(0);}} className={adminInputClass} />
+                          
+                          <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between bg-zinc-950 p-4 rounded-2xl border border-zinc-800/80 shadow-inner">
+                            <div className="flex flex-col gap-1 w-full md:w-auto">
+                              <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Ordenar por:</label>
+                              <select value={ordenacaoClientes} onChange={e => {setOrdenacaoClientes(e.target.value); setPaginaClientes(0);}} className="bg-zinc-900 border border-purple-500/30 text-zinc-300 text-sm font-bold rounded-xl px-3 py-2.5 focus:ring-2 focus:ring-purple-500 outline-none w-full md:w-56 cursor-pointer hover:border-purple-400 transition-colors">
+                                <option value="recentes">⏰ Mais Recentes</option>
+                                <option value="antigos">🕰️ Mais Antigos</option>
+                                <option value="maior_saldo">💰 Maior Saldo</option>
+                                <option value="menor_saldo">📉 Menor Saldo</option>
+                                <option value="az">🔤 Ordem Alfabética (A-Z)</option>
+                                <option value="za">🔠 Ordem Alfabética (Z-A)</option>
+                              </select>
+                            </div>
+
+                            <div className="flex flex-col gap-1 w-full md:w-auto">
+                              <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Filtrar Saldo:</label>
+                              <div className="flex bg-zinc-900 rounded-xl p-1 border border-zinc-700/50 shadow-inner w-full md:w-auto overflow-x-auto">
+                                <button onClick={() => {setFiltroSaldoClientes('todos'); setPaginaClientes(0);}} className={`flex-1 md:flex-none px-4 py-2 rounded-lg text-[10px] uppercase tracking-wider font-bold transition-all ${filtroSaldoClientes === 'todos' ? 'bg-purple-600 text-white shadow-md' : 'text-zinc-400 hover:text-white hover:bg-zinc-800'}`}>Todos</button>
+                                <button onClick={() => {setFiltroSaldoClientes('positivo'); setPaginaClientes(0);}} className={`flex-1 md:flex-none px-4 py-2 rounded-lg text-[10px] uppercase tracking-wider font-bold transition-all ${filtroSaldoClientes === 'positivo' ? 'bg-emerald-600 text-white shadow-md' : 'text-zinc-400 hover:text-white hover:bg-zinc-800'}`}>Positivos</button>
+                                <button onClick={() => {setFiltroSaldoClientes('negativo'); setPaginaClientes(0);}} className={`flex-1 md:flex-none px-4 py-2 rounded-lg text-[10px] uppercase tracking-wider font-bold transition-all ${filtroSaldoClientes === 'negativo' ? 'bg-rose-600 text-white shadow-md' : 'text-zinc-400 hover:text-white hover:bg-zinc-800'}`}>Negativados</button>
+                              </div>
+                            </div>
+                          </div>
                       </div>
 
                       <div className="max-h-[600px] overflow-y-auto pr-3 custom-scrollbar">
