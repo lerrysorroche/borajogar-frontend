@@ -1240,9 +1240,18 @@ function App() {
               <div className="relative rounded-3xl p-8 md:p-14 mb-10 border border-zinc-800 overflow-hidden shadow-2xl flex items-center min-h-[360px] transition-all duration-700" style={{ backgroundImage: `url('${currentBanner}')`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
                 <div className="absolute inset-0 bg-gradient-to-r from-zinc-950/80 via-zinc-950/40 to-transparent"></div>
                 <div className="relative z-10 w-full">
-                  <span className="inline-block py-1.5 px-4 rounded-full bg-blue-500/20 border border-blue-500/30 text-blue-400 text-[10px] font-bold tracking-wider mb-6 uppercase">CATÁLOGO ATUALIZADO</span>
-                  <h1 className="text-3xl md:text-4xl lg:text-5xl font-black text-white mb-6 tracking-tighter leading-tight max-w-2xl">A sua Próxima Aventura <br /><span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400">Começa Aqui</span></h1>
-                  <p className="text-sm md:text-base text-zinc-300 max-w-xl mb-8 leading-relaxed">Alugue os maiores lançamentos e os melhores exclusivos. Receba seu acesso instantaneamente e comece a jogar sem sair de casa.</p>
+                  <span className="inline-block py-1.5 px-4 rounded-full bg-blue-500/20 border border-blue-500/30 text-blue-400 text-[10px] font-mono-tech font-bold tracking-widest mb-6 uppercase shadow-[0_0_15px_rgba(59,130,246,0.3)]">
+                    CATÁLOGO ATUALIZADO
+                  </span>
+                  
+                  {/* 🚀 TÍTULO DA VITRINE COM A NOVA FONTE E NEON FLICKER */}
+                  <h1 className="text-3xl md:text-4xl lg:text-5xl font-mono-tech font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400 mb-6 tracking-widest leading-tight max-w-4xl animate-neon-flicker uppercase">
+                    A sua Próxima Aventura <br /> Começa Aqui
+                  </h1>
+                  
+                  <p className="text-sm md:text-base text-zinc-300 max-w-xl mb-8 leading-relaxed font-medium">
+                    Alugue os maiores lançamentos e os melhores exclusivos. Receba seu acesso instantaneamente e comece a jogar sem sair de casa.
+                  </p>
                   
                   <div className="relative max-w-xl group">
                     <div className="absolute inset-y-0 left-0 pl-6 flex items-center pointer-events-none"><span className="text-xl opacity-70">🎮</span></div>
