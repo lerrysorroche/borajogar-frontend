@@ -220,6 +220,16 @@ function App() {
   }
 
   const abrirConfirmacao = (tipo, jogoId, jogoTitulo, preco7, preco14, diasEscolhidosInicial = 7) => {
+    // 🚀 MUDANÇA AQUI: Se não tem conta, manda fazer login/cadastro!
+    if (!usuarioLogado) {
+      mostrarToast("Faça login ou crie uma conta grátis para alugar jogos!", "aviso");
+      setModoLogin(true);
+      setModoEsqueciSenha(false);
+      setAbaAtual('login');
+      window.scrollTo(0, 0);
+      return;
+    }
+
     const precoAlvo = diasEscolhidosInicial === 14 ? preco14 : preco7;
     if (usuarioLogado.saldo < precoAlvo) { mostrarToast(`Saldo insuficiente para ${diasEscolhidosInicial} dias!\nColoque créditos em "Meus Acessos"!`, "erro"); return; }
     if (usuarioLogado.saldo < 0) { mostrarToast(`Você está negativado!`, "erro"); return; }
@@ -391,6 +401,10 @@ function App() {
   const votarEnquete = (opcaoId) => {
     if (!usuarioLogado) {
        mostrarToast("Você precisa criar uma conta grátis ou fazer login para votar!", "aviso");
+       setModoLogin(false); // Direciona direto pra aba de criar conta
+       setModoEsqueciSenha(false);
+       setAbaAtual('login');
+       window.scrollTo(0, 0);
        return;
     }
     fetch('https://borajogar-api.onrender.com/enquete/votar', {
@@ -448,9 +462,11 @@ function App() {
          setMeuVoto(dados.voto_usuario);
       });
 
+    // 🚀 MUDANÇA AQUI: Carregar os jogos SEMPRE, mesmo sem estar logado!
+    fetch('https://borajogar-api.onrender.com/jogos').then(res => res.json()).then(dados => setJogos(dados));
+
+    // Bloqueia o carregamento de dados sensíveis (painel, saldo) se não tiver logado
     if (!usuarioLogado) return;
-    
-    fetch('https://borajogar-api.onrender.com/jogos').then(res => res.json()).then(dados => setJogos(dados))
     
     if (usuarioLogado.is_admin) {
       fetch('https://borajogar-api.onrender.com/admin/locacoes', { headers: getAuthHeaders() }).then(res => res.ok ? res.json() : []).then(dados => setTodasLocacoes(dados))
@@ -931,7 +947,7 @@ function App() {
         </div>
       )}
 
-      {!usuarioLogado && modoLogin && abaAtual !== 'faq' && abaAtual !== 'termos' && abaAtual !== 'privacidade' && !modoEsqueciSenha ? (
+      {abaAtual === 'login' && !usuarioLogado && modoLogin && !modoEsqueciSenha ? (
         <div className="flex justify-center items-center min-h-screen p-4" style={{ backgroundImage: `url('https://cinesiageek.com.br/wp-content/uploads/2024/09/playstation5.jpeg')`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
           <div className="absolute inset-0 bg-zinc-950/80 backdrop-blur-md"></div>
           <div className="relative z-10 bg-zinc-900 p-8 md:p-10 rounded-3xl border border-zinc-800 w-full max-w-md shadow-2xl animate-fade-in">
@@ -965,7 +981,7 @@ function App() {
             </form>
           </div>
         </div>
-      ) : !usuarioLogado && !modoLogin && !modoEsqueciSenha && abaAtual !== 'faq' && abaAtual !== 'termos' && abaAtual !== 'privacidade' ? (
+      ) : abaAtual === 'login' && !usuarioLogado && !modoLogin && !modoEsqueciSenha ? (
         <div className="flex justify-center items-center min-h-screen p-4" style={{ backgroundImage: `url('https://cinesiageek.com.br/wp-content/uploads/2024/09/playstation5.jpeg')`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
           <div className="absolute inset-0 bg-zinc-950/80 backdrop-blur-md"></div>
           <div className="relative z-10 bg-zinc-900 p-8 md:p-10 rounded-3xl border border-zinc-800 w-full max-w-md shadow-2xl animate-fade-in">
@@ -1009,7 +1025,7 @@ function App() {
             </form>
           </div>
         </div>
-      ) : !usuarioLogado && modoEsqueciSenha && abaAtual !== 'faq' && abaAtual !== 'termos' && abaAtual !== 'privacidade' ? (
+      ) : abaAtual === 'login' && !usuarioLogado && modoEsqueciSenha ? (
           <div className="flex justify-center items-center min-h-screen p-4" style={{ backgroundImage: `url('https://cinesiageek.com.br/wp-content/uploads/2024/09/playstation5.jpeg')`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
             <div className="absolute inset-0 bg-zinc-950/80 backdrop-blur-md"></div>
             <div className="relative z-10 bg-zinc-900 p-8 md:p-10 rounded-3xl border border-zinc-800 w-full max-w-md shadow-2xl animate-fade-in">
@@ -1048,7 +1064,7 @@ function App() {
 
               <div className="flex items-center gap-4">
                 {!usuarioLogado ? (
-                  <button onClick={() => {setAbaAtual('vitrine'); setModoLogin(true); setModoEsqueciSenha(false);}} className="bg-blue-600 hover:bg-blue-500 text-white px-5 py-2 rounded-xl transition-colors text-xs font-bold uppercase tracking-wider">Entrar</button>
+                  <button onClick={() => {setAbaAtual('login'); setModoLogin(true); setModoEsqueciSenha(false);}} className="bg-blue-600 hover:bg-blue-500 text-white px-5 py-2 rounded-xl transition-colors text-xs font-bold uppercase tracking-wider">Entrar</button>
                 ) : (
                   <>
                     <div className="hidden md:flex items-center space-x-2 mr-2 border-r border-zinc-800 pr-4">
