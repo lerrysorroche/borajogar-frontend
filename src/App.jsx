@@ -1788,7 +1788,7 @@ function App() {
                     <span className="transition duration-300 group-open:-rotate-180 text-purple-500 text-lg">▼</span>
                   </summary>
                   <div className="px-6 md:px-8 pb-6 md:pb-8 text-zinc-400 text-xs md:text-sm leading-relaxed border-t border-zinc-800/50 pt-6">
-                    É super simples! Você adiciona saldo à sua carteira digital, escolhe o jogo na vitrine e clica em <strong className="text-white">"Alugar Agora"</strong>. O valor é descontado e os dados da conta (E-mail e Senha) aparecem imediatamente na sua aba <strong className="text-emerald-400">🔑 Meus Acessos</strong>. O aluguel dura 7 dias corridos a partir do momento da compra.
+                    É super simples! Você adiciona saldo à sua carteira digital, escolhe o jogo na vitrine, escolhe o número de dias que quer ficar com o jogo (7 ou 14 dias) e clica em <strong className="text-white">"ALUGAR"</strong>. O valor é descontado e os dados da conta (E-mail e Senha) aparecem imediatamente na sua aba <strong className="text-emerald-400">🔑 Meus Acessos</strong>. O aluguel dura 7 ou 14 dias corridos a partir do momento da compra.
                   </div>
                 </details>
 
@@ -1799,11 +1799,24 @@ function App() {
                   </summary>
                   <div className="px-6 md:px-8 pb-6 md:pb-8 text-zinc-400 text-xs md:text-sm leading-relaxed border-t border-zinc-800/50 pt-6">
                     <ol className="list-decimal pl-5 space-y-3 text-zinc-300 font-medium">
-                      <li>Ligue seu console e vá na tela de seleção de usuário.</li>
-                      <li>Selecione <strong className="text-white">"Adicionar Novo Usuário"</strong> (Nunca escolha "Jogar como Convidado").</li>
-                      <li>Clique em <strong className="text-white">"Iniciar Sessão e Jogar"</strong>.</li>
-                      <li>Insira o E-mail e a Senha fornecidos na aba <em>Meus Acessos</em>.</li>
-                      <li>Quando o console pedir o código de verificação (2FA), siga as instruções da próxima pergunta!</li>
+                      <li>Ligue o console. Selecione <strong className="text-white">ADICIONAR USUÁRIO</strong> (na tela de boas vindas dos usuários).</li>
+                      <li>Do lado esquerdo da tela, selecione <strong className="text-white">VAMOS COMEÇAR</strong>.</li>
+                      <li>Aceite os termos e selecione <strong className="text-white">CONFIRMAR</strong>.</li>
+                      <li>Na tela com o QR Code, selecione <strong className="text-white">INICIAR SESSÃO MANUALMENTE</strong> (canto esquerdo embaixo).</li>
+                      <li>Insira o E-mail e Senha da conta que estão disponíveis acima.</li>
+                      <li>Quando o console pedir o código (2FA), clique no botão verde <strong className="text-emerald-400">"Gerar Código de Acesso (2FA)"</strong> aqui no site.</li>
+                      <li>Digite o código 2FA (6 dígitos) rapidamente, ele fica ativo por 30 segundos.</li>
+                      <li><strong className="text-rose-400">NÃO ATIVE MAIS NADA</strong>. Somente selecione OK.</li>
+                      <li>Para jogar na sua conta pessoal e ganhar os troféus, é OBRIGATÓRIO habilitar o compartilhamento:
+                      <ul className="list-disc pl-5 mt-3 text-zinc-400 space-y-3 border-l-2 border-zinc-700 ml-1">
+                        <li><strong>No PS5:</strong> Vá em Configurações &gt; Usuários e contas &gt; Outros &gt; Compartilhamento do console... &gt; <strong className="text-white">Habilitar</strong>. (Se não estiver habilitado)</li>
+                        <li><strong>No PS4:</strong> Vá em Configurações &gt; Gerenciamento da conta &gt; <strong className="text-white">Ativar como seu PS4 principal</strong>. (Se não estiver habilitado)</li>
+                        <li className="text-rose-400 font-bold flex items-center gap-3 mt-3 bg-rose-950/30 p-3.5 rounded-xl border border-rose-500/20"><span className="text-lg">⚠️</span> É aqui também, que no final do seu aluguel, você vai DESABILITAR o compartilhamento.</li>
+                      </ul>
+                      </li>
+                      <li className="text-emerald-400 font-black mt-6 text-sm bg-emerald-950/40 p-5 rounded-xl border border-emerald-500/40 shadow-inner">
+                        Vá na Biblioteca da conta, coloque o jogo para baixar, volte para o seu perfil pessoal (a sua conta oficial) e divirta-se!
+                      </li>
                     </ol>
                   </div>
                 </details>
@@ -1814,7 +1827,7 @@ function App() {
                     <span className="transition duration-300 group-open:-rotate-180 text-purple-500 text-lg">▼</span>
                   </summary>
                   <div className="px-6 md:px-8 pb-6 md:pb-8 text-zinc-400 text-xs md:text-sm leading-relaxed border-t border-zinc-800/50 pt-6">
-                    A segurança vem em primeiro lugar! Na aba <strong className="text-emerald-400">🔑 Meus Acessos</strong>, ao lado da senha do seu jogo, existe um botão verde chamado <strong className="text-white">"Gerar Código de Acesso (2FA)"</strong>.<br/><br/>
+                    A segurança vem em primeiro lugar! Na aba <strong className="text-emerald-400">🔑 Meus Acessos</strong>, embaixo das informações da conta (Login e Senha), existe um botão verde chamado <strong className="text-white">"GERAR CÓDIGO DE ACESSO (2FA)"</strong>.<br/><br/>
                     Basta clicar nele que um código de 6 dígitos vai aparecer na sua tela. Digite esse código rapidamente no seu PlayStation (ele muda a cada 30 segundos). Você não precisa mandar mensagem pro suporte, o sistema gera o código para você na hora!
                   </div>
                 </details>
@@ -1827,8 +1840,8 @@ function App() {
                   <div className="px-6 md:px-8 pb-6 md:pb-8 text-zinc-400 text-xs md:text-sm leading-relaxed border-t border-zinc-800/50 pt-6">
                     <strong className="text-white">Sim, com certeza!</strong> Para isso, logo após fazer o login com a conta alugada no console:
                     <ul className="list-disc pl-5 mt-4 space-y-3 font-medium text-zinc-300">
-                      <li><strong>No PS5:</strong> Vá em Configurações &gt; Usuários e Contas &gt; Outros &gt; <em>Compartilhamento do console e jogo offline</em> e <strong className="text-emerald-400">ative</strong>.</li>
-                      <li><strong>No PS4:</strong> Vá em Configurações &gt; Gerenciamento da conta &gt; <em>Ativar como seu PS4 principal</em> e <strong className="text-emerald-400">ative</strong>.</li>
+                      <li><strong>No PS5:</strong> Vá em Configurações &gt; Usuários e Contas &gt; Outros &gt; <em>Compartilhamento do console e jogo offline</em> e <strong className="text-emerald-400">habilite</strong>.</li>
+                      <li><strong>No PS4:</strong> Vá em Configurações &gt; Gerenciamento da conta &gt; <em>Ativar como seu PS4 principal</em> e <strong className="text-emerald-400">habilite</strong>.</li>
                     </ul>
                     <div className="mt-4">Depois disso, inicie o download do jogo, troque para a sua conta pessoal (a sua oficial) e jogue normalmente. Os saves e troféus ficarão nela!</div>
                   </div>
@@ -1840,7 +1853,7 @@ function App() {
                     <span className="transition duration-300 group-open:-rotate-180 text-purple-500 text-lg">▼</span>
                   </summary>
                   <div className="px-6 md:px-8 pb-6 md:pb-8 text-zinc-400 text-xs md:text-sm leading-relaxed border-t border-zinc-800/50 pt-6">
-                    Não se preocupe, você pode garantir a sua vaga! Clique no botão <strong className="text-amber-400">"Reservar na Fila"</strong>. O valor do jogo será investido e você verá uma data de <em>Previsão de Liberação</em> em "Meus Acessos". <br/><br/>
+                    Não se preocupe, você pode garantir a sua vaga! Clique no botão <strong className="text-amber-400">"RESERVAR"</strong> (7 ou 14 dias). O valor do jogo será investido e você verá uma data de <em>Previsão de Liberação</em> em "Meus Acessos". <br/><br/>
                     Nosso sistema inteligente repassa a conta automaticamente para você no exato segundo em que o aluguel do cliente anterior terminar.
                   </div>
                 </details>
@@ -1863,8 +1876,9 @@ function App() {
                     <span className="transition duration-300 group-open:-rotate-180 text-rose-500 text-lg">▼</span>
                   </summary>
                   <div className="px-6 md:px-8 pb-6 md:pb-8 text-zinc-300 text-xs md:text-sm leading-relaxed border-t border-rose-500/30 pt-6">
-                    Essa é a nossa regra mais rigorosa! Se o seu tempo acabar e você deixar a conta ativada como "Principal" no seu console, isso bloqueia o console e impede que o próximo cliente da fila jogue. <br/><br/>
-                    Neste caso, nosso sistema aplica uma <strong className="text-rose-400">Multa Administrativa Automática de R$ 50,00</strong> direto na sua carteira digital. Se você não tiver saldo, sua conta ficará negativada e bloqueada para alugar jogos. Por isso, coloque sempre um alarme!
+                    Essa é a nossa regra mais rigorosa! Se o seu tempo acabar e você deixar a conta ativada como "Principal" no seu console, isso bloqueia a conta e impede que o próximo cliente da fila jogue. Quando isso acontece, nós solicitamos à Sony que faça a desabilitação. Isso pode causar banimento!<br/><br/>
+                    Neste caso, nosso sistema aplica uma <strong className="text-rose-400">Multa Administrativa Automática de R$ 50,00</strong> direto na sua carteira digital. Se você não tiver saldo, sua conta ficará negativada e bloqueada para alugar jogos. Por isso, sempre desabilite a conta como "Principal" no seu console quando seu aluguel acabar.<br/><br/>
+                    Se tiver alguma dúvida sobre como desabilitar a conta como "Principal" no seu console, consulte que fica disponível junto com as informações da conta ou entre em contato conosco e te ajudaremos.
                   </div>
                 </details>
 
