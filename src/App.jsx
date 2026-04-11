@@ -1878,7 +1878,7 @@ function App() {
                   <div className="px-6 md:px-8 pb-6 md:pb-8 text-zinc-300 text-xs md:text-sm leading-relaxed border-t border-rose-500/30 pt-6">
                     Essa é a nossa regra mais rigorosa! Se o seu tempo acabar e você deixar a conta ativada como "Principal" no seu console, isso bloqueia a conta e impede que o próximo cliente da fila jogue. Quando isso acontece, nós solicitamos à Sony que faça a desabilitação. Isso pode causar banimento!<br/><br/>
                     Neste caso, nosso sistema aplica uma <strong className="text-rose-400">Multa Administrativa Automática de R$ 50,00</strong> direto na sua carteira digital. Se você não tiver saldo, sua conta ficará negativada e bloqueada para alugar jogos. Por isso, sempre desabilite a conta como "Principal" no seu console quando seu aluguel acabar.<br/><br/>
-                    Se tiver alguma dúvida sobre como desabilitar a conta como "Principal" no seu console, consulte que fica disponível junto com as informações da conta ou entre em contato conosco e te ajudaremos.
+                    Se tiver alguma dúvida sobre como desabilitar a conta como "Principal" no seu console, consulte o tutorial que fica disponível junto com as informações da conta ou entre em contato conosco e te ajudaremos. É simples e rápido!
                   </div>
                 </details>
 
