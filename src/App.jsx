@@ -1244,9 +1244,9 @@ function App() {
                     CATÁLOGO ATUALIZADO
                   </span>
                   
-                  {/* 🚀 TÍTULO DA VITRINE COM A NOVA FONTE E NEON FLICKER */}
-                  <h1 className="text-3xl md:text-4xl lg:text-5xl font-mono-tech font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400 mb-6 tracking-widest leading-tight max-w-4xl animate-neon-flicker uppercase">
-                    A sua Próxima Aventura <br /> Começa Aqui
+                  {/* 🚀 TÍTULO DA VITRINE COMPACTADO E COM NOVA QUEBRA DE LINHA */}
+                  <h1 className="text-3xl md:text-4xl lg:text-5xl font-mono-tech font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400 mb-6 tracking-tighter leading-tight max-w-2xl animate-neon-flicker uppercase">
+                    A sua Próxima <br /> Aventura Começa Aqui!
                   </h1>
                   
                   <p className="text-sm md:text-base text-zinc-300 max-w-xl mb-8 leading-relaxed font-medium">
