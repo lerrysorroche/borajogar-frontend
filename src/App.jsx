@@ -83,6 +83,7 @@ function App() {
   const [indiceBanner, setIndiceBanner] = useState(0);
 
   const [modalEdicaoJogo, setModalEdicaoJogo] = useState(null)
+  const [modalEdicaoCliente, setModalEdicaoCliente] = useState(null) // 🚀 NOVO ESTADO AQUI
   
   const [termoBusca, setTermoBusca] = useState('')
   const [buscaEstoque, setBuscaEstoque] = useState('')
@@ -579,6 +580,31 @@ function App() {
     }).catch(() => mostrarToast("Erro de conexão.", "erro"));
   }
 
+  const salvarEdicaoCliente = (e) => {
+    e.preventDefault();
+    if (!modalEdicaoCliente) return;
+
+    fetch(`https://borajogar-api.onrender.com/usuarios/${modalEdicaoCliente.id}`, {
+      method: 'PUT',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({
+        nome: modalEdicaoCliente.nome,
+        email: modalEdicaoCliente.email,
+        telefone: modalEdicaoCliente.telefone,
+        saldo: parseFloat(modalEdicaoCliente.saldo)
+      })
+    }).then(async res => {
+      if (res.ok) {
+        mostrarToast("Cliente atualizado com sucesso!", "sucesso");
+        setModalEdicaoCliente(null);
+        carregarDados();
+      } else {
+        const data = await res.json();
+        mostrarToast(data.detail || "Erro ao atualizar cliente.", "erro");
+      }
+    }).catch(() => mostrarToast("Erro de conexão.", "erro"));
+  }
+
   const cadastrarConta = (e) => {
     e.preventDefault()
     fetch('https://borajogar-api.onrender.com/contas', {
@@ -647,22 +673,6 @@ function App() {
         }
       }).catch(() => mostrarToast("Erro de conexão.", "erro"));
     }
-  }
-
-  const ajustarSaldoCliente = (idUsuario, nomeUsuario) => {
-    const inputValor = window.prompt(`AJUSTE DE SALDO: ${nomeUsuario}\n\nPara ADICIONAR saldo, digite um número (Ex: 50)\nPara REMOVER saldo, coloque o sinal de menos (Ex: -20)`);
-    if (!inputValor) return; 
-    const valorReal = parseFloat(inputValor.replace(',', '.'));
-    if (isNaN(valorReal)) { mostrarToast("Você precisa digitar um número válido.", "erro"); return; }
-    const motivo = window.prompt("Qual o motivo deste ajuste? (Isso aparecerá no extrato do cliente)");
-    if (motivo === null) return;
-    fetch('https://borajogar-api.onrender.com/admin/ajustar-saldo', {
-      method: 'POST', headers: getAuthHeaders(),
-      body: JSON.stringify({ utilizador_id: idUsuario, valor: valorReal, motivo: motivo || 'Ajuste Manual' })
-    }).then(async res => {
-      const data = await res.json();
-      if (res.ok) { mostrarToast(data.mensagem, "sucesso"); carregarDados(); } else { mostrarToast(data.detail, "erro"); }
-    });
   }
 
   const cobrarNoWhatsApp = (nome, telefone, jogo) => {
@@ -882,6 +892,46 @@ function App() {
         </div>
       )}
 
+      {/* ========================================================================= */}
+      {/* NOVO MODAL DE EDIÇÃO DE CLIENTES (ADMIN)                                  */}
+      {/* ========================================================================= */}
+      {modalEdicaoCliente && (
+        <div className="fixed inset-0 z-[250] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-fade-in">
+          <div className="bg-gradient-to-br from-purple-900/20 to-zinc-900 border border-purple-500/30 rounded-3xl p-6 md:p-8 max-w-2xl w-full shadow-2xl shadow-purple-500/10 overflow-y-auto max-h-[90vh] custom-scrollbar">
+            <h3 className="text-xl font-black text-purple-400 mb-6 tracking-tight flex items-center gap-3">
+              ✏️ Editar Cliente
+            </h3>
+            <form onSubmit={salvarEdicaoCliente} className="flex flex-col gap-4">
+              
+              <div>
+                <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1 block">Nome do Cliente</label>
+                <input type="text" value={modalEdicaoCliente.nome} onChange={e => setModalEdicaoCliente({...modalEdicaoCliente, nome: e.target.value})} className={adminInputClass} required />
+              </div>
+
+              <div className="flex flex-col md:flex-row gap-4">
+                <div className="w-full">
+                  <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1 block">E-mail</label>
+                  <input type="email" value={modalEdicaoCliente.email} onChange={e => setModalEdicaoCliente({...modalEdicaoCliente, email: e.target.value})} className={adminInputClass} required />
+                </div>
+                <div className="w-full">
+                  <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1 block">WhatsApp</label>
+                  <input type="text" value={modalEdicaoCliente.telefone || ''} onChange={e => setModalEdicaoCliente({...modalEdicaoCliente, telefone: e.target.value})} className={adminInputClass} />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1 block">Saldo na Carteira (R$)</label>
+                <input type="number" step="0.01" value={modalEdicaoCliente.saldo} onChange={e => setModalEdicaoCliente({...modalEdicaoCliente, saldo: e.target.value})} className={adminInputClass} required />
+              </div>
+
+              <div className="flex gap-3 mt-4 pt-4 border-t border-zinc-800">
+                <button type="button" onClick={() => setModalEdicaoCliente(null)} className="flex-1 py-3 rounded-xl font-bold text-xs bg-zinc-800 text-zinc-300 hover:bg-zinc-700 hover:text-white uppercase tracking-wide transition-colors">Cancelar</button>
+                <button type="submit" className="flex-1 py-3 rounded-xl font-bold text-xs text-white uppercase tracking-wide shadow-lg transition-all bg-purple-600 hover:bg-purple-500 shadow-purple-600/20">Salvar Alterações</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {modalConfirmacao.visivel && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-fade-in">
@@ -2231,30 +2281,34 @@ function App() {
                               {clientesFiltrados.slice(paginaClientes * 50, (paginaClientes + 1) * 50).map(u => (
                               <li key={u.id} className="flex flex-col md:flex-row justify-between items-start md:items-center bg-zinc-950/50 p-4 md:p-5 rounded-2xl border border-zinc-800/50 border-l-2 border-l-purple-500 shadow-sm hover:bg-zinc-800/50 transition-colors gap-4">
                                   <div className="flex flex-col gap-1.5">
-                                  <span className="text-sm font-black text-white tracking-tight">
-                                      {u.nome} {u.is_admin && <span className="ml-2 text-[8px] bg-amber-500/20 text-amber-400 px-2 py-0.5 rounded-md uppercase tracking-wider">Admin</span>}
-                                  </span>
-                                  <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">
-                                      Saldo: <strong className={`text-xs tracking-normal ml-1 ${u.saldo < 0 ? 'text-rose-400' : 'text-emerald-400'}`}>R$ {parseFloat(u.saldo).toFixed(2)}</strong>
-                                  </span>
-                                  {u.telefone && (
-                                    <a 
-                                      href={`whatsapp://send?phone=${u.telefone.replace(/\D/g, '').startsWith('55') ? u.telefone.replace(/\D/g, '') : '55' + u.telefone.replace(/\D/g, '')}`} 
-                                      target="_blank" 
-                                      rel="noopener noreferrer" 
-                                      className="text-[10px] font-bold text-emerald-400 hover:text-emerald-300 uppercase tracking-wider mt-1 flex items-center gap-1"
-                                    >
-                                      📱 Chamar no Whats
-                                    </a>
-                                  )}
+                                    <span className="text-sm font-black text-white tracking-tight">
+                                        {u.nome} {u.is_admin && <span className="ml-2 text-[8px] bg-amber-500/20 text-amber-400 px-2 py-0.5 rounded-md uppercase tracking-wider">Admin</span>}
+                                    </span>
+                                    <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">
+                                        Saldo: <strong className={`text-xs tracking-normal ml-1 ${u.saldo < 0 ? 'text-rose-400' : 'text-emerald-400'}`}>R$ {parseFloat(u.saldo).toFixed(2)}</strong>
+                                    </span>
+                                    <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">
+                                        E-mail: <span className="text-zinc-300 ml-1 truncate">{u.email}</span>
+                                    </span>
                                   </div>
+                                  
                                   {!u.is_admin && (
-                                  <div className="flex gap-2 w-full md:w-auto justify-end">
-                                      <button onClick={() => ajustarSaldoCliente(u.id, u.nome)} className="text-blue-400 hover:text-white text-[10px] uppercase tracking-wider bg-blue-900/30 hover:bg-blue-600 px-3 py-1.5 rounded-lg font-bold transition-colors border border-blue-500/30">
-                                      ⚖️ Ajustar
+                                  <div className="flex flex-wrap gap-2 w-full md:w-auto justify-end mt-2 md:mt-0">
+                                      {u.telefone && (
+                                        <a 
+                                          href={`whatsapp://send?phone=${u.telefone.replace(/\D/g, '').startsWith('55') ? u.telefone.replace(/\D/g, '') : '55' + u.telefone.replace(/\D/g, '')}`} 
+                                          target="_blank" 
+                                          rel="noopener noreferrer" 
+                                          className="text-emerald-400 hover:text-white text-[10px] uppercase tracking-wider bg-emerald-900/30 hover:bg-emerald-600 px-3 py-1.5 rounded-lg font-bold transition-colors border border-emerald-500/30 flex items-center gap-1"
+                                        >
+                                          📱 Whats
+                                        </a>
+                                      )}
+                                      <button onClick={() => setModalEdicaoCliente(u)} className="text-blue-400 hover:text-white text-[10px] uppercase tracking-wider bg-blue-900/30 hover:bg-blue-600 px-3 py-1.5 rounded-lg font-bold transition-colors border border-blue-500/30 flex items-center gap-1">
+                                        ✏️ Editar
                                       </button>
-                                      <button onClick={() => removerUsuario(u.id)} className="text-rose-400 hover:text-white text-[10px] uppercase tracking-wider bg-rose-900/30 hover:bg-rose-600 px-3 py-1.5 rounded-lg font-bold transition-colors border border-rose-500/30">
-                                      Excluir
+                                      <button onClick={() => removerUsuario(u.id)} className="text-rose-400 hover:text-white text-[10px] uppercase tracking-wider bg-rose-900/30 hover:bg-rose-600 px-3 py-1.5 rounded-lg font-bold transition-colors border border-rose-500/30 flex items-center gap-1">
+                                        🗑️ Excluir
                                       </button>
                                   </div>
                                   )}
