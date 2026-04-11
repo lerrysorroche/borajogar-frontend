@@ -740,25 +740,6 @@ function App() {
     window.open(`https://wa.me/${numeroLimpo}?text=${encodeURIComponent(mensagem)}`, '_blank');
   }
 
-  const calcularPrevisao = (dataBaseDeDevolucao, tamanhoFila, dataLancamento = null) => {
-    let dataReferencia;
-    const hoje = new Date();
-    hoje.setHours(0, 0, 0, 0);
-
-    if (dataLancamento && new Date(dataLancamento + 'T00:00:00') > hoje) {
-      dataReferencia = new Date(dataLancamento + 'T00:00:00');
-    } 
-    else if (dataBaseDeDevolucao) {
-      dataReferencia = new Date(dataBaseDeDevolucao);
-    } 
-    else {
-      return 'Aguardando Estoque';
-    }
-
-    dataReferencia.setDate(dataReferencia.getDate() + (tamanhoFila * 7));
-    return dataReferencia.toLocaleDateString();
-  }
-
   const lidarComFiltroPlataforma = (plat) => { setFiltroPlataforma(plat); setPaginaAtual(1); }
   const lidarComFiltroDisp = (disp) => { setFiltroDisponibilidade(disp); setPaginaAtual(1); }
   const lidarComBusca = (e) => { setTermoBusca(e.target.value); setPaginaAtual(1); }
@@ -1514,9 +1495,9 @@ function App() {
                               <span className="text-xs font-black text-amber-400">{jogo.tamanho_fila || 0} pessoa(s)</span>
                             </div>
                             <div className="flex justify-between items-center">
-                              <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">⏳ Próxima vaga em:</span>
+                              <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">⏳ Próxima Vaga em:</span>
                               <span className="text-xs font-black text-blue-400">
-                                {calcularPrevisao(jogo.proxima_devolucao, jogo.tamanho_fila || 0, jogo.data_lancamento)}
+                                {dataVagaGlobalStr}
                               </span>
                             </div>
                           </div>
@@ -1947,10 +1928,7 @@ function App() {
                             <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
                               <span className="text-zinc-500 text-[10px] uppercase font-bold tracking-wider w-20">Liberação</span>
                               <span className="text-blue-400 font-bold text-sm md:text-base tracking-wide">
-                                {(() => {
-                                  const jDetalhes = jogos.find(j => j.titulo === item.jogo);
-                                  return calcularPrevisao(item.proxima_devolucao, item.pessoas_na_frente, jDetalhes?.data_lancamento);
-                                })()}
+                                {item.data_estimada_str}
                               </span>
                             </div>
                           </div>
