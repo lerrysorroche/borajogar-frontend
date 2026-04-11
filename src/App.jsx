@@ -49,6 +49,7 @@ function App() {
   const [meusAlugueis, setMeusAlugueis] = useState([])
   const [minhasReservas, setMinhasReservas] = useState([]) 
   const [extrato, setExtrato] = useState([]) 
+  const [notificacoes, setNotificacoes] = useState([]) // 🚀 NOVA VARIÁVEL AQUI 
   
   // ESTADOS DA ENQUETE
   const [enqueteOpcoes, setEnqueteOpcoes] = useState([])
@@ -511,6 +512,30 @@ function App() {
     fetch(`https://borajogar-api.onrender.com/meus-alugueis/${usuarioLogado.id}`).then(res => res.json()).then(dados => setMeusAlugueis(dados))
     fetch(`https://borajogar-api.onrender.com/minhas-reservas/${usuarioLogado.id}`).then(res => res.json()).then(dados => setMinhasReservas(dados))
     fetch(`https://borajogar-api.onrender.com/extrato/${usuarioLogado.id}`).then(res => res.json()).then(dados => setExtrato(dados))
+    fetch(`https://borajogar-api.onrender.com/notificacoes/${usuarioLogado.id}`).then(res => res.json()).then(dados => setNotificacoes(dados)) // 🚀 CARREGA ALERTAS
+  }
+
+  // 🚀 FUNÇÕES DE AÇÃO DO ALERTA DE FILA
+  const manterReserva = (notificacaoId) => {
+    fetch('https://borajogar-api.onrender.com/notificacoes/ler', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ notificacao_id: notificacaoId })
+    }).then(() => {
+        mostrarToast("Perfeito! Acompanhe a nova data em Minhas Reservas.", "sucesso");
+        carregarDados();
+    });
+  }
+
+  const cancelarReservaComEstorno = (reservaId, notificacaoId) => {
+    if(!window.confirm("Tem certeza que deseja cancelar esta reserva e receber o crédito de volta na carteira?")) return;
+    fetch('https://borajogar-api.onrender.com/reservas/cancelar', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ reserva_id: reservaId, utilizador_id: usuarioLogado.id, notificacao_id: notificacaoId })
+    }).then(async res => {
+      const data = await res.json();
+      if(res.ok) { mostrarToast(data.mensagem, "sucesso"); carregarDados(); }
+      else { mostrarToast(data.detail, "erro"); }
+    })
   }
 
   useEffect(() => { carregarDados(); }, [usuarioLogado?.id]) 
@@ -1196,11 +1221,13 @@ function App() {
                     
                     {/* 🚀 SINO DE NOTIFICAÇÃO NEON */}
                     <button onClick={() => {setAbaAtual('dashboard'); window.scrollTo(0,0);}} className="hidden md:flex relative items-center justify-center w-10 h-10 rounded-xl bg-zinc-900 border border-zinc-800 hover:border-orange-500/50 hover:bg-orange-500/10 transition-all group">
-                      <span className="text-lg grayscale group-hover:grayscale-0 transition-all">🔔</span>
-                      <span className="absolute -top-1 -right-1 flex h-3 w-3">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
-                        <span className="relative inline-flex rounded-full h-3 w-3 bg-orange-500 border border-zinc-900"></span>
-                      </span>
+                      <span className={`text-lg transition-all ${notificacoes.length > 0 ? 'grayscale-0' : 'grayscale group-hover:grayscale-0'}`}>🔔</span>
+                      {notificacoes.length > 0 && (
+                        <span className="absolute -top-1 -right-1 flex h-3 w-3">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
+                          <span className="relative inline-flex rounded-full h-3 w-3 bg-orange-500 border border-zinc-900"></span>
+                        </span>
+                      )}
                     </button>
 
                     <span className="hidden md:block text-xs text-zinc-400">Olá, <strong className="text-white">{usuarioLogado.nome}</strong></span>
@@ -1559,27 +1586,29 @@ function App() {
                 </div>
               </div>
 
-              {/* 🚀 ALERTA DE ALTERAÇÃO DE FILA (EXEMPLO VISUAL) */}
-              <div className="bg-orange-950/30 border border-orange-500/40 rounded-3xl p-6 md:p-8 shadow-[0_0_20px_rgba(249,115,22,0.1)] flex flex-col gap-4 animate-fade-in relative overflow-hidden">
-                <div className="absolute top-0 left-0 w-1 h-full bg-orange-500"></div>
-                <div className="flex items-start gap-4">
-                  <span className="text-3xl animate-bounce">⚠️</span>
-                  <div>
-                    <h3 className="text-orange-400 font-black text-lg tracking-tight uppercase mb-1">Atualização na sua Reserva</h3>
-                    <p className="text-sm text-zinc-300 leading-relaxed font-medium">
-                      Devido à prioridade de clientes Veteranos (Rank 1), a data prevista para a liberação do seu jogo <strong className="text-white">Resident Evil Requiem</strong> foi alterada para <strong className="text-orange-400">11/05/2026</strong>.
-                    </p>
+              {/* 🚀 ALERTAS DE ALTERAÇÃO DE FILA REAIS */}
+              {notificacoes.map(notif => (
+                <div key={notif.id} className="bg-orange-950/30 border border-orange-500/40 rounded-3xl p-6 md:p-8 shadow-[0_0_20px_rgba(249,115,22,0.1)] flex flex-col gap-4 animate-fade-in relative overflow-hidden mb-4">
+                  <div className="absolute top-0 left-0 w-1 h-full bg-orange-500"></div>
+                  <div className="flex items-start gap-4">
+                    <span className="text-3xl animate-bounce">⚠️</span>
+                    <div>
+                      <h3 className="text-orange-400 font-black text-lg tracking-tight uppercase mb-1">Atualização na sua Reserva</h3>
+                      <p className="text-sm text-zinc-300 leading-relaxed font-medium">
+                        {notif.mensagem}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex flex-col sm:flex-row gap-3 mt-2 pl-0 sm:pl-12">
+                    <button onClick={() => manterReserva(notif.id)} className="flex-1 bg-orange-600 hover:bg-orange-500 text-white font-bold uppercase tracking-wider py-3 px-6 rounded-xl text-xs transition-colors shadow-lg shadow-orange-600/20">
+                      👍 Entendi, manter reserva
+                    </button>
+                    <button onClick={() => cancelarReservaComEstorno(notif.reserva_id, notif.id)} className="flex-1 bg-zinc-900 hover:bg-zinc-800 text-zinc-300 font-bold uppercase tracking-wider py-3 px-6 rounded-xl border border-zinc-700 text-xs transition-colors">
+                      💸 Cancelar e Estornar Crédito
+                    </button>
                   </div>
                 </div>
-                <div className="flex flex-col sm:flex-row gap-3 mt-2 pl-0 sm:pl-12">
-                  <button className="flex-1 bg-orange-600 hover:bg-orange-500 text-white font-bold uppercase tracking-wider py-3 px-6 rounded-xl text-xs transition-colors shadow-lg shadow-orange-600/20">
-                    👍 Entendi, manter reserva
-                  </button>
-                  <button className="flex-1 bg-zinc-900 hover:bg-zinc-800 text-zinc-300 font-bold uppercase tracking-wider py-3 px-6 rounded-xl border border-zinc-700 text-xs transition-colors">
-                    💸 Cancelar e Estornar Crédito
-                  </button>
-                </div>
-              </div>
+              ))}
               
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
                 <section className="bg-gradient-to-br from-cyan-900/20 to-zinc-900 p-6 md:p-8 rounded-3xl border border-cyan-500/30 shadow-2xl shadow-cyan-500/10 flex flex-col h-auto lg:h-[540px] relative overflow-hidden hover:-translate-y-1 transition-transform duration-300">
