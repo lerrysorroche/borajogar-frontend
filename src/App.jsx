@@ -1108,7 +1108,14 @@ function App() {
               
               <div className="bg-zinc-950/50 border border-zinc-800 p-4 rounded-xl mt-4 shadow-inner">
                 <p className="text-[11px] text-zinc-400 leading-relaxed text-center">
-                  Ao clicar em "Finalizar Cadastro", você confirma que é maior de idade e declara que leu, compreendeu e concorda integralmente com os nossos <strong className="text-emerald-400">Termos de Uso</strong> e <strong className="text-emerald-400">Política de Privacidade</strong>.
+                  Ao clicar em "Finalizar Cadastro", você confirma que é maior de idade e declara que leu, compreendeu e concorda integralmente com os nossos{' '}
+                  <button type="button" onClick={() => { setAbaAtual('termos'); window.scrollTo(0, 0); }} className="text-emerald-400 font-bold hover:text-emerald-300 transition-colors underline decoration-emerald-500/50 underline-offset-2 hover:decoration-emerald-400">
+                    Termos de Uso
+                  </button>
+                  {' '}e{' '}
+                  <button type="button" onClick={() => { setAbaAtual('privacidade'); window.scrollTo(0, 0); }} className="text-emerald-400 font-bold hover:text-emerald-300 transition-colors underline decoration-emerald-500/50 underline-offset-2 hover:decoration-emerald-400">
+                    Política de Privacidade
+                  </button>.
                 </p>
               </div>
 
