@@ -864,8 +864,24 @@ function App() {
       return 0;
     });
 
-  const alugueisAtivos = meusAlugueis.filter(item => item.status === 'ATIVA')
-  const historicoAlugueis = meusAlugueis.filter(item => item.status === 'EXPIRADA').slice(0, 5)
+  const alugueisAtivos = meusAlugueis.filter(item => item.status === 'ATIVA');
+  const todosAlugueisExpirados = meusAlugueis.filter(item => item.status === 'EXPIRADA');
+  
+  // 🚀 A MATEMÁTICA REAL (Conta tudo)
+  const totalAlugueis = todosAlugueisExpirados.length;
+  // 🚀 O VISUAL (Mostra só os 5 últimos no histórico do rodapé)
+  const historicoAlugueis = todosAlugueisExpirados.slice(0, 5);
+
+  // 🚀 SISTEMA DE RANKINGS
+  const obterRankInfo = (qtd) => {
+    if (qtd >= 50) return { nome: 'Super VIP', cor: 'bg-fuchsia-900/40 text-fuchsia-400 border-fuchsia-500/50', icon: '👑' };
+    if (qtd >= 30) return { nome: 'VIP', cor: 'bg-rose-900/40 text-rose-400 border-rose-500/50', icon: '💎' };
+    if (qtd >= 20) return { nome: 'Especial', cor: 'bg-amber-900/40 text-amber-400 border-amber-500/50', icon: '⭐' };
+    if (qtd >= 10) return { nome: 'Veterano', cor: 'bg-purple-900/40 text-purple-400 border-purple-500/50', icon: '🏆' };
+    if (qtd >= 1) return { nome: 'Membro', cor: 'bg-blue-900/40 text-blue-400 border-blue-500/50', icon: '🛡️' };
+    return { nome: 'Novato', cor: 'bg-zinc-800 text-zinc-500 border-zinc-700', icon: '🌱' };
+  };
+  const meuRank = obterRankInfo(totalAlugueis);
 
   const inputClass = "w-full p-3 bg-zinc-900 border border-zinc-700 text-sm font-medium text-white rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all placeholder-zinc-500"
   const subtitleCyberClass = "text-[11px] font-mono-tech font-bold text-center mb-10 tracking-[0.2em] uppercase bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent animate-neon-flicker block select-none";
@@ -1393,7 +1409,7 @@ function App() {
                   
                   // 🚀 NOVA LÓGICA DE HIERARQUIA (NÍVEL 1)
                   const ehJogoVIP = isLancamento || isEmBreve;
-                  const isVeterano = usuarioLogado ? (usuarioLogado.is_admin || historicoAlugueis.length > 0) : false;
+                  const isVeterano = usuarioLogado ? (usuarioLogado.is_admin || totalAlugueis >= 1) : false;
                   const bloqueadoParaUsuario = ehJogoVIP && usuarioLogado && !isVeterano;
                   
                   return (
@@ -1570,18 +1586,12 @@ function App() {
                   <p className="text-sm font-mono-tech text-zinc-400 mb-4">{usuarioLogado.email}</p>
                   
                   <div className="flex flex-wrap items-center justify-center md:justify-start gap-3">
-                    <span className="bg-zinc-950 border border-zinc-800 text-zinc-300 px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5">
-                      🎮 {historicoAlugueis.length} Locações
+                    <span className="bg-zinc-950 border border-zinc-800 text-white px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5">
+                      🎮 {totalAlugueis} Locações
                     </span>
-                    {historicoAlugueis.length > 0 ? (
-                      <span className="bg-purple-900/40 text-purple-400 border border-purple-500/50 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5 shadow-[0_0_10px_rgba(168,85,247,0.2)] animate-pulse-slow">
-                        🏆 Rank: Veterano
-                      </span>
-                    ) : (
-                      <span className="bg-zinc-800 text-zinc-500 border border-zinc-700 px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider">
-                        🌱 Rank: Novato
-                      </span>
-                    )}
+                    <span className={`${meuRank.cor} px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5 shadow-[0_0_10px_rgba(255,255,255,0.05)]`}>
+                      {meuRank.icon} Rank: {meuRank.nome}
+                    </span>
                   </div>
                 </div>
               </div>
