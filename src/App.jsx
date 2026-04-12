@@ -1593,7 +1593,7 @@ function App() {
                                     PROMO
                                   </span>
                                   <span className="text-[10px] uppercase tracking-wider font-black text-white/90 group-hover:text-white transition-colors [text-shadow:1px_1px_0px_black,-1px_-1px_0px_black,1px_-1px_0px_black,-1px_1px_0px_black]">
-                                    {jogo.estoque > 0 && !isEmBreve ? 'Alugar' : 'Reservar'} 14 D
+                                    {jogo.estoque > 0 && !isEmBreve ? 'Alugar' : 'Reservar'} 14 Dias
                                   </span>
                                   <strong className="text-lg mt-0.5 font-black text-white tracking-tight [text-shadow:1px_1px_0px_black,-1px_-1px_0px_black,1px_-1px_0px_black,-1px_1px_0px_black]">
                                     R$ {jogo.preco_aluguel_14.toFixed(2)}
