@@ -2022,7 +2022,48 @@ function App() {
                     <span className="transition duration-300 group-open:-rotate-180 text-purple-500 text-lg">▼</span>
                   </summary>
                   <div className="px-6 md:px-8 pb-6 md:pb-8 text-zinc-400 text-xs md:text-sm leading-relaxed border-t border-zinc-800/50 pt-6">
-                    É super simples! Você adiciona saldo à sua carteira digital, escolhe o jogo na vitrine, escolhe o número de dias que quer ficar com o jogo (7 ou 14 dias) e clica em <strong className="text-white">"ALUGAR"</strong>. O valor é descontado e os dados da conta (E-mail e Senha) aparecem imediatamente na sua aba <strong className="text-emerald-400">🔑 Meus Acessos</strong>. O aluguel dura 7 ou 14 dias corridos a partir do momento da compra.
+                    É super simples! Você adiciona saldo à sua carteira digital, escolhe o jogo na vitrine, escolhe o número de dias que quer ficar com o jogo (7 ou 14 dias) e clica em <strong className="text-white">"ALUGAR"</strong>. O valor é descontado e os dados da conta (E-mail e Senha) aparecem imediatamente na sua aba <strong className="text-emerald-400">🔑 MEUS ACESSOS</strong>. O aluguel dura 7 ou 14 dias corridos a partir do momento da compra.
+                  </div>
+                </details>
+
+                <details className="group bg-zinc-900 border border-zinc-800 rounded-3xl [&_summary::-webkit-details-marker]:hidden shadow-xl hover:-translate-y-1 transition-transform duration-300">
+                  <summary className="flex items-center justify-between p-6 md:p-8 cursor-pointer text-white hover:text-purple-400 transition-colors">
+                    <span className="text-base md:text-lg font-bold tracking-tight">🏅 Como funciona o Sistema de Ranks e a Prioridade VIP?</span>
+                    <span className="transition duration-300 group-open:-rotate-180 text-purple-500 text-lg">▼</span>
+                  </summary>
+                  <div className="px-6 md:px-8 pb-6 md:pb-8 text-zinc-400 text-xs md:text-sm leading-relaxed border-t border-zinc-800/50 pt-6">
+                    Aqui no <strong>BORA JOGAR!</strong>, a sua fidelidade se transforma em vantagens reais. Toda vez que você conclui um aluguel com sucesso, o seu nível sobe. Quanto maior o seu Rank, mais benefícios você tem.
+                    
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3 my-6">
+                      <div className="bg-zinc-950 border border-zinc-800 p-3 rounded-xl flex flex-col items-center justify-center gap-1">
+                        <span className="text-xl">🌱</span><span className="text-zinc-500 font-bold uppercase tracking-wider text-[10px]">Novato</span><span className="text-zinc-300 font-medium text-[10px]">0 Locações</span>
+                      </div>
+                      <div className="bg-blue-950/20 border border-blue-900/50 p-3 rounded-xl flex flex-col items-center justify-center gap-1 shadow-[0_0_10px_rgba(59,130,246,0.05)]">
+                        <span className="text-xl">🛡️</span><span className="text-blue-400 font-bold uppercase tracking-wider text-[10px]">Membro</span><span className="text-zinc-300 font-medium text-[10px]">1+ Locações</span>
+                      </div>
+                      <div className="bg-purple-950/20 border border-purple-900/50 p-3 rounded-xl flex flex-col items-center justify-center gap-1 shadow-[0_0_10px_rgba(168,85,247,0.05)]">
+                        <span className="text-xl">🏆</span><span className="text-purple-400 font-bold uppercase tracking-wider text-[10px]">Veterano</span><span className="text-zinc-300 font-medium text-[10px]">10+ Locações</span>
+                      </div>
+                      <div className="bg-amber-950/20 border border-amber-900/50 p-3 rounded-xl flex flex-col items-center justify-center gap-1 shadow-[0_0_10px_rgba(245,158,11,0.05)]">
+                        <span className="text-xl">⭐</span><span className="text-amber-400 font-bold uppercase tracking-wider text-[10px]">Especial</span><span className="text-zinc-300 font-medium text-[10px]">20+ Locações</span>
+                      </div>
+                      <div className="bg-rose-950/20 border border-rose-900/50 p-3 rounded-xl flex flex-col items-center justify-center gap-1 shadow-[0_0_10px_rgba(225,29,72,0.05)]">
+                        <span className="text-xl">💎</span><span className="text-rose-400 font-bold uppercase tracking-wider text-[10px]">VIP</span><span className="text-zinc-300 font-medium text-[10px]">30+ Locações</span>
+                      </div>
+                      <div className="bg-fuchsia-950/20 border border-fuchsia-900/50 p-3 rounded-xl flex flex-col items-center justify-center gap-1 shadow-[0_0_10px_rgba(217,70,239,0.05)]">
+                        <span className="text-xl">👑</span><span className="text-fuchsia-400 font-bold uppercase tracking-wider text-[10px]">Super VIP</span><span className="text-zinc-300 font-medium text-[10px]">50+ Locações</span>
+                      </div>
+                    </div>
+
+                    <strong className="text-white block mb-2 text-sm">Quais são os benefícios?</strong>
+                    <ul className="list-disc pl-5 space-y-4 font-medium text-zinc-300">
+                      <li>
+                        <strong className="text-blue-400">Acesso aos Lançamentos:</strong> Para garantir que nossos clientes fiéis sempre tenham prioridade nos jogos mais concorridos, os jogos com a tag <span className="bg-fuchsia-600/90 text-white text-[9px] px-2 py-0.5 rounded uppercase tracking-wider mx-1">LANÇAMENTO</span> ou em Pré-venda são exclusivos para clientes a partir do Rank <strong>MEMBRO</strong>. Novatos precisam concluir pelo menos 1 aluguel na locadora para desbloquear esse acesso.
+                      </li>
+                      <li>
+                        <strong className="text-amber-400">Prioridade na Fila (Fura-Fila):</strong> Se um jogo estiver alugado e você decidir entrar na fila de espera, o seu Rank entra em ação! Se você tiver um Rank maior que outro cliente que já estava na fila, o sistema automaticamente te coloca <strong>na frente dele</strong>. O cliente que foi ultrapassado receberá um aviso imediato com a nova data de liberação calculada.
+                      </li>
+                    </ul>
                   </div>
                 </details>
 
@@ -2038,14 +2079,14 @@ function App() {
                       <li>Aceite os termos e selecione <strong className="text-white">CONFIRMAR</strong>.</li>
                       <li>Na tela com o QR Code, selecione <strong className="text-white">INICIAR SESSÃO MANUALMENTE</strong> (canto esquerdo embaixo).</li>
                       <li>Insira o E-mail e Senha da conta que estão disponíveis acima.</li>
-                      <li>Quando o console pedir o código (2FA), clique no botão verde <strong className="text-emerald-400">"Gerar Código de Acesso (2FA)"</strong> aqui no site.</li>
+                      <li>Quando o console pedir o código (2FA), clique no botão verde <strong className="text-emerald-400">"GERAR CÓDIGO DE ACESSO (2FA)"</strong> aqui no site.</li>
                       <li>Digite o código 2FA (6 dígitos) rapidamente, ele fica ativo por 30 segundos.</li>
                       <li><strong className="text-rose-400">NÃO ATIVE MAIS NADA</strong>. Somente selecione OK.</li>
                       <li>Para jogar na sua conta pessoal e ganhar os troféus, é OBRIGATÓRIO habilitar o compartilhamento:
                       <ul className="list-disc pl-5 mt-3 text-zinc-400 space-y-3 border-l-2 border-zinc-700 ml-1">
-                        <li><strong>No PS5:</strong> Vá em Configurações &gt; Usuários e contas &gt; Outros &gt; Compartilhamento do console... &gt; <strong className="text-white">Habilitar</strong>. (Se não estiver habilitado)</li>
-                        <li><strong>No PS4:</strong> Vá em Configurações &gt; Gerenciamento da conta &gt; <strong className="text-white">Ativar como seu PS4 principal</strong>. (Se não estiver habilitado)</li>
-                        <li className="text-rose-400 font-bold flex items-center gap-3 mt-3 bg-rose-950/30 p-3.5 rounded-xl border border-rose-500/20"><span className="text-lg">⚠️</span> É aqui também, que no final do seu aluguel, você vai DESABILITAR o compartilhamento.</li>
+                        <li><strong>No PS5:</strong> Vá em Configurações &gt; Usuários e contas &gt; Outros &gt; Compartilhamento do console... &gt; <strong className="text-white">HABILITAR</strong>. (Se não estiver habilitado)</li>
+                        <li><strong>No PS4:</strong> Vá em Configurações &gt; Gerenciamento da conta &gt; <strong className="text-white">ATIVAR COMO SEU PS4 PRINCIPAL</strong>. (Se não estiver habilitado)</li>
+                        <li className="text-rose-400 font-bold flex items-center gap-3 mt-3 bg-rose-950/30 p-3.5 rounded-xl border border-rose-500/20"><span className="text-lg">⚠️</span> É aqui também, que no final do seu aluguel, você vai DESATIVAR o compartilhamento.</li>
                       </ul>
                       </li>
                       <li className="text-emerald-400 font-black mt-6 text-sm bg-emerald-950/40 p-5 rounded-xl border border-emerald-500/40 shadow-inner">
@@ -2061,7 +2102,7 @@ function App() {
                     <span className="transition duration-300 group-open:-rotate-180 text-purple-500 text-lg">▼</span>
                   </summary>
                   <div className="px-6 md:px-8 pb-6 md:pb-8 text-zinc-400 text-xs md:text-sm leading-relaxed border-t border-zinc-800/50 pt-6">
-                    A segurança vem em primeiro lugar! Na aba <strong className="text-emerald-400">🔑 Meus Acessos</strong>, embaixo das informações da conta (Login e Senha), existe um botão verde chamado <strong className="text-white">"GERAR CÓDIGO DE ACESSO (2FA)"</strong>.<br/><br/>
+                    A segurança vem em primeiro lugar! Na aba <strong className="text-emerald-400">🔑 MEUS ACESSOS</strong>, embaixo das informações da conta (Login e Senha), existe um botão verde chamado <strong className="text-emerald-400">"GERAR CÓDIGO DE ACESSO (2FA)"</strong>.<br/><br/>
                     Basta clicar nele que um código de 6 dígitos vai aparecer na sua tela. Digite esse código rapidamente no seu PlayStation (ele muda a cada 30 segundos). Você não precisa mandar mensagem pro suporte, o sistema gera o código para você na hora!
                   </div>
                 </details>
@@ -2074,8 +2115,8 @@ function App() {
                   <div className="px-6 md:px-8 pb-6 md:pb-8 text-zinc-400 text-xs md:text-sm leading-relaxed border-t border-zinc-800/50 pt-6">
                     <strong className="text-white">Sim, com certeza!</strong> Para isso, logo após fazer o login com a conta alugada no console:
                     <ul className="list-disc pl-5 mt-4 space-y-3 font-medium text-zinc-300">
-                      <li><strong>No PS5:</strong> Vá em Configurações &gt; Usuários e Contas &gt; Outros &gt; <em>Compartilhamento do console e jogo offline</em> e <strong className="text-emerald-400">habilite</strong>.</li>
-                      <li><strong>No PS4:</strong> Vá em Configurações &gt; Gerenciamento da conta &gt; <em>Ativar como seu PS4 principal</em> e <strong className="text-emerald-400">habilite</strong>.</li>
+                      <li><strong>No PS5:</strong> Vá em Configurações &gt; Usuários e Contas &gt; Outros &gt; <em>Compartilhamento do console e jogo offline</em> &gt; <strong className="text-emerald-400">HABILITAR</strong>.</li>
+                      <li><strong>No PS4:</strong> Vá em Configurações &gt; Gerenciamento da conta &gt; <em>Ativar como seu PS4 principal</em> &gt; <strong className="text-emerald-400">HABILITAR</strong>.</li>
                     </ul>
                     <div className="mt-4">Depois disso, inicie o download do jogo, troque para a sua conta pessoal (a sua oficial) e jogue normalmente. Os saves e troféus ficarão nela!</div>
                   </div>
@@ -2087,7 +2128,7 @@ function App() {
                     <span className="transition duration-300 group-open:-rotate-180 text-purple-500 text-lg">▼</span>
                   </summary>
                   <div className="px-6 md:px-8 pb-6 md:pb-8 text-zinc-400 text-xs md:text-sm leading-relaxed border-t border-zinc-800/50 pt-6">
-                    Não se preocupe, você pode garantir a sua vaga! Clique no botão <strong className="text-amber-400">"RESERVAR"</strong> (7 ou 14 dias). O valor do jogo será investido e você verá uma data de <em>Previsão de Liberação</em> em "Meus Acessos". <br/><br/>
+                    Não se preocupe, você pode garantir a sua vaga! Clique no botão <strong className="text-amber-400">"RESERVAR"</strong> (7 ou 14 dias). O valor do jogo será investido e você verá uma data de <em>Previsão de Liberação</em> em <strong className="text-emerald-400">🔑 MEUS ACESSOS</strong>. <br/><br/>
                     Nosso sistema inteligente repassa a conta automaticamente para você no exato segundo em que o aluguel do cliente anterior terminar.
                   </div>
                 </details>
@@ -2097,9 +2138,9 @@ function App() {
                     <span className="text-base md:text-lg font-bold tracking-tight">♻️ Posso devolver um jogo antes do prazo e receber cashback?</span>
                     <span className="transition duration-300 group-open:-rotate-180 text-emerald-500 text-lg">▼</span>
                   </summary>
-                  <div className="px-6 md:px-8 pb-6 md:pb-8 text-zinc-300 text-xs md:text-sm leading-relaxed border-t border-emerald-500/30 pt-6">
-                    Nós possuímos um sistema de <strong className="text-white">Devolução Dinâmica</strong>! Essa opção fica ativa automaticamente apenas quando o jogo que você alugou está com <strong className="text-rose-400">alta demanda</strong> (ou seja, quando existem outras pessoas na fila de espera aguardando para jogar).<br/><br/>
-                    Se este for o caso, um botão verde <strong className="text-emerald-400">"♻️ Devolver"</strong> aparecerá ao lado do seu jogo na aba <em>Meus Acessos</em>. Ao fazer a devolução antecipada para agilizar a fila, você ganha uma recompensa: <strong className="text-emerald-400">R$ {configSistema.valor_por_dia.toFixed(2)} de cashback por cada 24 horas (1 dia completo)</strong> que ainda restavam no seu prazo!<br/><br/>
+                  <div className="px-6 md:px-8 pb-6 md:pb-8 text-zinc-400 text-xs md:text-sm leading-relaxed border-t border-emerald-800/50 pt-6">
+                    Nós possuímos um sistema de <strong className="text-white">DEVOLUÇÃO DINÂMICA</strong>! Essa opção fica ativa automaticamente apenas quando o jogo que você alugou está com <strong className="text-rose-400">ALTA DEMANDA</strong> (ou seja, quando existem outras pessoas na fila de espera aguardando para jogar).<br/><br/>
+                    Se este for o caso, um botão verde <strong className="text-emerald-400">"♻️ DEVOLVER"</strong> aparecerá ao lado do seu jogo na aba <strong className="text-emerald-400">🔑 MEUS ACESSOS</strong>. Ao fazer a devolução antecipada para agilizar a fila, você ganha uma recompensa: <strong className="text-emerald-400">R$ {configSistema.valor_por_dia.toFixed(2)} de cashback por cada 24 horas (1 dia completo)</strong> que ainda restavam no seu prazo!<br/><br/>
                     O valor cai direto na sua carteira digital assim que a nossa equipe verificar que a conta foi devidamente desativada do seu console.
                   </div>
                 </details>
@@ -2109,9 +2150,9 @@ function App() {
                     <span className="text-base md:text-lg font-bold tracking-tight">🚨 O que acontece se eu esquecer de desativar a conta do meu videogame?</span>
                     <span className="transition duration-300 group-open:-rotate-180 text-rose-500 text-lg">▼</span>
                   </summary>
-                  <div className="px-6 md:px-8 pb-6 md:pb-8 text-zinc-300 text-xs md:text-sm leading-relaxed border-t border-rose-500/30 pt-6">
+                  <div className="px-6 md:px-8 pb-6 md:pb-8 text-zinc-400 text-xs md:text-sm leading-relaxed border-t border-rose-800/50 pt-6">
                     Essa é a nossa regra mais rigorosa! Se o seu tempo acabar e você deixar a conta ativada como "Principal" no seu console, isso bloqueia a conta e impede que o próximo cliente da fila jogue. Quando isso acontece, nós solicitamos à Sony que faça a desabilitação. Isso pode causar banimento!<br/><br/>
-                    Neste caso, nosso sistema aplica uma <strong className="text-rose-400">Multa Administrativa Automática de R$ 50,00</strong> direto na sua carteira digital. Se você não tiver saldo, sua conta ficará negativada e bloqueada para alugar jogos. Por isso, sempre desabilite a conta como "Principal" no seu console quando seu aluguel acabar.<br/><br/>
+                    Neste caso, nosso sistema aplica uma <strong className="text-rose-400">MULTA ADMINISTRATIVA AUTOMÁTICA DE R$ 50,00</strong> direto na sua carteira digital. Se você não tiver saldo, sua conta ficará negativada e bloqueada para alugar jogos. Por isso, sempre desabilite a conta como "Principal" no seu console quando seu aluguel acabar.<br/><br/>
                     Se tiver alguma dúvida sobre como desabilitar a conta como "Principal" no seu console, consulte o tutorial que fica disponível junto com as informações da conta ou entre em contato conosco e te ajudaremos. É simples e rápido!
                   </div>
                 </details>
