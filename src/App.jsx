@@ -1408,6 +1408,17 @@ function App() {
                 Mostrando <span className="text-white">{jogosFiltrados.length}</span> jogo(s) encontrado(s)
               </div>
 
+              {/* 🚀 SPINNER DE CARREGAMENTO (Aparece enquanto o Render desperta) */}
+              {jogos.length === 0 && (
+                  <div className="mb-8 py-20 flex flex-col items-center justify-center text-center animate-fade-in bg-zinc-900/50 rounded-3xl border border-zinc-800 shadow-xl">
+                      <div className="w-16 h-16 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin mb-6 shadow-[0_0_15px_rgba(59,130,246,0.5)]"></div>
+                      <h3 className="text-2xl font-black text-white tracking-tight mb-2">Conectando aos Servidores...</h3>
+                      <p className="text-sm text-zinc-400 font-medium max-w-md leading-relaxed">
+                          O sistema está ligando e puxando o catálogo de jogos. Isso pode levar alguns segundos. Segura aí!
+                      </p>
+                  </div>
+              )}
+
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
                 {jogosDaPagina.map(jogo => {
                   const isLancamento = idsLancamentos.includes(jogo.id);
