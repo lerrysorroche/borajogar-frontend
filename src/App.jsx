@@ -1427,14 +1427,19 @@ function App() {
                   // 🚀 VERIFICA SE O USUÁRIO JÁ RESERVOU ESTE JOGO
                   const minhaReservaAtiva = minhasReservas.find(res => res.jogo === tituloLimpo);
                   
-                  // 🚀 MATEMÁTICA DE DATAS PÚBLICAS (Para quem não reservou ainda)
+                  // 🚀 MATEMÁTICA DE DATAS PÚBLICAS BLINDADA
                   let dataVagaGlobal = isEmBreve ? new Date(dataLanc) : new Date();
+                  
                   if (jogo.proxima_devolucao) {
                       const pd = new Date(jogo.proxima_devolucao);
                       if (pd > dataVagaGlobal) dataVagaGlobal = pd;
                   }
-                  dataVagaGlobal.setDate(dataVagaGlobal.getDate() + (jogo.fila_dias_espera || 0));
-                  const dataVagaGlobalStr = dataVagaGlobal.toLocaleDateString('pt-BR');
+
+                  // Usa matemática de milissegundos para evitar o bug de 'Invalid Date' ao virar o mês
+                  const diasFilaEsperaMs = (jogo.fila_dias_espera || 0) * 24 * 60 * 60 * 1000;
+                  const dataFinalExata = new Date(dataVagaGlobal.getTime() + diasFilaEsperaMs);
+                  
+                  const dataVagaGlobalStr = dataFinalExata.toLocaleDateString('pt-BR');
                   
                   return (
                   <div key={jogo.id} className={`bg-zinc-900 rounded-3xl border ${bloqueadoParaUsuario ? 'border-zinc-800/50 opacity-90 grayscale-[20%]' : 'border-zinc-800'} flex flex-col shadow-xl hover:-translate-y-2 hover:border-blue-500/50 transition-all duration-300 group overflow-hidden`}>
