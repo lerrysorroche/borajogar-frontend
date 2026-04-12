@@ -112,6 +112,9 @@ function App() {
   const [novoCupomTipo, setNovoCupomTipo] = useState('PORCENTAGEM')
   const [novoCupomValor, setNovoCupomValor] = useState('')
 
+  const [filtroStatusCatalogo, setFiltroStatusCatalogo] = useState('todos');
+  const [periodoFiltroEstatisticas, setPeriodoFiltroEstatisticas] = useState('mes');
+
   const [pixPendente, setPixPendente] = useState(null)
 
   const [paginaAtual, setPaginaAtual] = useState(1)
@@ -509,7 +512,9 @@ function App() {
     if (usuarioLogado.is_admin) {
       fetch('https://borajogar-api.onrender.com/admin/locacoes', { headers: getAuthHeaders() }).then(res => res.ok ? res.json() : []).then(dados => setTodasLocacoes(Array.isArray(dados) ? dados : []))
       fetch('https://borajogar-api.onrender.com/admin/reservas', { headers: getAuthHeaders() }).then(res => res.ok ? res.json() : []).then(dados => setTodasReservas(Array.isArray(dados) ? dados : []))
-      fetch('https://borajogar-api.onrender.com/admin/estatisticas', { headers: getAuthHeaders() }).then(res => res.ok ? res.json() : {faturamento: 0, total_clientes: 0, locacoes_ativas: 0}).then(dados => setEstatisticasAdmin(dados))
+      fetch(`https://borajogar-api.onrender.com/admin/estatisticas?periodo=${periodoFiltroEstatisticas}`, { headers: getAuthHeaders() })
+        .then(res => res.ok ? res.json() : {faturamento: 0, total_clientes: 0, movimentacao_periodo: 0})
+        .then(dados => setEstatisticasAdmin(dados))
       fetch('https://borajogar-api.onrender.com/usuarios', { headers: getAuthHeaders() }).then(res => res.ok ? res.json() : []).then(dados => setTodosUsuarios(Array.isArray(dados) ? dados : []))
       fetch('https://borajogar-api.onrender.com/admin/manutencao', { headers: getAuthHeaders() }).then(res => res.ok ? res.json() : []).then(dados => setContasManutencao(Array.isArray(dados) ? dados : []))
     }
@@ -889,6 +894,16 @@ function App() {
       if (ordenacaoClientes === 'maior_saldo') return b.saldo - a.saldo;
       if (ordenacaoClientes === 'menor_saldo') return a.saldo - b.saldo;
       return 0;
+    });
+
+  const jogosCatalogoAdminFiltrados = jogos
+    .filter(j => j.titulo.toLowerCase().includes(termoBusca.toLowerCase()))
+    .filter(j => {
+        if (filtroStatusCatalogo === 'todos') return true;
+        if (filtroStatusCatalogo === 'disponiveis') return j.estoque > 0;
+        if (filtroStatusCatalogo === 'alugados') return j.estoque === 0;
+        if (filtroStatusCatalogo === 'lancamentos') return idsLancamentos.includes(j.id);
+        return true;
     });
 
   const alugueisAtivos = meusAlugueis.filter(item => item.status === 'ATIVA');
@@ -2219,6 +2234,18 @@ function App() {
             <div className="animate-fade-in mt-2 max-w-6xl mx-auto">
               <h2 className="text-2xl md:text-3xl font-black text-white tracking-tight mb-8">Administração do Sistema</h2>
               {/* 📊 BLOCOS ESTATISTICAS DO SISTEMA */}
+              <div className="flex justify-end mb-4">
+                  <select 
+                    value={periodoFiltroEstatisticas} 
+                    onChange={(e) => {setPeriodoFiltroEstatisticas(e.target.value); setTimeout(carregarDados, 100);}}
+                    className="bg-zinc-900 border border-zinc-800 text-zinc-400 text-[10px] font-black uppercase tracking-widest rounded-xl px-4 py-2 outline-none cursor-pointer hover:border-emerald-500/50 transition-all shadow-lg"
+                  >
+                      <option value="mes">📅 Mês Atual</option>
+                      <option value="30dias">⏳ Últimos 30 Dias</option>
+                      <option value="ano">🗓️ Ano Atual</option>
+                      <option value="tudo">♾️ Todo o Período</option>
+                  </select>
+              </div>
               <section className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
                 <div className="bg-gradient-to-br from-emerald-900/40 to-zinc-900 border border-emerald-500/30 p-8 rounded-3xl shadow-xl shadow-emerald-500/10 relative overflow-hidden hover:-translate-y-1 transition-transform duration-300">
                   <div className="absolute -right-4 -top-4 text-8xl opacity-5">💰</div>
@@ -2485,19 +2512,37 @@ function App() {
                       <span className="transition duration-300 group-open:-rotate-180 text-blue-500 text-lg">▼</span>
                       </summary>
                       <div className="px-6 md:px-8 pb-6 md:pb-8 border-t border-zinc-800/50 pt-8">
-                      <div className="mb-6">
-                          <input type="text" placeholder="Pesquisar jogo no catálogo..." value={termoBusca} onChange={e => setTermoBusca(e.target.value)} className={adminInputClass} />
-                      </div>
                       
+                      {/* 🚀 BARRA DE BUSCA E FILTROS DO CATÁLOGO */}
+                      <div className="mb-6 flex flex-col lg:flex-row gap-4 bg-zinc-950 p-4 rounded-2xl border border-zinc-800/80 shadow-inner items-center">
+                          <input 
+                            type="text" 
+                            placeholder="🔍 Pesquisar por nome do jogo..." 
+                            value={termoBusca} 
+                            onChange={e => setTermoBusca(e.target.value)} 
+                            className={`${adminInputClass} flex-1 w-full`} 
+                          />
+                          
+                          <div className="flex bg-zinc-900 rounded-xl p-1 border border-zinc-700/50 shadow-inner w-full lg:w-auto overflow-x-auto">
+                              <button onClick={() => setFiltroStatusCatalogo('todos')} className={`flex-1 lg:flex-none px-4 py-2 rounded-lg text-[10px] uppercase tracking-wider font-bold transition-all ${filtroStatusCatalogo === 'todos' ? 'bg-blue-600 text-white' : 'text-zinc-400 hover:text-white'}`}>Todos</button>
+                              <button onClick={() => setFiltroStatusCatalogo('disponiveis')} className={`flex-1 lg:flex-none px-4 py-2 rounded-lg text-[10px] uppercase tracking-wider font-bold transition-all ${filtroStatusCatalogo === 'disponiveis' ? 'bg-emerald-600 text-white' : 'text-zinc-400 hover:text-white'}`}>Livres</button>
+                              <button onClick={() => setFiltroStatusCatalogo('alugados')} className={`flex-1 lg:flex-none px-4 py-2 rounded-lg text-[10px] uppercase tracking-wider font-bold transition-all ${filtroStatusCatalogo === 'alugados' ? 'bg-rose-600 text-white' : 'text-zinc-400 hover:text-white'}`}>Alugados</button>
+                              <button onClick={() => setFiltroStatusCatalogo('lancamentos')} className={`flex-1 lg:flex-none px-4 py-2 rounded-lg text-[10px] uppercase tracking-wider font-bold transition-all ${filtroStatusCatalogo === 'lancamentos' ? 'bg-fuchsia-600 text-white' : 'text-zinc-400 hover:text-white'}`}>🔥 Lançam.</button>
+                          </div>
+                      </div>
+
                       <div className="max-h-[600px] overflow-y-auto pr-3 custom-scrollbar">
-                          {jogosFiltrados.length === 0 ? <p className="text-zinc-500 text-sm font-medium">Vazio.</p> : (
+                          {jogosCatalogoAdminFiltrados.length === 0 ? <p className="text-zinc-500 text-sm font-medium">Nenhum jogo encontrado.</p> : (
                           <ul className="space-y-3">
-                              {jogosFiltrados.slice(paginaCatalogo * 50, (paginaCatalogo + 1) * 50).map(jogo => (
+                              {jogosCatalogoAdminFiltrados.slice(paginaCatalogo * 50, (paginaCatalogo + 1) * 50).map(jogo => (
                               <li key={jogo.id} className="flex flex-col md:flex-row justify-between items-start md:items-center bg-zinc-950/50 p-4 md:p-5 rounded-2xl border-l-2 border-blue-500 gap-4 shadow-sm hover:bg-zinc-800/50 transition-colors">
                                   <div className="flex flex-col leading-relaxed gap-1 w-full md:w-auto">
-                                  <span className="font-black text-sm text-white tracking-tight truncate max-w-[300px]">{jogo.titulo}</span>
-                                  <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">R$ {jogo.preco_aluguel.toFixed(2)}</span>
-                                  {jogo.estoque > 0 ? <span className="text-emerald-400 text-[10px] font-bold uppercase tracking-wider mt-1">✅ {jogo.estoque} Disponível</span> : <span className="text-rose-400 text-[10px] font-bold uppercase tracking-wider mt-1">❌ Alugado</span>}
+                                    <span className="font-black text-sm text-white tracking-tight truncate max-w-[300px]">{jogo.titulo}</span>
+                                    <div className="flex items-center gap-3">
+                                        <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">7D: R$ {jogo.preco_aluguel.toFixed(2)}</span>
+                                        <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">14D: R$ {jogo.preco_aluguel_14.toFixed(2)}</span>
+                                    </div>
+                                    {jogo.estoque > 0 ? <span className="text-emerald-400 text-[10px] font-bold uppercase tracking-wider mt-1">✅ {jogo.estoque} Disponível</span> : <span className="text-rose-400 text-[10px] font-bold uppercase tracking-wider mt-1">❌ Alugado</span>}
                                   </div>
                                   
                                   <div className="flex gap-2 w-full md:w-auto justify-end">
@@ -2513,7 +2558,7 @@ function App() {
                       <div className="mt-6 flex justify-between items-center bg-zinc-950 p-4 rounded-2xl border border-zinc-800/80">
                           <button onClick={() => setPaginaCatalogo(Math.max(0, paginaCatalogo - 1))} disabled={paginaCatalogo === 0} className="px-5 py-2.5 bg-zinc-800 text-white rounded-xl disabled:opacity-50 hover:bg-zinc-700 text-[10px] uppercase tracking-wider font-bold transition-colors">◀ Anterior</button>
                           <span className="text-zinc-400 text-xs font-bold">Página {paginaCatalogo + 1}</span>
-                          <button onClick={() => setPaginaCatalogo(paginaCatalogo + 1)} disabled={(paginaCatalogo + 1) * 50 >= jogosFiltrados.length} className="px-5 py-2.5 bg-zinc-800 text-white rounded-xl disabled:opacity-50 hover:bg-zinc-700 text-[10px] uppercase tracking-wider font-bold transition-colors">Próxima ▶</button>
+                          <button onClick={() => setPaginaCatalogo(paginaCatalogo + 1)} disabled={(paginaCatalogo + 1) * 50 >= jogosCatalogoAdminFiltrados.length} className="px-5 py-2.5 bg-zinc-800 text-white rounded-xl disabled:opacity-50 hover:bg-zinc-700 text-[10px] uppercase tracking-wider font-bold transition-colors">Próxima ▶</button>
                       </div>
                       </div>
                   </details>
