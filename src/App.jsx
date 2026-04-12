@@ -507,7 +507,7 @@ function App() {
     if (!usuarioLogado) return;
     
     // ====================================================================
-    // 🚀 3. DADOS DE ADMIN E DO CLIENTE
+    // 🚀 3. DADOS DE ADMIN
     // ====================================================================
     if (usuarioLogado.is_admin) {
       fetch('https://borajogar-api.onrender.com/admin/locacoes', { headers: getAuthHeaders() }).then(res => res.ok ? res.json() : []).then(dados => setTodasLocacoes(Array.isArray(dados) ? dados : []))
@@ -517,6 +517,7 @@ function App() {
         .then(dados => setEstatisticasAdmin(dados))
       fetch('https://borajogar-api.onrender.com/usuarios', { headers: getAuthHeaders() }).then(res => res.ok ? res.json() : []).then(dados => setTodosUsuarios(Array.isArray(dados) ? dados : []))
       fetch('https://borajogar-api.onrender.com/admin/manutencao', { headers: getAuthHeaders() }).then(res => res.ok ? res.json() : []).then(dados => setContasManutencao(Array.isArray(dados) ? dados : []))
+      fetch('https://borajogar-api.onrender.com/admin/cupons', { headers: getAuthHeaders() }).then(res => res.ok ? res.json() : []).then(dados => setListaCupons(Array.isArray(dados) ? dados : []))
     }
     
     fetch(`https://borajogar-api.onrender.com/meus-alugueis/${usuarioLogado.id}`).then(res => res.ok ? res.json() : []).then(dados => setMeusAlugueis(Array.isArray(dados) ? dados : []))
@@ -2237,7 +2238,14 @@ function App() {
               <div className="flex justify-end mb-4">
                   <select 
                     value={periodoFiltroEstatisticas} 
-                    onChange={(e) => {setPeriodoFiltroEstatisticas(e.target.value); setTimeout(carregarDados, 100);}}
+                    onChange={(e) => {
+                        const novoPeriodo = e.target.value;
+                        setPeriodoFiltroEstatisticas(novoPeriodo);
+                        // 🚀 Força a busca instantânea sem esperar o React piscar
+                        fetch(`https://borajogar-api.onrender.com/admin/estatisticas?periodo=${novoPeriodo}`, { headers: getAuthHeaders() })
+                            .then(res => res.ok ? res.json() : {faturamento: 0, total_clientes: 0, movimentacao_periodo: 0})
+                            .then(dados => setEstatisticasAdmin(dados));
+                    }}
                     className="bg-zinc-900 border border-zinc-800 text-zinc-400 text-[10px] font-black uppercase tracking-widest rounded-xl px-4 py-2 outline-none cursor-pointer hover:border-emerald-500/50 transition-all shadow-lg"
                   >
                       <option value="mes">📅 Mês Atual</option>
