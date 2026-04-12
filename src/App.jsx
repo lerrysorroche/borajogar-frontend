@@ -46,6 +46,7 @@ function App() {
   const [mudarSenhaNova, setMudarSenhaNova] = useState('')
 
   const [jogos, setJogos] = useState([])
+  const [carregandoJogos, setCarregandoJogos] = useState(true) // 🚀 AVISA SE ESTÁ CARREGANDO
   const [meusAlugueis, setMeusAlugueis] = useState([])
   const [minhasReservas, setMinhasReservas] = useState([]) 
   const [extrato, setExtrato] = useState([]) 
@@ -468,9 +469,25 @@ function App() {
 
   const carregarDados = () => {
     // ====================================================================
-    // 🚀 1. DADOS PÚBLICOS (Garante que sempre receba um Array)
+    // 🚀 1. DADOS PÚBLICOS (Com Auto-Retry para servidor dormindo)
     // ====================================================================
-    fetch('https://borajogar-api.onrender.com/jogos').then(res => res.ok ? res.json() : []).then(dados => setJogos(Array.isArray(dados) ? dados : []));
+    const buscarJogos = () => {
+      fetch('https://borajogar-api.onrender.com/jogos')
+        .then(res => {
+          if (!res.ok) throw new Error("Servidor dormindo");
+          return res.json();
+        })
+        .then(dados => {
+          setJogos(Array.isArray(dados) ? dados : []);
+          setCarregandoJogos(false); // 🚀 Desliga o spinner quando carrega!
+        })
+        .catch(() => {
+          // Se falhar (Render dormindo), tenta de novo em 3 segundos
+          setTimeout(buscarJogos, 3000);
+        });
+    };
+    buscarJogos(); // Inicia a busca
+
     fetch('https://borajogar-api.onrender.com/configuracoes').then(res => res.ok ? res.json() : {}).then(dados => setConfigSistema(dados));
     
     let urlEnquete = 'https://borajogar-api.onrender.com/enquete';
@@ -1405,16 +1422,16 @@ function App() {
               )}
 
               <div className="mb-6 text-xs font-bold text-zinc-500 uppercase tracking-wider">
-                Mostrando <span className="text-white">{jogosFiltrados.length}</span> jogo(s) encontrado(s)
+                Mostrando <span className="text-white">{!carregandoJogos ? jogosFiltrados.length : 0}</span> jogo(s) encontrado(s)
               </div>
 
-              {/* 🚀 SPINNER DE CARREGAMENTO (Aparece enquanto o Render desperta) */}
-              {jogos.length === 0 && (
+              {/* 🚀 SPINNER DE CARREGAMENTO INTELIGENTE */}
+              {carregandoJogos && (
                   <div className="mb-8 py-20 flex flex-col items-center justify-center text-center animate-fade-in bg-zinc-900/50 rounded-3xl border border-zinc-800 shadow-xl">
                       <div className="w-16 h-16 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin mb-6 shadow-[0_0_15px_rgba(59,130,246,0.5)]"></div>
-                      <h3 className="text-2xl font-black text-white tracking-tight mb-2">Conectando aos Servidores...</h3>
+                      <h3 className="text-2xl font-black text-white tracking-tight mb-2">Acordando os Servidores...</h3>
                       <p className="text-sm text-zinc-400 font-medium max-w-md leading-relaxed">
-                          O sistema está ligando e puxando o catálogo de jogos. Isso pode levar alguns segundos. Segura aí!
+                          Nosso sistema está estabelecendo uma conexão segura com o banco de dados. Isso pode levar até 50 segundos. Segura aí!
                       </p>
                   </div>
               )}
