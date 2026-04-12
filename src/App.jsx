@@ -480,8 +480,14 @@ function App() {
         }
         return res.json();
       })
-      .then(dados => setJogos(Array.isArray(dados) ? dados : []))
-      .catch(err => mostrarToast("Servidor conectando ou sem internet. Dê um F5.", "aviso"));
+      .then(dados => {
+        setJogos(Array.isArray(dados) ? dados : []);
+        setCarregandoJogos(false); // 🚀 DESLIGA A ANIMAÇÃO QUANDO CARREGA!
+      })
+      .catch(err => {
+        mostrarToast("Servidor conectando ou sem internet. Dê um F5.", "aviso");
+        setCarregandoJogos(false); // 🚀 DESLIGA A ANIMAÇÃO SE DER ERRO DE REDE TAMBÉM!
+      });
 
     fetch('https://borajogar-api.onrender.com/configuracoes').then(res => res.ok ? res.json() : {}).then(dados => setConfigSistema(dados));
     
