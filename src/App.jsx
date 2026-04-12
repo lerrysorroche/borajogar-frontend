@@ -2593,16 +2593,23 @@ function App() {
                                         <tr className="text-zinc-500 border-b border-zinc-800">
                                             <th className="pb-3 font-bold uppercase tracking-wider text-[10px]">Cliente</th>
                                             <th className="pb-3 font-bold uppercase tracking-wider text-[10px]">Jogo</th>
-                                            <th className="pb-3 font-bold uppercase tracking-wider text-[10px]">Data da Reserva</th>
+                                            <th className="pb-3 font-bold uppercase tracking-wider text-[10px]">Início Previsto</th>
+                                            <th className="pb-3 font-bold uppercase tracking-wider text-[10px]">Fim Previsto</th>
                                             <th className="pb-3 text-right font-bold uppercase tracking-wider text-[10px]">Ações</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {reservasAdminFiltradas.map(reserva => (
                                             <tr key={reserva.id} className="border-b border-zinc-800/50 hover:bg-zinc-800/30 transition-colors">
-                                                <td className="py-4 text-zinc-300 text-xs font-medium">{reserva.cliente}</td>
+                                                <td className="py-4 text-zinc-300 text-xs font-medium">
+                                                    {reserva.cliente}
+                                                    <div className="text-[9px] text-zinc-500 mt-1 font-bold">Feita em: {new Date(reserva.data_solicitacao).toLocaleDateString()}</div>
+                                                </td>
                                                 <td className="py-4 font-black text-white text-sm tracking-tight">{reserva.jogo}</td>
-                                                <td className="py-4 text-amber-400 text-xs font-bold">{new Date(reserva.data_solicitacao).toLocaleString()}</td>
+                                                <td className="py-4 text-blue-400 text-xs font-bold">{reserva.data_inicio}</td>
+                                                <td className="py-4 text-amber-400 text-xs font-bold">
+                                                    {reserva.data_fim} <span className="text-zinc-500 font-normal ml-1">({reserva.dias_aluguel}d)</span>
+                                                </td>
                                                 <td className="py-4 text-right">
                                                     <button onClick={() => cancelarReservaAdmin(reserva.id, reserva.cliente, reserva.jogo)} className="text-rose-400 hover:text-white text-[10px] uppercase tracking-wider bg-rose-900/30 hover:bg-rose-600 px-3 py-1.5 rounded-lg font-bold transition-colors border border-rose-500/30 shadow">
                                                         Cancelar e Estornar
