@@ -59,7 +59,7 @@ function App() {
   const [novaOpcaoEnqueteImagem, setNovaOpcaoEnqueteImagem] = useState('')
 
   const [configSistema, setConfigSistema] = useState({ devolucao_dinamica: false, valor_por_dia: 2.0, anuncio_ativo: false, mensagem_anuncio: "" })
-  const [estatisticasAdmin, setEstatisticasAdmin] = useState({ faturamento: 0, total_clientes: 0, movimentacao_periodo: 0 })
+  const [estatisticasAdmin, setEstatisticasAdmin] = useState({ faturamento: 0, total_clientes: 0, locacoes_ativas: 0 })
   const [contasManutencao, setContasManutencao] = useState([])
   const [novasSenhasTemp, setNovasSenhasTemp] = useState({}) 
   const [codigosGerados2FA, setCodigosGerados2FA] = useState({})
@@ -513,7 +513,7 @@ function App() {
       fetch('https://borajogar-api.onrender.com/admin/locacoes', { headers: getAuthHeaders() }).then(res => res.ok ? res.json() : []).then(dados => setTodasLocacoes(Array.isArray(dados) ? dados : []))
       fetch('https://borajogar-api.onrender.com/admin/reservas', { headers: getAuthHeaders() }).then(res => res.ok ? res.json() : []).then(dados => setTodasReservas(Array.isArray(dados) ? dados : []))
       fetch(`https://borajogar-api.onrender.com/admin/estatisticas?periodo=${periodoFiltroEstatisticas}`, { headers: getAuthHeaders() })
-        .then(res => res.ok ? res.json() : {faturamento: 0, total_clientes: 0, movimentacao_periodo: 0})
+        .then(res => res.ok ? res.json() : {faturamento: 0, total_clientes: 0, locacoes_ativas: 0})
         .then(dados => setEstatisticasAdmin(dados))
       fetch('https://borajogar-api.onrender.com/usuarios', { headers: getAuthHeaders() }).then(res => res.ok ? res.json() : []).then(dados => setTodosUsuarios(Array.isArray(dados) ? dados : []))
       fetch('https://borajogar-api.onrender.com/admin/manutencao', { headers: getAuthHeaders() }).then(res => res.ok ? res.json() : []).then(dados => setContasManutencao(Array.isArray(dados) ? dados : []))
@@ -2243,7 +2243,7 @@ function App() {
                         setPeriodoFiltroEstatisticas(novoPeriodo);
                         // 🚀 Força a busca instantânea sem esperar o React piscar
                         fetch(`https://borajogar-api.onrender.com/admin/estatisticas?periodo=${novoPeriodo}`, { headers: getAuthHeaders() })
-                            .then(res => res.ok ? res.json() : {faturamento: 0, total_clientes: 0, movimentacao_periodo: 0})
+                            .then(res => res.ok ? res.json() : {faturamento: 0, total_clientes: 0, locacoes_ativas: 0})
                             .then(dados => setEstatisticasAdmin(dados));
                     }}
                     className="bg-zinc-900 border border-zinc-800 text-zinc-400 text-[10px] font-black uppercase tracking-widest rounded-xl px-4 py-2 outline-none cursor-pointer hover:border-emerald-500/50 transition-all shadow-lg"
@@ -2266,9 +2266,9 @@ function App() {
                   <span className="text-3xl md:text-4xl font-black text-blue-400 tracking-tighter">{estatisticasAdmin.total_clientes}</span>
                 </div>
                 <div className="bg-gradient-to-br from-amber-900/40 to-zinc-900 border border-amber-500/30 p-8 rounded-3xl shadow-xl shadow-amber-500/10 relative overflow-hidden hover:-translate-y-1 transition-transform duration-300">
-                  <div className="absolute -right-4 -top-4 text-8xl opacity-5">🔄</div>
-                  <h4 className="text-zinc-400 text-[10px] font-bold uppercase tracking-widest mb-3">Movimentação no Período</h4>
-                  <span className="text-3xl md:text-4xl font-black text-amber-400 tracking-tighter">{estatisticasAdmin.movimentacao_periodo || 0}</span>
+                  <div className="absolute -right-4 -top-4 text-8xl opacity-5">🎮</div>
+                  <h4 className="text-zinc-400 text-[10px] font-bold uppercase tracking-widest mb-3">Locações Ativas</h4>
+                  <span className="text-3xl md:text-4xl font-black text-amber-400 tracking-tighter">{estatisticasAdmin.locacoes_ativas || 0}</span>
                 </div>
               </section>
 
