@@ -469,24 +469,19 @@ function App() {
 
   const carregarDados = () => {
     // ====================================================================
-    // 🚀 1. DADOS PÚBLICOS (Com Auto-Retry para servidor dormindo)
+    // 🚀 1. DADOS PÚBLICOS (Com sistema dedo-duro de erros)
     // ====================================================================
-    const buscarJogos = () => {
-      fetch('https://borajogar-api.onrender.com/jogos')
-        .then(res => {
-          if (!res.ok) throw new Error("Servidor dormindo");
-          return res.json();
-        })
-        .then(dados => {
-          setJogos(Array.isArray(dados) ? dados : []);
-          setCarregandoJogos(false); // 🚀 Desliga o spinner quando carrega!
-        })
-        .catch(() => {
-          // Se falhar (Render dormindo), tenta de novo em 3 segundos
-          setTimeout(buscarJogos, 3000);
-        });
-    };
-    buscarJogos(); // Inicia a busca
+    fetch('https://borajogar-api.onrender.com/jogos')
+      .then(async res => {
+        if (!res.ok) {
+          const erroText = await res.text();
+          mostrarToast(`⚠️ Erro no Servidor: ${erroText}`, "erro");
+          return [];
+        }
+        return res.json();
+      })
+      .then(dados => setJogos(Array.isArray(dados) ? dados : []))
+      .catch(err => mostrarToast("Servidor conectando ou sem internet. Dê um F5.", "aviso"));
 
     fetch('https://borajogar-api.onrender.com/configuracoes').then(res => res.ok ? res.json() : {}).then(dados => setConfigSistema(dados));
     
@@ -503,7 +498,7 @@ function App() {
     if (!usuarioLogado) return;
     
     // ====================================================================
-    // 🚀 3. DADOS DE ADMIN
+    // 🚀 3. DADOS DE ADMIN E DO CLIENTE
     // ====================================================================
     if (usuarioLogado.is_admin) {
       fetch('https://borajogar-api.onrender.com/admin/locacoes', { headers: getAuthHeaders() }).then(res => res.ok ? res.json() : []).then(dados => setTodasLocacoes(Array.isArray(dados) ? dados : []))
@@ -513,9 +508,6 @@ function App() {
       fetch('https://borajogar-api.onrender.com/admin/manutencao', { headers: getAuthHeaders() }).then(res => res.ok ? res.json() : []).then(dados => setContasManutencao(Array.isArray(dados) ? dados : []))
     }
     
-    // ====================================================================
-    // 🚀 4. DADOS DO CLIENTE
-    // ====================================================================
     fetch(`https://borajogar-api.onrender.com/meus-alugueis/${usuarioLogado.id}`).then(res => res.ok ? res.json() : []).then(dados => setMeusAlugueis(Array.isArray(dados) ? dados : []))
     fetch(`https://borajogar-api.onrender.com/minhas-reservas/${usuarioLogado.id}`).then(res => res.ok ? res.json() : []).then(dados => setMinhasReservas(Array.isArray(dados) ? dados : []))
     fetch(`https://borajogar-api.onrender.com/extrato/${usuarioLogado.id}`).then(res => res.ok ? res.json() : []).then(dados => setExtrato(Array.isArray(dados) ? dados : []))
