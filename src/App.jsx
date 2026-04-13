@@ -1462,7 +1462,8 @@ function App() {
                   const tituloLimpo = jogo.titulo; 
                   
                   // 🚀 NOVA LÓGICA DE HIERARQUIA (NÍVEL 1)
-                  const ehJogoVIP = isLancamento || isEmBreve;
+                  // Agora o bloqueio VIP só acontece se o jogo for um Pré-lançamento (isEmBreve)
+                  const ehJogoVIP = isEmBreve;
                   const isVeterano = usuarioLogado ? (usuarioLogado.is_admin || totalAlugueis >= 1) : false;
                   const bloqueadoParaUsuario = ehJogoVIP && usuarioLogado && !isVeterano;
 
@@ -2058,10 +2059,10 @@ function App() {
                     <strong className="text-white block mb-2 text-sm">Quais são os benefícios?</strong>
                     <ul className="list-disc pl-5 space-y-4 font-medium text-zinc-300">
                       <li>
-                        <strong className="text-blue-400">Acesso aos Lançamentos:</strong> Para garantir que nossos clientes fiéis sempre tenham prioridade nos jogos mais concorridos, os jogos com a tag <span className="bg-fuchsia-600/90 text-white text-[9px] px-2 py-0.5 rounded uppercase tracking-wider mx-1">LANÇAMENTO</span> ou em Pré-venda são exclusivos para clientes a partir do Rank <strong>MEMBRO</strong>. Novatos precisam concluir pelo menos 1 aluguel na locadora para desbloquear esse acesso.
+                        <strong className="text-blue-400">ACESSO ANTECIPADO:</strong> Para garantir que nossos clientes fiéis sempre tenham prioridade, as reservas de jogos em <strong>PRÉ-VENDA (DATA FUTURA)</strong> são exclusivas para clientes a partir do Rank <strong>MEMBRO</strong>. Após o lançamento oficial do jogo, ele fica liberado para todos os clientes, incluindo Novatos!
                       </li>
                       <li>
-                        <strong className="text-amber-400">Prioridade na Fila (Fura-Fila):</strong> Se um jogo estiver alugado e você decidir entrar na fila de espera, o seu Rank entra em ação! Se você tiver um Rank maior que outro cliente que já estava na fila, o sistema automaticamente te coloca <strong>na frente dele</strong>. O cliente que foi ultrapassado receberá um aviso imediato com a nova data de liberação calculada.
+                        <strong className="text-amber-400">PRIORIDADE NA FILA (FURA-FILA):</strong> Se um jogo estiver alugado e você decidir entrar na fila de espera, o seu Rank entra em ação! Se você tiver um Rank maior que outro cliente que já estava na fila, o sistema automaticamente te coloca <strong>na frente dele</strong>. O cliente que foi ultrapassado receberá um aviso imediato com a nova data de liberação calculada.
                       </li>
                     </ul>
                   </div>
