@@ -1454,10 +1454,8 @@ function App() {
                 {jogosDaPagina.map(jogo => {
                   const isLancamento = idsLancamentos.includes(jogo.id);
                   
-                  const hoje = new Date();
-                  hoje.setHours(0, 0, 0, 0); 
                   const dataLanc = jogo.data_lancamento ? new Date(jogo.data_lancamento + 'T00:00:00') : null;
-                  const isEmBreve = dataLanc && dataLanc > hoje;
+                  const isEmBreve = dataLanc && dataLanc > hojeGlobal; // Usa a variável global!
                   const dataFormatada = dataLanc ? dataLanc.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }) : '';
                   const tituloLimpo = jogo.titulo; 
                   
