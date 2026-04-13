@@ -166,6 +166,12 @@ function App() {
         .then(data => {
             if (data.status === 'PAGO') {
                 mostrarToast("✅ Pagamento Confirmado! Saldo liberado.", "sucesso");
+
+                // 🚀 GATILHO DO PIXEL: Avisa a Meta que entrou dinheiro, mandando o valor exato!
+                if (window.fbq) { 
+                  window.fbq('track', 'Purchase', { value: parseFloat(valorRecarga), currency: 'BRL' }); 
+                }
+
                 setPixPendente(null); 
                 setCupomRecarga('');
                 setValorRecarga('30');
@@ -390,6 +396,10 @@ function App() {
       const data = await res.json()
       if (res.ok) {
         mostrarToast("Conta criada! Sua carteira já está pronta.", "sucesso")
+
+        // 🚀 GATILHO DO PIXEL: Avisa a Meta que alguém se cadastrou!
+        if (window.fbq) { window.fbq('track', 'CompleteRegistration'); }
+
         setFormEmail(cadEmail); setFormSenha(cadSenha); setModoLogin(true); 
         setCadNome(''); setCadEmail(''); setCadSenha(''); setCadSenhaConfirmacao(''); setCadTelefone(''); setCadCodigoConvite('');
       } else { mostrarToast(data.detail, "erro") }
