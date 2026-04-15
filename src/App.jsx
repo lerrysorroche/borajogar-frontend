@@ -172,6 +172,14 @@ function App() {
                   window.fbq('track', 'Purchase', { value: parseFloat(valorRecarga), currency: 'BRL' }); 
                 }
 
+                // 🎯 GATILHO DO GOOGLE ADS
+                if (typeof window.gtag === 'function') {
+                  window.gtag('event', 'purchase', {
+                    value: parseFloat(valorRecarga),
+                    currency: 'BRL'
+                  });
+                }
+
                 setPixPendente(null); 
                 setCupomRecarga('');
                 setValorRecarga('30');
