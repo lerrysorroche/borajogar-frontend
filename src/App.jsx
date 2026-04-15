@@ -172,11 +172,13 @@ function App() {
                   window.fbq('track', 'Purchase', { value: parseFloat(valorRecarga), currency: 'BRL' }); 
                 }
 
-                // 🎯 GATILHO DO GOOGLE ADS
+                // 🎯 GATILHO OFICIAL DE CONVERSÃO DO GOOGLE ADS
                 if (typeof window.gtag === 'function') {
-                  window.gtag('event', 'purchase', {
-                    value: parseFloat(valorRecarga),
-                    currency: 'BRL'
+                  window.gtag('event', 'conversion', {
+                      'send_to': 'AW-18093761831/3yJqCMGM9pwcEKfK47ND',
+                      'value': parseFloat(valorRecarga),
+                      'currency': 'BRL',
+                      'transaction_id': pixPendente.payment_id
                   });
                 }
 
