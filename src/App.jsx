@@ -2307,7 +2307,7 @@ function App() {
             {abaAtual === 'vitrine' && (
               <div className="animate-fade-in pb-12">
                 {/* =========================================================
-                    1. ZONA DE ATRAÇÃO: HERO BANNER PRINCIPAL (ALTURA AMPLIADA)
+                    1. ZONA DE ATRAÇÃO: HERO BANNER PRINCIPAL (GLASSM.)
                 ========================================================== */}
                 <div
                   className="relative mb-8 flex min-h-[480px] w-full items-center overflow-hidden rounded-3xl border border-zinc-800 shadow-2xl transition-all duration-700 md:min-h-[600px]"
@@ -2317,26 +2317,21 @@ function App() {
                     backgroundPosition: 'center',
                   }}
                 >
-                  {/* OVERLAY DE GRADIENTE: Mais suave para não escurecer demais a foto */}
                   <div className="absolute inset-0 bg-gradient-to-t from-zinc-950/80 via-transparent to-black/20 md:bg-gradient-to-r md:from-zinc-950/90 md:via-zinc-950/40 md:to-transparent"></div>
 
-                  {/* CONTEÚDO DE TEXTO PRINCIPAL (Com margem inferior para não bater no anúncio) */}
                   <div className="relative z-10 w-full px-8 pb-20 md:px-14 md:pb-32">
                     <span className="mb-6 inline-block rounded-full border border-blue-500/30 bg-blue-500/20 px-4 py-1.5 font-mono-tech text-[10px] font-bold uppercase tracking-widest text-blue-400 shadow-[0_0_15px_rgba(59,130,246,0.3)]">
                       Catálogo Atualizado
                     </span>
-
                     <h1 className="mb-6 max-w-2xl animate-neon-flicker bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text font-mono-tech text-3xl font-bold uppercase leading-tight tracking-tighter text-transparent md:text-5xl lg:text-6xl">
                       A sua Próxima <br /> Aventura Começa Aqui!
                     </h1>
-
                     <p className="max-w-xl text-sm font-medium leading-relaxed text-zinc-300 md:text-lg">
                       Alugue os maiores lançamentos e os melhores exclusivos. Receba seu acesso
                       instantaneamente e comece a jogar sem sair de casa.
                     </p>
                   </div>
 
-                  {/* 📣 FAIXA DE ANÚNCIO: ESTILO GLASSMORPHISM (TRANSPARENTE) */}
                   {configSistema.anuncio_ativo && configSistema.mensagem_anuncio && (
                     <div className="absolute bottom-0 left-0 z-30 w-full border-t border-white/10 bg-black/30 py-6 backdrop-blur-md md:py-8">
                       <div className="flex items-center justify-center gap-4 px-6 text-center">
@@ -2349,7 +2344,6 @@ function App() {
                     </div>
                   )}
 
-                  {/* PAGINAÇÃO DO BANNER: Posicionada acima da tarja de anúncio */}
                   {bannerUrls.length > 1 && (
                     <div
                       className={`absolute left-1/2 z-20 flex -translate-x-1/2 gap-2 transition-all duration-500 ${configSistema.anuncio_ativo ? 'bottom-24 md:bottom-28' : 'bottom-6'}`}
@@ -2359,7 +2353,6 @@ function App() {
                           key={idx}
                           onClick={() => setIndiceBanner(idx)}
                           className={`h-1.5 rounded-full transition-all duration-300 ${idx === indiceBanner ? 'w-8 bg-blue-500' : 'w-2 bg-white/40 hover:bg-white/70'}`}
-                          aria-label={`Banner ${idx + 1}`}
                         />
                       ))}
                     </div>
@@ -2367,20 +2360,8 @@ function App() {
                 </div>
 
                 {/* =========================================================
-                    2. ZONA DE AVISOS: ANÚNCIOS E CHOQUE DE REALIDADE (NEON)
+                    2. ZONA DE AVISOS: CHOQUE DE REALIDADE (NEON)
                 ========================================================== */}
-                {configSistema.anuncio_ativo && configSistema.mensagem_anuncio && (
-                  <div className="animate-pulse-slow relative mb-6 w-full overflow-hidden rounded-3xl bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 p-1 shadow-2xl">
-                    <div className="flex items-center justify-center gap-4 rounded-[22px] bg-zinc-950 p-6 text-center md:p-8">
-                      <span className="hidden text-3xl md:block">📣</span>
-                      <h2 className="bg-gradient-to-r from-amber-400 to-orange-500 bg-clip-text text-base font-black uppercase leading-snug tracking-tight text-transparent md:text-xl">
-                        {configSistema.mensagem_anuncio}
-                      </h2>
-                      <span className="hidden text-3xl md:block">🔥</span>
-                    </div>
-                  </div>
-                )}
-
                 <div className="group relative mb-8 w-full overflow-hidden border-y border-zinc-800/50 bg-zinc-950">
                   <div className="absolute inset-0 -translate-x-1/4 scale-150 transform rounded-full bg-red-950/30 opacity-40 blur-3xl"></div>
                   <div className="absolute inset-0 translate-x-1/4 scale-150 transform rounded-full bg-cyan-950/30 opacity-40 blur-3xl"></div>
@@ -2498,7 +2479,69 @@ function App() {
                 </div>
 
                 {/* =========================================================
-                    3. ZONA DE AÇÃO: BARRA DE COMANDO DA VITRINE
+                    🚀 3. NOVA POSIÇÃO: ENQUETE DE LANÇAMENTOS
+                ========================================================== */}
+                {enqueteOpcoes.length > 0 && (
+                  <div className="animate-fade-in relative mb-12 overflow-hidden rounded-3xl border border-zinc-800 bg-zinc-900/40 p-6 shadow-xl md:p-8">
+                    <div className="absolute left-0 top-0 h-full w-1 bg-gradient-to-b from-fuchsia-500 to-blue-500"></div>
+                    <h3 className="mb-2 text-xl font-black uppercase tracking-tight text-white md:text-2xl">
+                      Próximas Adições: Você Decide!
+                    </h3>
+                    <p className="mb-6 text-sm font-medium text-zinc-400">
+                      Vote no jogo que você mais quer ver no catálogo e ajude a BORA JOGAR! a
+                      crescer.
+                    </p>
+
+                    <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+                      {enqueteOpcoes.map((opcao) => {
+                        const isSelected = meuVoto === opcao.id;
+                        return (
+                          <div
+                            key={opcao.id}
+                            onClick={() => votarEnquete(opcao.id)}
+                            className={`group relative h-40 cursor-pointer overflow-hidden rounded-2xl transition-all duration-300 md:h-48 ${isSelected ? 'z-10 scale-105 border-2 border-fuchsia-500 shadow-[0_0_20px_rgba(217,70,239,0.5)]' : 'border-2 border-transparent opacity-80 hover:border-zinc-600 hover:opacity-100'}`}
+                          >
+                            <img
+                              src={opcao.url_imagem}
+                              alt={opcao.titulo}
+                              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+                            />
+                            <div className="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black/90 via-black/30 to-transparent p-3">
+                              <span className="text-xs font-black leading-tight tracking-tight text-white drop-shadow-md md:text-sm">
+                                {opcao.titulo}
+                              </span>
+                            </div>
+                            {isSelected && (
+                              <div className="absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full border border-white/20 bg-fuchsia-500 text-white shadow-lg">
+                                <svg
+                                  className="h-4 w-4"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth="3"
+                                    d="M5 13l4 4L19 7"
+                                  ></path>
+                                </svg>
+                              </div>
+                            )}
+                            {usuarioLogado?.is_admin && (
+                              <div className="absolute left-2 top-2 rounded-lg border border-zinc-700 bg-black/80 px-2 py-1 text-[10px] font-black text-fuchsia-400 backdrop-blur-md">
+                                {opcao.total_votos} votos
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* =========================================================
+                    4. ZONA DE AÇÃO: BARRA DE COMANDO DA VITRINE
                 ========================================================== */}
                 <div className="mb-8 flex flex-col justify-between gap-4 rounded-2xl border border-zinc-800 bg-zinc-900/50 p-4 shadow-lg backdrop-blur-sm lg:flex-row lg:items-center">
                   <div className="text-center text-xs font-bold uppercase tracking-wider text-zinc-400 lg:text-left">
@@ -2564,7 +2607,7 @@ function App() {
                 </div>
 
                 {/* =========================================================
-                    4. ZONA DE CONSUMO: VITRINE E PAGINAÇÃO
+                    5. ZONA DE CONSUMO: VITRINE E PAGINAÇÃO
                 ========================================================== */}
                 {carregandoJogos && (
                   <div className="animate-fade-in mb-8 flex flex-col items-center justify-center rounded-3xl border border-zinc-800 bg-zinc-900/50 py-20 text-center shadow-xl">
@@ -2848,70 +2891,6 @@ function App() {
                     >
                       Próximo
                     </button>
-                  </div>
-                )}
-
-                {/* =========================================================
-                    5. ZONA DE RETENÇÃO: ENQUETE NO FINAL DA PÁGINA
-                ========================================================== */}
-                {enqueteOpcoes.length > 0 && (
-                  <div className="animate-fade-in relative mt-8 overflow-hidden rounded-3xl border border-zinc-800 bg-zinc-900/50 p-6 shadow-xl md:p-8">
-                    <div className="absolute left-0 top-0 h-full w-1 bg-gradient-to-b from-fuchsia-500 to-blue-500"></div>
-                    <h3 className="mb-2 text-xl font-black tracking-tight text-white md:text-2xl">
-                      NÃO ACHOU O QUE QUERIA?
-                    </h3>
-                    <p className="mb-6 text-sm leading-relaxed text-zinc-400">
-                      Vote abaixo e decida qual será o próximo grande lançamento a entrar no
-                      catálogo da BORA JOGAR!
-                    </p>
-
-                    <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
-                      {enqueteOpcoes.map((opcao) => {
-                        const isSelected = meuVoto === opcao.id;
-                        return (
-                          <div
-                            key={opcao.id}
-                            onClick={() => votarEnquete(opcao.id)}
-                            className={`group relative h-40 cursor-pointer overflow-hidden rounded-2xl transition-all duration-300 md:h-48 ${isSelected ? 'z-10 scale-105 border-2 border-fuchsia-500 shadow-[0_0_20px_rgba(217,70,239,0.5)]' : 'border-2 border-transparent opacity-80 hover:border-zinc-600 hover:opacity-100'}`}
-                          >
-                            <img
-                              src={opcao.url_imagem}
-                              alt={opcao.titulo}
-                              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
-                            />
-                            <div className="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black/90 via-black/30 to-transparent p-3">
-                              <span className="text-xs font-black leading-tight tracking-tight text-white drop-shadow-md md:text-sm">
-                                {opcao.titulo}
-                              </span>
-                            </div>
-
-                            {isSelected && (
-                              <div className="absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full border border-white/20 bg-fuchsia-500 text-white shadow-lg">
-                                <svg
-                                  className="h-4 w-4"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  viewBox="0 0 24 24"
-                                >
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth="3"
-                                    d="M5 13l4 4L19 7"
-                                  ></path>
-                                </svg>
-                              </div>
-                            )}
-
-                            {usuarioLogado?.is_admin && (
-                              <div className="absolute left-2 top-2 rounded-lg border border-zinc-700 bg-black/80 px-2 py-1 text-[10px] font-black text-fuchsia-400 backdrop-blur-md">
-                                {opcao.total_votos} votos
-                              </div>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
                   </div>
                 )}
               </div>
