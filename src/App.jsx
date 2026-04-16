@@ -1407,102 +1407,6 @@ function App() {
                 )}
               </div>
 
-                {/* 🚨 SEÇÃO: CHOQUE DE REALIDADE (CRIADOR DE CONFIANÇA) */}
-        <div className="max-w-6xl mx-auto px-4 mb-16 mt-8">
-          <div className="text-center mb-10">
-            <h2 className="text-2xl md:text-4xl font-black text-white mb-3 uppercase tracking-tight">
-              A verdade sobre comprar <span className="text-red-500">"Mídia Digital"</span>
-            </h2>
-            <p className="text-zinc-400 text-sm md:text-base max-w-2xl mx-auto">
-              Entenda por que a BORA JOGAR! é a única opção segura para o seu console e para o seu bolso.
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-6">
-            {/* O GOLPE (Concorrentes) */}
-            <div className="bg-zinc-900/50 border border-red-900/50 rounded-2xl p-6 md:p-8 relative overflow-hidden">
-              <div className="absolute top-0 left-0 w-1 h-full bg-red-600"></div>
-              <div className="flex items-center gap-3 mb-8">
-                <span className="bg-red-500/20 text-red-500 p-2 rounded-lg">
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
-                </span>
-                <h3 className="text-xl font-bold text-red-400">A Armadilha "Vitalícia"</h3>
-              </div>
-              <ul className="space-y-6 text-sm md:text-base">
-                <li className="flex gap-3 items-start">
-                  <span className="text-red-500 mt-0.5">❌</span>
-                  <div className="flex flex-col">
-                    <span className="font-bold text-red-500">Conta compartilhada:</span>
-                    <span className="text-zinc-300 mt-1">Vendem a mesma conta para 10 pessoas diferentes.</span>
-                  </div>
-                </li>
-                <li className="flex gap-3 items-start">
-                  <span className="text-red-500 mt-0.5">❌</span>
-                  <div className="flex flex-col">
-                    <span className="font-bold text-red-500">Derrubado no meio da partida:</span>
-                    <span className="text-zinc-300 mt-1">Alguém entra na conta ao mesmo tempo e te expulsa do jogo.</span>
-                  </div>
-                </li>
-                <li className="flex gap-3 items-start">
-                  <span className="text-red-500 mt-0.5">❌</span>
-                  <div className="flex flex-col">
-                    <span className="font-bold text-red-500">Risco extremo de BAN:</span>
-                    <span className="text-zinc-300 mt-1">A Sony detecta o uso irregular e bane o seu PlayStation para sempre.</span>
-                  </div>
-                </li>
-                <li className="flex gap-3 items-start">
-                  <span className="text-red-500 mt-0.5">❌</span>
-                  <div className="flex flex-col">
-                    <span className="font-bold text-red-500">Você perde o acesso:</span>
-                    <span className="text-zinc-300 mt-1">O vendedor muda a senha meses depois e some com o seu dinheiro.</span>
-                  </div>
-                </li>
-              </ul>
-            </div>
-
-            {/* A SOLUÇÃO (Bora Jogar) */}
-            <div className="bg-cyan-950/20 border border-cyan-800/50 rounded-2xl p-6 md:p-8 relative overflow-hidden shadow-[0_0_30px_rgba(6,182,212,0.1)]">
-              <div className="absolute top-0 left-0 w-1 h-full bg-cyan-500"></div>
-              <div className="flex items-center gap-3 mb-8">
-                <span className="bg-cyan-500/20 text-cyan-400 p-2 rounded-lg">
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
-                </span>
-                <h3 className="text-xl font-bold text-cyan-400">O Padrão BORA JOGAR!</h3>
-              </div>
-              <ul className="space-y-6 text-sm md:text-base">
-                <li className="flex gap-3 items-start">
-                  <span className="text-cyan-400 mt-0.5">✅</span>
-                  <div className="flex flex-col">
-                    <span className="font-bold text-cyan-400">Acesso 100% Exclusivo:</span>
-                    <span className="text-zinc-300 mt-1">Durante o seu aluguel, ninguém mais toca na conta. É só sua.</span>
-                  </div>
-                </li>
-                <li className="flex gap-3 items-start">
-                  <span className="text-cyan-400 mt-0.5">✅</span>
-                  <div className="flex flex-col">
-                    <span className="font-bold text-cyan-400">Paz para jogar:</span>
-                    <span className="text-zinc-300 mt-1">Jogue online e ganhe troféus na sua conta principal sem nunca ser derrubado.</span>
-                  </div>
-                </li>
-                <li className="flex gap-3 items-start">
-                  <span className="text-cyan-400 mt-0.5">✅</span>
-                  <div className="flex flex-col">
-                    <span className="font-bold text-cyan-400">Zero risco de BAN:</span>
-                    <span className="text-zinc-300 mt-1">Operamos 100% dentro das regras da Sony com o sistema de 2FA via painel.</span>
-                  </div>
-                </li>
-                <li className="flex gap-3 items-start">
-                  <span className="text-cyan-400 mt-0.5">✅</span>
-                  <div className="flex flex-col">
-                    <span className="font-bold text-cyan-400">Inteligência financeira:</span>
-                    <span className="text-zinc-300 mt-1">Pague apenas R$ 30, zere um lançamento de R$ 350 e parta para o próximo jogo!</span>
-                  </div>
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>
-
               {configSistema.anuncio_ativo && configSistema.mensagem_anuncio && (
                 <div className="w-full p-1 rounded-3xl mb-10 animate-pulse-slow shadow-2xl relative overflow-hidden bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500">
                   <div className="bg-zinc-950 p-6 md:p-8 rounded-[22px] flex items-center justify-center gap-4 text-center">
@@ -1514,6 +1418,63 @@ function App() {
                   </div>
                 </div>
               )}
+
+              {/* 🚨 SEÇÃO: CHOQUE DE REALIDADE (BANNER ULTRA COMPACTO NEON) */}
+        <div className="w-full bg-zinc-950 border-t border-b border-zinc-800/50 my-6 relative overflow-hidden group">
+          {/* Efeito de brilho de fundo (Gradient Blur) */}
+          <div className="absolute inset-0 bg-red-950/30 opacity-40 blur-3xl rounded-full scale-150 transform -translate-x-1/4"></div>
+          <div className="absolute inset-0 bg-cyan-950/30 opacity-40 blur-3xl rounded-full scale-150 transform translate-x-1/4"></div>
+
+          <div className="max-w-7xl mx-auto px-4 py-6 md:py-4 relative z-10">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 md:gap-0 md:divide-x md:divide-zinc-800">
+              
+              {/* COLUNA 1: O AVISO (Rápido e Impactante) */}
+              <div className="flex flex-col md:items-center md:text-center px-4 md:pr-6 md:pl-0">
+                <div className="flex items-center gap-2 mb-1.5">
+                  <span className="text-red-500">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                  </span>
+                  <h3 className="text-xs font-black text-red-500 uppercase tracking-wider">A VERDADE SOBRE "MÍDIA VITALÍCIA"</h3>
+                </div>
+                <p className="text-zinc-300 text-[11px] leading-relaxed">Vendem a mesma conta para <strong className="text-white">vários consoles ao mesmo tempo</strong>.</p>
+              </div>
+
+              {/* COLUNA 2: O RISCO (Ativando o medo) */}
+              <div className="flex flex-col md:items-center md:text-center px-4 md:px-6">
+                <div className="flex items-center gap-2 mb-1.5">
+                  <span className="text-red-500">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                  </span>
+                  <h3 className="text-xs font-black text-red-500 uppercase tracking-wider">RISCO EXTREMO DE BANIMENTO</h3>
+                </div>
+                <p className="text-zinc-300 text-[11px] leading-relaxed">Sony detecta e <strong className="text-white">bane seu PlayStation permanentemente</strong>. Você perde tudo.</p>
+              </div>
+
+              {/* COLUNA 3: A SOLUÇÃO BORA JOGAR! (Confiança) */}
+              <div className="flex flex-col md:items-center md:text-center px-4 md:px-6 mt-4 md:mt-0 pt-4 md:pt-0 border-t md:border-t-0 border-zinc-800">
+                <div className="flex items-center gap-2 mb-1.5">
+                  <span className="text-cyan-400 group-hover:drop-shadow-[0_0_8px_rgba(6,182,212,0.8)] transition-all">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                  </span>
+                  <h3 className="text-xs font-black text-cyan-400 uppercase tracking-wider">PADRÃO BORA JOGAR!: ACESSO EXCLUSIVO</h3>
+                </div>
+                <p className="text-zinc-300 text-[11px] leading-relaxed">A conta é <strong className="text-white">SÓ SUA</strong> durante o aluguel. Jogue online, ganhe troféus, sem cair.</p>
+              </div>
+
+              {/* COLUNA 4: A MATEMÁTICA (Urguência/Ganância) */}
+              <div className="flex flex-col md:items-center md:text-center px-4 md:pl-6 md:pr-0">
+                <div className="flex items-center gap-2 mb-1.5">
+                  <span className="text-cyan-400 group-hover:drop-shadow-[0_0_8px_rgba(6,182,212,0.8)] transition-all">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M12 16v1m0-1V8"></path></svg>
+                  </span>
+                  <h3 className="text-xs font-black text-cyan-400 uppercase tracking-wider">INTELIGÊNCIA FINANCEIRA</h3>
+                </div>
+                <p className="text-zinc-300 text-[11px] leading-relaxed">Pague <strong className="text-white">apenas R$ 30</strong>, zere o lançamento de R$ 350 e parta para o próximo jogo.</p>
+              </div>
+
+            </div>
+          </div>
+        </div>
 
               {enqueteOpcoes.length > 0 && (
                 <div className="mb-12 bg-zinc-900/50 border border-zinc-800 rounded-3xl p-6 md:p-8 shadow-xl relative overflow-hidden animate-fade-in">
