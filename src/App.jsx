@@ -2307,7 +2307,7 @@ function App() {
             {abaAtual === 'vitrine' && (
               <div className="animate-fade-in pb-12">
                 {/* =========================================================
-                    1. ZONA DE ATRAÇÃO: HERO BANNER PRINCIPAL
+                    1. ZONA DE ATRAÇÃO: HERO BANNER PRINCIPAL + ANÚNCIO
                 ========================================================== */}
                 <div
                   className="relative mb-6 flex min-h-[350px] w-full items-center overflow-hidden rounded-3xl border border-zinc-800 shadow-2xl transition-all duration-700 md:min-h-[450px]"
@@ -2317,10 +2317,23 @@ function App() {
                     backgroundPosition: 'center',
                   }}
                 >
-                  {/* OVERLAY ALFA */}
+                  {/* 📣 FAIXA DE ANÚNCIO: AGORA FLUTUANDO DENTRO DA IMAGEM! */}
+                  {configSistema.anuncio_ativo && configSistema.mensagem_anuncio && (
+                    <div className="absolute left-0 top-0 z-30 w-full border-b border-rose-500/30 bg-zinc-950/80 shadow-[0_4px_30px_rgba(225,29,72,0.3)] backdrop-blur-md">
+                      <div className="flex items-center justify-center gap-3 px-4 py-3 md:py-4">
+                        <span className="animate-pulse text-xl md:text-2xl">📣</span>
+                        <h2 className="bg-gradient-to-r from-amber-400 via-orange-500 to-rose-500 bg-clip-text text-center text-xs font-black uppercase tracking-widest text-transparent md:text-sm">
+                          {configSistema.mensagem_anuncio}
+                        </h2>
+                        <span className="animate-pulse text-xl md:text-2xl">🔥</span>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* OVERLAY ALFA: Escurece a imagem suavemente para garantir a leitura do texto */}
                   <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/80 to-transparent md:bg-gradient-to-r md:from-zinc-950 md:via-zinc-950/80 md:to-transparent"></div>
 
-                  <div className="relative z-10 w-full px-8 md:px-14">
+                  <div className="relative z-10 mt-8 w-full px-8 md:mt-0 md:px-14">
                     <span className="mb-6 inline-block rounded-full border border-blue-500/30 bg-blue-500/20 px-4 py-1.5 font-mono-tech text-[10px] font-bold uppercase tracking-widest text-blue-400 shadow-[0_0_15px_rgba(59,130,246,0.3)]">
                       Catálogo Atualizado
                     </span>
@@ -2335,6 +2348,7 @@ function App() {
                     </p>
                   </div>
 
+                  {/* Paginação do Banner de Imagens */}
                   {bannerUrls.length > 1 && (
                     <div className="absolute bottom-4 left-1/2 z-20 flex -translate-x-1/2 gap-2">
                       {bannerUrls.map((_, idx) => (
