@@ -2989,43 +2989,6 @@ function App() {
                   })}
                 </div>
 
-                {totalPaginas > 1 && (
-                  <div className="flex justify-center items-center gap-3 mt-16">
-                    <button
-                      onClick={() =>
-                        setPaginaAtual((prev) => Math.max(prev - 1, 1))
-                      }
-                      disabled={paginaAtual === 1}
-                      className="px-4 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-400 hover:bg-zinc-800 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-all font-bold text-xs uppercase tracking-wider"
-                    >
-                      Anterior
-                    </button>
-                    {[...Array(totalPaginas)].map((_, index) => {
-                      const numeroDaPagina = index + 1;
-                      return (
-                        <button
-                          key={numeroDaPagina}
-                          onClick={() => setPaginaAtual(numeroDaPagina)}
-                          className={`w-10 h-10 rounded-xl font-black text-sm transition-all ${paginaAtual === numeroDaPagina ? "bg-blue-600 text-white shadow-lg shadow-blue-500/30 border border-blue-500" : "bg-zinc-900 border border-zinc-800 text-zinc-400 hover:bg-zinc-800 hover:text-white"}`}
-                        >
-                          {numeroDaPagina}
-                        </button>
-                      );
-                    })}
-                    <button
-                      onClick={() =>
-                        setPaginaAtual((prev) =>
-                          Math.min(prev + 1, totalPaginas),
-                        )
-                      }
-                      disabled={paginaAtual === totalPaginas}
-                      className="px-4 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-400 hover:bg-zinc-800 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-all font-bold text-xs uppercase tracking-wider"
-                    >
-                      Próximo
-                    </button>
-                  </div>
-                )}
-
                 {enqueteOpcoes.length > 0 && (
                   <div className="mb-12 bg-zinc-900/50 border border-zinc-800 rounded-3xl p-6 md:p-8 shadow-xl relative overflow-hidden animate-fade-in">
                     <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-fuchsia-500 to-blue-500"></div>
@@ -3086,6 +3049,43 @@ function App() {
                         );
                       })}
                     </div>
+                  </div>
+                )}
+
+                {totalPaginas > 1 && (
+                  <div className="flex justify-center items-center gap-3 mt-16">
+                    <button
+                      onClick={() =>
+                        setPaginaAtual((prev) => Math.max(prev - 1, 1))
+                      }
+                      disabled={paginaAtual === 1}
+                      className="px-4 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-400 hover:bg-zinc-800 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-all font-bold text-xs uppercase tracking-wider"
+                    >
+                      Anterior
+                    </button>
+                    {[...Array(totalPaginas)].map((_, index) => {
+                      const numeroDaPagina = index + 1;
+                      return (
+                        <button
+                          key={numeroDaPagina}
+                          onClick={() => setPaginaAtual(numeroDaPagina)}
+                          className={`w-10 h-10 rounded-xl font-black text-sm transition-all ${paginaAtual === numeroDaPagina ? "bg-blue-600 text-white shadow-lg shadow-blue-500/30 border border-blue-500" : "bg-zinc-900 border border-zinc-800 text-zinc-400 hover:bg-zinc-800 hover:text-white"}`}
+                        >
+                          {numeroDaPagina}
+                        </button>
+                      );
+                    })}
+                    <button
+                      onClick={() =>
+                        setPaginaAtual((prev) =>
+                          Math.min(prev + 1, totalPaginas),
+                        )
+                      }
+                      disabled={paginaAtual === totalPaginas}
+                      className="px-4 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-400 hover:bg-zinc-800 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-all font-bold text-xs uppercase tracking-wider"
+                    >
+                      Próximo
+                    </button>
                   </div>
                 )}
               </div>
