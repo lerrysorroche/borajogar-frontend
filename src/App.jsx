@@ -1419,98 +1419,64 @@ function App() {
                 </div>
               )}
 
-              {/* 🚨 SEÇÃO: CHOQUE DE REALIDADE (BANNER ULTRA COMPACTO NEON) */}
+              {/* 🚨 SEÇÃO: CHOQUE DE REALIDADE (BANNER ULTRA COMPACTO NEON - FONTES MAIORES) */}
         <div className="w-full bg-zinc-950 border-t border-b border-zinc-800/50 my-6 relative overflow-hidden group">
           {/* Efeito de brilho de fundo (Gradient Blur) */}
           <div className="absolute inset-0 bg-red-950/30 opacity-40 blur-3xl rounded-full scale-150 transform -translate-x-1/4"></div>
           <div className="absolute inset-0 bg-cyan-950/30 opacity-40 blur-3xl rounded-full scale-150 transform translate-x-1/4"></div>
 
-          <div className="max-w-7xl mx-auto px-4 py-6 md:py-4 relative z-10">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 md:gap-0 md:divide-x md:divide-zinc-800">
+          <div className="max-w-7xl mx-auto px-4 py-6 md:py-5 relative z-10">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-5 md:gap-0 md:divide-x md:divide-zinc-800">
               
-              {/* COLUNA 1: O AVISO (Rápido e Impactante) */}
+              {/* COLUNA 1: O AVISO */}
               <div className="flex flex-col md:items-center md:text-center px-4 md:pr-6 md:pl-0">
-                <div className="flex items-center gap-2 mb-1.5">
+                <div className="flex items-center gap-2 mb-2">
                   <span className="text-red-500">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
                   </span>
-                  <h3 className="text-xs font-black text-red-500 uppercase tracking-wider">A VERDADE SOBRE "MÍDIA VITALÍCIA"</h3>
+                  <h3 className="text-sm font-black text-red-500 uppercase tracking-wider">A VERDADE SOBRE "MÍDIA VITALÍCIA"</h3>
                 </div>
-                <p className="text-zinc-300 text-[11px] leading-relaxed">Vendem a mesma conta para <strong className="text-white">vários consoles ao mesmo tempo</strong>.</p>
+                <p className="text-zinc-300 text-xs leading-relaxed">Vendem a mesma conta para <strong className="text-white">vários consoles ao mesmo tempo</strong>.</p>
               </div>
 
-              {/* COLUNA 2: O RISCO (Ativando o medo) */}
+              {/* COLUNA 2: O RISCO */}
               <div className="flex flex-col md:items-center md:text-center px-4 md:px-6">
-                <div className="flex items-center gap-2 mb-1.5">
+                <div className="flex items-center gap-2 mb-2">
                   <span className="text-red-500">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
                   </span>
-                  <h3 className="text-xs font-black text-red-500 uppercase tracking-wider">RISCO EXTREMO DE BANIMENTO</h3>
+                  <h3 className="text-sm font-black text-red-500 uppercase tracking-wider">RISCO EXTREMO DE BANIMENTO</h3>
                 </div>
-                <p className="text-zinc-300 text-[11px] leading-relaxed">Sony detecta e <strong className="text-white">bane seu PlayStation permanentemente</strong>. Você perde tudo.</p>
+                <p className="text-zinc-300 text-xs leading-relaxed">Sony detecta e <strong className="text-white">bane seu PlayStation permanentemente</strong>. Você perde tudo.</p>
               </div>
 
-              {/* COLUNA 3: A SOLUÇÃO BORA JOGAR! (Confiança) */}
-              <div className="flex flex-col md:items-center md:text-center px-4 md:px-6 mt-4 md:mt-0 pt-4 md:pt-0 border-t md:border-t-0 border-zinc-800">
-                <div className="flex items-center gap-2 mb-1.5">
+              {/* COLUNA 3: A SOLUÇÃO */}
+              <div className="flex flex-col md:items-center md:text-center px-4 md:px-6 mt-2 md:mt-0 pt-4 md:pt-0 border-t md:border-t-0 border-zinc-800">
+                <div className="flex items-center gap-2 mb-2">
                   <span className="text-cyan-400 group-hover:drop-shadow-[0_0_8px_rgba(6,182,212,0.8)] transition-all">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
                   </span>
-                  <h3 className="text-xs font-black text-cyan-400 uppercase tracking-wider">PADRÃO BORA JOGAR!: ACESSO EXCLUSIVO</h3>
+                  <h3 className="text-sm font-black text-cyan-400 uppercase tracking-wider">PADRÃO BORA JOGAR!: EXCLUSIVO</h3>
                 </div>
-                <p className="text-zinc-300 text-[11px] leading-relaxed">A conta é <strong className="text-white">SÓ SUA</strong> durante o aluguel. Jogue online, ganhe troféus, sem cair.</p>
+                <p className="text-zinc-300 text-xs leading-relaxed">A conta é <strong className="text-white">SÓ SUA</strong> durante o aluguel. Jogue online, ganhe troféus, sem cair.</p>
               </div>
 
-              {/* COLUNA 4: A MATEMÁTICA (Urguência/Ganância) */}
-              <div className="flex flex-col md:items-center md:text-center px-4 md:pl-6 md:pr-0">
-                <div className="flex items-center gap-2 mb-1.5">
+              {/* COLUNA 4: A MATEMÁTICA */}
+              <div className="flex flex-col md:items-center md:text-center px-4 md:pl-6 md:pr-0 mt-2 md:mt-0 pt-4 md:pt-0 border-t md:border-t-0 border-zinc-800">
+                <div className="flex items-center gap-2 mb-2">
                   <span className="text-cyan-400 group-hover:drop-shadow-[0_0_8px_rgba(6,182,212,0.8)] transition-all">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M12 16v1m0-1V8"></path></svg>
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M12 16v1m0-1V8"></path></svg>
                   </span>
-                  <h3 className="text-xs font-black text-cyan-400 uppercase tracking-wider">INTELIGÊNCIA FINANCEIRA</h3>
+                  <h3 className="text-sm font-black text-cyan-400 uppercase tracking-wider">INTELIGÊNCIA FINANCEIRA</h3>
                 </div>
-                <p className="text-zinc-300 text-[11px] leading-relaxed">Pague <strong className="text-white">apenas R$ 30</strong>, zere o lançamento de R$ 350 e parta para o próximo jogo.</p>
+                <p className="text-zinc-300 text-xs leading-relaxed">Pague <strong className="text-white">apenas R$ 30</strong>, zere lançamentos e parta para o próximo jogo.</p>
               </div>
 
             </div>
           </div>
         </div>
 
-              {enqueteOpcoes.length > 0 && (
-                <div className="mb-12 bg-zinc-900/50 border border-zinc-800 rounded-3xl p-6 md:p-8 shadow-xl relative overflow-hidden animate-fade-in">
-                  <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-fuchsia-500 to-blue-500"></div>
-                  <h3 className="text-xl md:text-2xl font-black text-white mb-2 tracking-tight">QUAL JOGO VOCÊ QUER JOGAR NO FUTURO?</h3>
-                  <p className="text-sm text-zinc-400 mb-6 leading-relaxed">Clique em uma das opções e ajude o BORA JOGAR! escolher quais jogos devem entrar no catálogo no futuro!</p>
-
-                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-                    {enqueteOpcoes.map(opcao => {
-                      const isSelected = meuVoto === opcao.id;
-                      return (
-                        <div key={opcao.id} onClick={() => votarEnquete(opcao.id)} className={`relative h-40 md:h-48 rounded-2xl overflow-hidden cursor-pointer transition-all duration-300 group ${isSelected ? 'border-2 border-fuchsia-500 shadow-[0_0_20px_rgba(217,70,239,0.5)] scale-105 z-10' : 'border-2 border-transparent hover:border-zinc-600 opacity-80 hover:opacity-100'}`}>
-                          <img src={opcao.url_imagem} alt={opcao.titulo} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent flex flex-col justify-end p-3">
-                            <span className="text-white font-black text-xs md:text-sm tracking-tight leading-tight drop-shadow-md">{opcao.titulo}</span>
-                          </div>
-                          
-                          {/* Checkmark Neon */}
-                          {isSelected && (
-                            <div className="absolute top-2 right-2 bg-fuchsia-500 text-white rounded-full w-6 h-6 flex items-center justify-center shadow-lg border border-white/20">
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path></svg>
-                            </div>
-                          )}
-
-                          {/* Contador Admin */}
-                          {usuarioLogado?.is_admin && (
-                            <div className="absolute top-2 left-2 bg-black/80 backdrop-blur-md text-fuchsia-400 font-black text-[10px] px-2 py-1 rounded-lg border border-zinc-700">
-                              {opcao.total_votos} votos
-                            </div>
-                          )}
-                        </div>
-                      )
-                    })}
-                  </div>
-                </div>
-              )}
+              
 
               <div className="mb-6 text-xs font-bold text-zinc-500 uppercase tracking-wider">
                 Mostrando <span className="text-white">{!carregandoJogos ? jogosFiltrados.length : 0}</span> jogo(s) encontrado(s)
@@ -1715,6 +1681,43 @@ function App() {
                 </div>
               )}
             </div>
+
+            {enqueteOpcoes.length > 0 && (
+                <div className="mb-12 bg-zinc-900/50 border border-zinc-800 rounded-3xl p-6 md:p-8 shadow-xl relative overflow-hidden animate-fade-in">
+                  <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-fuchsia-500 to-blue-500"></div>
+                  <h3 className="text-xl md:text-2xl font-black text-white mb-2 tracking-tight">QUAL JOGO VOCÊ QUER JOGAR NO FUTURO?</h3>
+                  <p className="text-sm text-zinc-400 mb-6 leading-relaxed">Clique em uma das opções e ajude o BORA JOGAR! escolher quais jogos devem entrar no catálogo no futuro!</p>
+
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+                    {enqueteOpcoes.map(opcao => {
+                      const isSelected = meuVoto === opcao.id;
+                      return (
+                        <div key={opcao.id} onClick={() => votarEnquete(opcao.id)} className={`relative h-40 md:h-48 rounded-2xl overflow-hidden cursor-pointer transition-all duration-300 group ${isSelected ? 'border-2 border-fuchsia-500 shadow-[0_0_20px_rgba(217,70,239,0.5)] scale-105 z-10' : 'border-2 border-transparent hover:border-zinc-600 opacity-80 hover:opacity-100'}`}>
+                          <img src={opcao.url_imagem} alt={opcao.titulo} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent flex flex-col justify-end p-3">
+                            <span className="text-white font-black text-xs md:text-sm tracking-tight leading-tight drop-shadow-md">{opcao.titulo}</span>
+                          </div>
+                          
+                          {/* Checkmark Neon */}
+                          {isSelected && (
+                            <div className="absolute top-2 right-2 bg-fuchsia-500 text-white rounded-full w-6 h-6 flex items-center justify-center shadow-lg border border-white/20">
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path></svg>
+                            </div>
+                          )}
+
+                          {/* Contador Admin */}
+                          {usuarioLogado?.is_admin && (
+                            <div className="absolute top-2 left-2 bg-black/80 backdrop-blur-md text-fuchsia-400 font-black text-[10px] px-2 py-1 rounded-lg border border-zinc-700">
+                              {opcao.total_votos} votos
+                            </div>
+                          )}
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+              )}
+
           )}
 
           {abaAtual === 'dashboard' && (
