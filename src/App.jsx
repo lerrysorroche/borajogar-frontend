@@ -2307,21 +2307,21 @@ function App() {
             {abaAtual === 'vitrine' && (
               <div className="animate-fade-in pb-12">
                 {/* =========================================================
-                    1. ZONA DE ATRAÇÃO: HERO BANNER PRINCIPAL + ANÚNCIO
+                    1. ZONA DE ATRAÇÃO: HERO BANNER PRINCIPAL (ALTURA AMPLIADA)
                 ========================================================== */}
                 <div
-                  className="relative mb-6 flex min-h-[360px] w-full items-center overflow-hidden rounded-3xl border border-zinc-800 shadow-2xl transition-all duration-700 md:min-h-[480px]"
+                  className="relative mb-8 flex min-h-[480px] w-full items-center overflow-hidden rounded-3xl border border-zinc-800 shadow-2xl transition-all duration-700 md:min-h-[600px]"
                   style={{
                     backgroundImage: `url('${currentBanner}')`,
                     backgroundSize: 'cover',
                     backgroundPosition: 'center',
                   }}
                 >
-                  {/* OVERLAY ALFA: Escurece a imagem suavemente para garantir a leitura do texto */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/60 to-transparent md:bg-gradient-to-r md:from-zinc-950 md:via-zinc-950/70 md:to-transparent"></div>
+                  {/* OVERLAY DE GRADIENTE: Mais suave para não escurecer demais a foto */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-zinc-950/80 via-transparent to-black/20 md:bg-gradient-to-r md:from-zinc-950/90 md:via-zinc-950/40 md:to-transparent"></div>
 
-                  {/* CONTEÚDO DE TEXTO PRINCIPAL */}
-                  <div className="relative z-10 w-full px-8 md:px-14">
+                  {/* CONTEÚDO DE TEXTO PRINCIPAL (Com margem inferior para não bater no anúncio) */}
+                  <div className="relative z-10 w-full px-8 pb-20 md:px-14 md:pb-32">
                     <span className="mb-6 inline-block rounded-full border border-blue-500/30 bg-blue-500/20 px-4 py-1.5 font-mono-tech text-[10px] font-bold uppercase tracking-widest text-blue-400 shadow-[0_0_15px_rgba(59,130,246,0.3)]">
                       Catálogo Atualizado
                     </span>
@@ -2336,20 +2336,20 @@ function App() {
                     </p>
                   </div>
 
-                  {/* 📣 FAIXA DE ANÚNCIO: AGORA NA PARTE DE BAIXO E MAIS IMPACTANTE! */}
+                  {/* 📣 FAIXA DE ANÚNCIO: ESTILO GLASSMORPHISM (TRANSPARENTE) */}
                   {configSistema.anuncio_ativo && configSistema.mensagem_anuncio && (
-                    <div className="absolute bottom-0 left-0 z-30 w-full border-t border-rose-500/30 bg-zinc-950/90 shadow-[0_-4px_30px_rgba(225,29,72,0.2)] backdrop-blur-md">
-                      <div className="flex items-center justify-center gap-4 px-4 py-5 md:py-7">
-                        <span className="animate-pulse text-2xl md:text-3xl">📣</span>
-                        <h2 className="bg-gradient-to-r from-amber-400 via-orange-500 to-rose-500 bg-clip-text text-center text-sm font-black uppercase tracking-tighter text-transparent md:text-2xl lg:text-3xl">
+                    <div className="absolute bottom-0 left-0 z-30 w-full border-t border-white/10 bg-black/30 py-6 backdrop-blur-md md:py-8">
+                      <div className="flex items-center justify-center gap-4 px-6 text-center">
+                        <span className="animate-pulse text-xl md:text-2xl">📣</span>
+                        <h2 className="bg-gradient-to-r from-amber-300 via-white to-rose-400 bg-clip-text text-sm font-black uppercase tracking-widest text-transparent md:text-xl lg:text-2xl">
                           {configSistema.mensagem_anuncio}
                         </h2>
-                        <span className="animate-pulse text-2xl md:text-3xl">🔥</span>
+                        <span className="animate-pulse text-xl md:text-2xl">🔥</span>
                       </div>
                     </div>
                   )}
 
-                  {/* PAGINAÇÃO DO BANNER: Ajustada para não bater no anúncio */}
+                  {/* PAGINAÇÃO DO BANNER: Posicionada acima da tarja de anúncio */}
                   {bannerUrls.length > 1 && (
                     <div
                       className={`absolute left-1/2 z-20 flex -translate-x-1/2 gap-2 transition-all duration-500 ${configSistema.anuncio_ativo ? 'bottom-24 md:bottom-28' : 'bottom-6'}`}
@@ -2358,7 +2358,7 @@ function App() {
                         <button
                           key={idx}
                           onClick={() => setIndiceBanner(idx)}
-                          className={`h-2 rounded-full transition-all duration-300 ${idx === indiceBanner ? 'w-8 bg-blue-500' : 'w-2 bg-white/30 hover:bg-white/60'}`}
+                          className={`h-1.5 rounded-full transition-all duration-300 ${idx === indiceBanner ? 'w-8 bg-blue-500' : 'w-2 bg-white/40 hover:bg-white/70'}`}
                           aria-label={`Banner ${idx + 1}`}
                         />
                       ))}
