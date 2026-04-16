@@ -2310,52 +2310,55 @@ function App() {
                     1. ZONA DE ATRAÇÃO: HERO BANNER PRINCIPAL + ANÚNCIO
                 ========================================================== */}
                 <div
-                  className="relative mb-6 flex min-h-[350px] w-full items-center overflow-hidden rounded-3xl border border-zinc-800 shadow-2xl transition-all duration-700 md:min-h-[450px]"
+                  className="relative mb-6 flex min-h-[360px] w-full items-center overflow-hidden rounded-3xl border border-zinc-800 shadow-2xl transition-all duration-700 md:min-h-[480px]"
                   style={{
                     backgroundImage: `url('${currentBanner}')`,
                     backgroundSize: 'cover',
                     backgroundPosition: 'center',
                   }}
                 >
-                  {/* 📣 FAIXA DE ANÚNCIO: AGORA FLUTUANDO DENTRO DA IMAGEM! */}
-                  {configSistema.anuncio_ativo && configSistema.mensagem_anuncio && (
-                    <div className="absolute left-0 top-0 z-30 w-full border-b border-rose-500/30 bg-zinc-950/80 shadow-[0_4px_30px_rgba(225,29,72,0.3)] backdrop-blur-md">
-                      <div className="flex items-center justify-center gap-3 px-4 py-3 md:py-4">
-                        <span className="animate-pulse text-xl md:text-2xl">📣</span>
-                        <h2 className="bg-gradient-to-r from-amber-400 via-orange-500 to-rose-500 bg-clip-text text-center text-xs font-black uppercase tracking-widest text-transparent md:text-sm">
-                          {configSistema.mensagem_anuncio}
-                        </h2>
-                        <span className="animate-pulse text-xl md:text-2xl">🔥</span>
-                      </div>
-                    </div>
-                  )}
-
                   {/* OVERLAY ALFA: Escurece a imagem suavemente para garantir a leitura do texto */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/80 to-transparent md:bg-gradient-to-r md:from-zinc-950 md:via-zinc-950/80 md:to-transparent"></div>
+                  <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/60 to-transparent md:bg-gradient-to-r md:from-zinc-950 md:via-zinc-950/70 md:to-transparent"></div>
 
-                  <div className="relative z-10 mt-8 w-full px-8 md:mt-0 md:px-14">
+                  {/* CONTEÚDO DE TEXTO PRINCIPAL */}
+                  <div className="relative z-10 w-full px-8 md:px-14">
                     <span className="mb-6 inline-block rounded-full border border-blue-500/30 bg-blue-500/20 px-4 py-1.5 font-mono-tech text-[10px] font-bold uppercase tracking-widest text-blue-400 shadow-[0_0_15px_rgba(59,130,246,0.3)]">
                       Catálogo Atualizado
                     </span>
 
-                    <h1 className="mb-6 max-w-2xl animate-neon-flicker bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text font-mono-tech text-3xl font-bold uppercase leading-tight tracking-tighter text-transparent md:text-4xl lg:text-5xl">
+                    <h1 className="mb-6 max-w-2xl animate-neon-flicker bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text font-mono-tech text-3xl font-bold uppercase leading-tight tracking-tighter text-transparent md:text-5xl lg:text-6xl">
                       A sua Próxima <br /> Aventura Começa Aqui!
                     </h1>
 
-                    <p className="max-w-xl text-sm font-medium leading-relaxed text-zinc-300 md:text-base">
+                    <p className="max-w-xl text-sm font-medium leading-relaxed text-zinc-300 md:text-lg">
                       Alugue os maiores lançamentos e os melhores exclusivos. Receba seu acesso
                       instantaneamente e comece a jogar sem sair de casa.
                     </p>
                   </div>
 
-                  {/* Paginação do Banner de Imagens */}
+                  {/* 📣 FAIXA DE ANÚNCIO: AGORA NA PARTE DE BAIXO E MAIS IMPACTANTE! */}
+                  {configSistema.anuncio_ativo && configSistema.mensagem_anuncio && (
+                    <div className="absolute bottom-0 left-0 z-30 w-full border-t border-rose-500/30 bg-zinc-950/90 shadow-[0_-4px_30px_rgba(225,29,72,0.2)] backdrop-blur-md">
+                      <div className="flex items-center justify-center gap-4 px-4 py-5 md:py-7">
+                        <span className="animate-pulse text-2xl md:text-3xl">📣</span>
+                        <h2 className="bg-gradient-to-r from-amber-400 via-orange-500 to-rose-500 bg-clip-text text-center text-sm font-black uppercase tracking-tighter text-transparent md:text-2xl lg:text-3xl">
+                          {configSistema.mensagem_anuncio}
+                        </h2>
+                        <span className="animate-pulse text-2xl md:text-3xl">🔥</span>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* PAGINAÇÃO DO BANNER: Ajustada para não bater no anúncio */}
                   {bannerUrls.length > 1 && (
-                    <div className="absolute bottom-4 left-1/2 z-20 flex -translate-x-1/2 gap-2">
+                    <div
+                      className={`absolute left-1/2 z-20 flex -translate-x-1/2 gap-2 transition-all duration-500 ${configSistema.anuncio_ativo ? 'bottom-24 md:bottom-28' : 'bottom-6'}`}
+                    >
                       {bannerUrls.map((_, idx) => (
                         <button
                           key={idx}
                           onClick={() => setIndiceBanner(idx)}
-                          className={`h-2 rounded-full transition-all duration-300 ${idx === indiceBanner ? 'w-6 bg-blue-500' : 'w-2 bg-white/30 hover:bg-white/60'}`}
+                          className={`h-2 rounded-full transition-all duration-300 ${idx === indiceBanner ? 'w-8 bg-blue-500' : 'w-2 bg-white/30 hover:bg-white/60'}`}
                           aria-label={`Banner ${idx + 1}`}
                         />
                       ))}
