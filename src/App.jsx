@@ -2697,6 +2697,69 @@ function App() {
                   </div>
                 </div>
 
+                {enqueteOpcoes.length > 0 && (
+                  <div className="mb-12 bg-zinc-900/50 border border-zinc-800 rounded-3xl p-6 md:p-8 shadow-xl relative overflow-hidden animate-fade-in">
+                    <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-fuchsia-500 to-blue-500"></div>
+                    <h3 className="text-xl md:text-2xl font-black text-white mb-2 tracking-tight">
+                      QUAL JOGO VOCÊ QUER JOGAR NO FUTURO?
+                    </h3>
+                    <p className="text-sm text-zinc-400 mb-6 leading-relaxed">
+                      Clique em uma das opções e ajude o BORA JOGAR! escolher
+                      quais jogos devem entrar no catálogo no futuro!
+                    </p>
+
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+                      {enqueteOpcoes.map((opcao) => {
+                        const isSelected = meuVoto === opcao.id;
+                        return (
+                          <div
+                            key={opcao.id}
+                            onClick={() => votarEnquete(opcao.id)}
+                            className={`relative h-40 md:h-48 rounded-2xl overflow-hidden cursor-pointer transition-all duration-300 group ${isSelected ? "border-2 border-fuchsia-500 shadow-[0_0_20px_rgba(217,70,239,0.5)] scale-105 z-10" : "border-2 border-transparent hover:border-zinc-600 opacity-80 hover:opacity-100"}`}
+                          >
+                            <img
+                              src={opcao.url_imagem}
+                              alt={opcao.titulo}
+                              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent flex flex-col justify-end p-3">
+                              <span className="text-white font-black text-xs md:text-sm tracking-tight leading-tight drop-shadow-md">
+                                {opcao.titulo}
+                              </span>
+                            </div>
+
+                            {/* Checkmark Neon */}
+                            {isSelected && (
+                              <div className="absolute top-2 right-2 bg-fuchsia-500 text-white rounded-full w-6 h-6 flex items-center justify-center shadow-lg border border-white/20">
+                                <svg
+                                  className="w-4 h-4"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth="3"
+                                    d="M5 13l4 4L19 7"
+                                  ></path>
+                                </svg>
+                              </div>
+                            )}
+
+                            {/* Contador Admin */}
+                            {usuarioLogado?.is_admin && (
+                              <div className="absolute top-2 left-2 bg-black/80 backdrop-blur-md text-fuchsia-400 font-black text-[10px] px-2 py-1 rounded-lg border border-zinc-700">
+                                {opcao.total_votos} votos
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
                 <div className="mb-6 text-xs font-bold text-zinc-500 uppercase tracking-wider">
                   Mostrando{" "}
                   <span className="text-white">
@@ -2988,69 +3051,6 @@ function App() {
                     );
                   })}
                 </div>
-
-                {enqueteOpcoes.length > 0 && (
-                  <div className="mb-12 bg-zinc-900/50 border border-zinc-800 rounded-3xl p-6 md:p-8 shadow-xl relative overflow-hidden animate-fade-in">
-                    <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-fuchsia-500 to-blue-500"></div>
-                    <h3 className="text-xl md:text-2xl font-black text-white mb-2 tracking-tight">
-                      QUAL JOGO VOCÊ QUER JOGAR NO FUTURO?
-                    </h3>
-                    <p className="text-sm text-zinc-400 mb-6 leading-relaxed">
-                      Clique em uma das opções e ajude o BORA JOGAR! escolher
-                      quais jogos devem entrar no catálogo no futuro!
-                    </p>
-
-                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-                      {enqueteOpcoes.map((opcao) => {
-                        const isSelected = meuVoto === opcao.id;
-                        return (
-                          <div
-                            key={opcao.id}
-                            onClick={() => votarEnquete(opcao.id)}
-                            className={`relative h-40 md:h-48 rounded-2xl overflow-hidden cursor-pointer transition-all duration-300 group ${isSelected ? "border-2 border-fuchsia-500 shadow-[0_0_20px_rgba(217,70,239,0.5)] scale-105 z-10" : "border-2 border-transparent hover:border-zinc-600 opacity-80 hover:opacity-100"}`}
-                          >
-                            <img
-                              src={opcao.url_imagem}
-                              alt={opcao.titulo}
-                              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                            />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent flex flex-col justify-end p-3">
-                              <span className="text-white font-black text-xs md:text-sm tracking-tight leading-tight drop-shadow-md">
-                                {opcao.titulo}
-                              </span>
-                            </div>
-
-                            {/* Checkmark Neon */}
-                            {isSelected && (
-                              <div className="absolute top-2 right-2 bg-fuchsia-500 text-white rounded-full w-6 h-6 flex items-center justify-center shadow-lg border border-white/20">
-                                <svg
-                                  className="w-4 h-4"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  viewBox="0 0 24 24"
-                                >
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth="3"
-                                    d="M5 13l4 4L19 7"
-                                  ></path>
-                                </svg>
-                              </div>
-                            )}
-
-                            {/* Contador Admin */}
-                            {usuarioLogado?.is_admin && (
-                              <div className="absolute top-2 left-2 bg-black/80 backdrop-blur-md text-fuchsia-400 font-black text-[10px] px-2 py-1 rounded-lg border border-zinc-700">
-                                {opcao.total_votos} votos
-                              </div>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
 
                 {totalPaginas > 1 && (
                   <div className="flex justify-center items-center gap-3 mt-16">
