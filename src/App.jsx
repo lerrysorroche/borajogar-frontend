@@ -40,11 +40,9 @@ function App() {
   const [cadTelefone, setCadTelefone] = useState('');
   const [cadCodigoConvite, setCadCodigoConvite] = useState('');
 
-  // Confirmações de Senha
   const [cadSenhaConfirmacao, setCadSenhaConfirmacao] = useState('');
   const [mudarSenhaNovaConfirmacao, setMudarSenhaNovaConfirmacao] = useState('');
 
-  // Estados do Olhinho (Mostrar/Ocultar Senha)
   const [verSenhaLogin, setVerSenhaLogin] = useState(false);
   const [verSenhaCad, setVerSenhaCad] = useState(false);
   const [verSenhaCadConf, setVerSenhaCadConf] = useState(false);
@@ -58,13 +56,12 @@ function App() {
   const [mudarSenhaNova, setMudarSenhaNova] = useState('');
 
   const [jogos, setJogos] = useState([]);
-  const [carregandoJogos, setCarregandoJogos] = useState(true); // 🚀 AVISA SE ESTÁ CARREGANDO
+  const [carregandoJogos, setCarregandoJogos] = useState(true);
   const [meusAlugueis, setMeusAlugueis] = useState([]);
   const [minhasReservas, setMinhasReservas] = useState([]);
   const [extrato, setExtrato] = useState([]);
-  const [notificacoes, setNotificacoes] = useState([]); // 🚀 NOVA VARIÁVEL AQUI
+  const [notificacoes, setNotificacoes] = useState([]);
 
-  // ESTADOS DA ENQUETE
   const [enqueteOpcoes, setEnqueteOpcoes] = useState([]);
   const [meuVoto, setMeuVoto] = useState(null);
   const [novaOpcaoEnqueteTitulo, setNovaOpcaoEnqueteTitulo] = useState('');
@@ -165,7 +162,6 @@ function App() {
       return;
     }
 
-    // 🚀 VALIDAÇÃO SIMPLES DO CPF
     const cpfLimpo = cpfRecarga.replace(/\D/g, '');
     if (cpfLimpo.length !== 11) {
       mostrarToast('Por favor, digite um CPF válido com 11 números.', 'erro');
@@ -182,7 +178,7 @@ function App() {
         valor: valorReal,
         cupom: cupomRecarga,
         cpf: cpfLimpo,
-      }), // 🚀 ENVIANDO O CPF
+      }),
     }).then(async (res) => {
       const data = await res.json();
       if (res.ok) {
@@ -207,7 +203,6 @@ function App() {
             if (data.status === 'PAGO') {
               mostrarToast('✅ Pagamento Confirmado! Saldo liberado.', 'sucesso');
 
-              // 🚀 GATILHO DO PIXEL: Avisa a Meta que entrou dinheiro, mandando o valor exato!
               if (window.fbq) {
                 window.fbq('track', 'Purchase', {
                   value: parseFloat(valorRecarga),
@@ -215,7 +210,6 @@ function App() {
                 });
               }
 
-              // 🎯 GATILHO OFICIAL DE CONVERSÃO DO GOOGLE ADS
               if (typeof window.gtag === 'function') {
                 window.gtag('event', 'conversion', {
                   send_to: 'AW-18093761831/3yJqCMGM9pwcEKfK47ND',
@@ -284,7 +278,6 @@ function App() {
       return;
     }
 
-    // Trava de Segurança: Mesma regra do cadastro
     const regexSenha = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
     if (!regexSenha.test(mudarSenhaNova)) {
       mostrarToast(
@@ -325,7 +318,6 @@ function App() {
     preco14,
     diasEscolhidosInicial = 7,
   ) => {
-    // 🚀 MUDANÇA: Se não tem conta, manda fazer login/cadastro na hora de alugar!
     if (!usuarioLogado) {
       mostrarToast('Faça login ou crie uma conta grátis para alugar jogos!', 'aviso');
       setModoLogin(true);
@@ -569,7 +561,6 @@ function App() {
       if (res.ok) {
         mostrarToast('Conta criada! Sua carteira já está pronta.', 'sucesso');
 
-        // 🚀 GATILHO DO PIXEL: Avisa a Meta que alguém se cadastrou!
         if (window.fbq) {
           window.fbq('track', 'CompleteRegistration');
         }
@@ -616,11 +607,10 @@ function App() {
     localStorage.removeItem('token_locadora');
   };
 
-  // FUNÇÕES DA ENQUETE
   const votarEnquete = (opcaoId) => {
     if (!usuarioLogado) {
       mostrarToast('Você precisa criar uma conta grátis ou fazer login para votar!', 'aviso');
-      setModoLogin(false); // Direciona direto pra aba de criar conta
+      setModoLogin(false);
       setModoEsqueciSenha(false);
       setAbaAtual('login');
       window.scrollTo(0, 0);
@@ -693,9 +683,6 @@ function App() {
   };
 
   const carregarDados = () => {
-    // ====================================================================
-    // 🚀 1. DADOS PÚBLICOS (Com sistema dedo-duro de erros)
-    // ====================================================================
     fetch('https://borajogar-api.onrender.com/jogos')
       .then(async (res) => {
         if (!res.ok) {
@@ -707,11 +694,11 @@ function App() {
       })
       .then((dados) => {
         setJogos(Array.isArray(dados) ? dados : []);
-        setCarregandoJogos(false); // 🚀 DESLIGA A ANIMAÇÃO QUANDO CARREGA!
+        setCarregandoJogos(false);
       })
       .catch((err) => {
         mostrarToast('Servidor conectando ou sem internet. Dê um F5.', 'aviso');
-        setCarregandoJogos(false); // 🚀 DESLIGA A ANIMAÇÃO SE DER ERRO DE REDE TAMBÉM!
+        setCarregandoJogos(false);
       });
 
     fetch('https://borajogar-api.onrender.com/configuracoes')
@@ -727,14 +714,8 @@ function App() {
         if (dados.voto_usuario) setMeuVoto(dados.voto_usuario);
       });
 
-    // ====================================================================
-    // 🚀 2. TRAVA DE SEGURANÇA
-    // ====================================================================
     if (!usuarioLogado) return;
 
-    // ====================================================================
-    // 🚀 3. DADOS DE ADMIN
-    // ====================================================================
     if (usuarioLogado.is_admin) {
       fetch('https://borajogar-api.onrender.com/admin/locacoes', {
         headers: getAuthHeaders(),
@@ -784,7 +765,6 @@ function App() {
       .then((res) => (res.ok ? res.json() : []))
       .then((dados) => setNotificacoes(Array.isArray(dados) ? dados : []));
 
-    // 🚀 CORREÇÃO DO SALDO GLOBAL
     fetch(`https://borajogar-api.onrender.com/usuarios/${usuarioLogado.id}/saldo`)
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
@@ -802,7 +782,6 @@ function App() {
       .catch((err) => console.log('Aguardando backend...'));
   };
 
-  // 🚀 FUNÇÕES DE AÇÃO DO ALERTA DE FILA
   const manterReserva = (notificacaoId) => {
     fetch('https://borajogar-api.onrender.com/notificacoes/ler', {
       method: 'POST',
@@ -956,7 +935,7 @@ function App() {
         email: modalEdicaoCliente.email,
         telefone: modalEdicaoCliente.telefone,
         saldo: parseFloat(modalEdicaoCliente.saldo),
-        motivo_ajuste: modalEdicaoCliente.motivo_ajuste || 'Ajuste Administrativo', // 🚀 Envia o motivo
+        motivo_ajuste: modalEdicaoCliente.motivo_ajuste || 'Ajuste Administrativo',
       }),
     })
       .then(async (res) => {
@@ -1207,7 +1186,6 @@ function App() {
     if (aDisponivel && !bDisponivel) return -1;
     if (!aDisponivel && bDisponivel) return 1;
 
-    // 🚀 BLINDAGEM: Garante que undefined vire 0 na matemática
     const popA = a.popularidade || 0;
     const popB = b.popularidade || 0;
 
@@ -1330,12 +1308,9 @@ function App() {
   const alugueisAtivos = meusAlugueis.filter((item) => item.status === 'ATIVA');
   const todosAlugueisExpirados = meusAlugueis.filter((item) => item.status === 'EXPIRADA');
 
-  // 🚀 A MATEMÁTICA REAL (Conta tudo)
   const totalAlugueis = todosAlugueisExpirados.length;
-  // 🚀 O VISUAL (Mostra só os 5 últimos no histórico do rodapé)
   const historicoAlugueis = todosAlugueisExpirados.slice(0, 5);
 
-  // 🚀 SISTEMA DE RANKINGS
   const obterRankInfo = (qtd) => {
     if (qtd >= 50)
       return {
@@ -1382,8 +1357,6 @@ function App() {
   const navBtnClass = 'text-sm font-bold px-4 py-2 rounded-xl transition-all duration-300';
   const adminInputClass =
     'w-full px-4 py-2.5 text-sm font-medium bg-zinc-950 border border-zinc-800 text-white rounded-xl focus:ring-1 focus:ring-blue-500 focus:outline-none transition-all placeholder-zinc-600';
-  const adminCardClass =
-    'bg-zinc-900 p-6 md:p-8 rounded-3xl border border-zinc-800 shadow-2xl flex flex-col';
 
   const bannerUrls = configSistema.banners_url
     ? configSistema.banners_url
@@ -1694,7 +1667,6 @@ function App() {
                   />
                 </div>
 
-                {/* 🚀 NOVO CAMPO: Motivo do Ajuste */}
                 <div className="w-full">
                   <label className="mb-1 block text-xs font-bold uppercase tracking-wider text-zinc-500">
                     Motivo (Aparecerá no Extrato)
@@ -2192,7 +2164,6 @@ function App() {
                         </span>
                       </div>
 
-                      {/* 🚀 SINO DE NOTIFICAÇÃO NEON */}
                       <button
                         onClick={() => {
                           setAbaAtual('dashboard');
@@ -2346,7 +2317,7 @@ function App() {
                     backgroundPosition: 'center',
                   }}
                 >
-                  {/* OVERLAY ALFA: Escurece a imagem suavemente para garantir a leitura do texto */}
+                  {/* OVERLAY ALFA */}
                   <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/80 to-transparent md:bg-gradient-to-r md:from-zinc-950 md:via-zinc-950/80 md:to-transparent"></div>
 
                   <div className="relative z-10 w-full px-8 md:px-14">
@@ -2364,7 +2335,6 @@ function App() {
                     </p>
                   </div>
 
-                  {/* Paginação do Banner de Imagens */}
                   {bannerUrls.length > 1 && (
                     <div className="absolute bottom-4 left-1/2 z-20 flex -translate-x-1/2 gap-2">
                       {bannerUrls.map((_, idx) => (
@@ -2394,13 +2364,11 @@ function App() {
                   </div>
                 )}
 
-                {/* Banner Ultra Compacto Neon */}
                 <div className="group relative mb-8 w-full overflow-hidden border-y border-zinc-800/50 bg-zinc-950">
                   <div className="absolute inset-0 -translate-x-1/4 scale-150 transform rounded-full bg-red-950/30 opacity-40 blur-3xl"></div>
                   <div className="absolute inset-0 translate-x-1/4 scale-150 transform rounded-full bg-cyan-950/30 opacity-40 blur-3xl"></div>
                   <div className="relative z-10 mx-auto max-w-7xl px-4 py-6 md:py-5">
                     <div className="grid grid-cols-1 gap-5 md:grid-cols-4 md:gap-0 md:divide-x md:divide-zinc-800">
-                      {/* Aviso */}
                       <div className="flex flex-col px-4 md:items-center md:pl-0 md:pr-6 md:text-center">
                         <div className="mb-2 flex items-center gap-2">
                           <span className="text-red-500">
@@ -2427,7 +2395,6 @@ function App() {
                           <strong className="text-white">vários consoles ao mesmo tempo</strong>.
                         </p>
                       </div>
-                      {/* Risco */}
                       <div className="flex flex-col px-4 md:items-center md:px-6 md:text-center">
                         <div className="mb-2 flex items-center gap-2">
                           <span className="text-red-500">
@@ -2457,7 +2424,6 @@ function App() {
                           . Você perde tudo.
                         </p>
                       </div>
-                      {/* Solução */}
                       <div className="mt-2 flex flex-col border-t border-zinc-800 px-4 pt-4 md:mt-0 md:items-center md:border-t-0 md:px-6 md:pt-0 md:text-center">
                         <div className="mb-2 flex items-center gap-2">
                           <span className="text-cyan-400 transition-all group-hover:drop-shadow-[0_0_8px_rgba(6,182,212,0.8)]">
@@ -2484,7 +2450,6 @@ function App() {
                           aluguel. Jogue online, sem cair.
                         </p>
                       </div>
-                      {/* Matemática */}
                       <div className="mt-2 flex flex-col border-t border-zinc-800 px-4 pt-4 md:mt-0 md:items-center md:border-t-0 md:pl-6 md:pr-0 md:pt-0 md:text-center">
                         <div className="mb-2 flex items-center gap-2">
                           <span className="text-cyan-400 transition-all group-hover:drop-shadow-[0_0_8px_rgba(6,182,212,0.8)]">
@@ -2519,7 +2484,6 @@ function App() {
                     3. ZONA DE AÇÃO: BARRA DE COMANDO DA VITRINE
                 ========================================================== */}
                 <div className="mb-8 flex flex-col justify-between gap-4 rounded-2xl border border-zinc-800 bg-zinc-900/50 p-4 shadow-lg backdrop-blur-sm lg:flex-row lg:items-center">
-                  {/* Contador de Jogos */}
                   <div className="text-center text-xs font-bold uppercase tracking-wider text-zinc-400 lg:text-left">
                     Mostrando{' '}
                     <span className="text-white">
@@ -2528,9 +2492,7 @@ function App() {
                     jogo(s) encontrado(s)
                   </div>
 
-                  {/* Controles: Busca e Filtros */}
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                    {/* Input de Busca */}
                     <div className="relative w-full sm:w-64">
                       <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
                         <span className="opacity-60">🎮</span>
@@ -2544,7 +2506,6 @@ function App() {
                       />
                     </div>
 
-                    {/* Filtros em Botões (Mantendo o design original do cliente) */}
                     <div className="flex flex-wrap gap-3">
                       <div className="scrollbar-hide flex overflow-x-auto rounded-xl border border-zinc-700/50 bg-zinc-950 p-1">
                         <button
@@ -2588,7 +2549,6 @@ function App() {
                 {/* =========================================================
                     4. ZONA DE CONSUMO: VITRINE E PAGINAÇÃO
                 ========================================================== */}
-                {/* 🚀 SPINNER DE CARREGAMENTO INTELIGENTE */}
                 {carregandoJogos && (
                   <div className="animate-fade-in mb-8 flex flex-col items-center justify-center rounded-3xl border border-zinc-800 bg-zinc-900/50 py-20 text-center shadow-xl">
                     <div className="mb-6 h-16 w-16 animate-spin rounded-full border-4 border-blue-500/20 border-t-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.5)]"></div>
@@ -2618,7 +2578,6 @@ function App() {
                       : '';
                     const tituloLimpo = jogo.titulo;
 
-                    // LÓGICA VIP E BLOQUEIOS
                     const ehJogoVIP = isEmBreve;
                     const isVeterano = usuarioLogado
                       ? usuarioLogado.is_admin || totalAlugueis >= 1
@@ -2629,7 +2588,6 @@ function App() {
                       (res) => res.jogo === tituloLimpo,
                     );
 
-                    // MATEMÁTICA DE DATAS
                     let dataVagaGlobal = isEmBreve ? new Date(dataLanc) : new Date();
 
                     if (jogo.proxima_devolucao) {
@@ -2659,7 +2617,6 @@ function App() {
                             </div>
                           )}
 
-                          {/* ETIQUETAS EM COLUNA */}
                           <div className="pointer-events-none absolute left-4 right-4 top-4 flex items-start justify-between">
                             <div className="flex flex-col items-start gap-2">
                               <span className="rounded-lg border border-zinc-700/50 bg-zinc-950/80 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-white shadow-lg backdrop-blur-md">
@@ -2745,7 +2702,6 @@ function App() {
                               </div>
                             )}
 
-                            {/* LÓGICA DE EXIBIÇÃO: RESERVADO vs BOTÕES DE COMPRA */}
                             <div className="mt-3 flex w-full gap-3">
                               {minhaReservaAtiva ? (
                                 <div className="group relative flex h-[76px] flex-1 flex-col items-center justify-center overflow-hidden rounded-xl border border-emerald-500/30 bg-emerald-950/40 p-3 shadow-[0_0_15px_rgba(16,185,129,0.15)] transition-all">
@@ -2779,7 +2735,6 @@ function App() {
                                 </button>
                               ) : (
                                 <>
-                                  {/* Botão 7 Dias */}
                                   <button
                                     onClick={() =>
                                       abrirConfirmacao(
@@ -2806,7 +2761,6 @@ function App() {
                                     </strong>
                                   </button>
 
-                                  {/* Botão 14 Dias */}
                                   {jogo.preco_aluguel_14 > 0 && (
                                     <button
                                       onClick={() =>
@@ -2914,7 +2868,6 @@ function App() {
                               </span>
                             </div>
 
-                            {/* Checkmark Neon */}
                             {isSelected && (
                               <div className="absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full border border-white/20 bg-fuchsia-500 text-white shadow-lg">
                                 <svg
@@ -2933,7 +2886,6 @@ function App() {
                               </div>
                             )}
 
-                            {/* Contador Admin */}
                             {usuarioLogado?.is_admin && (
                               <div className="absolute left-2 top-2 rounded-lg border border-zinc-700 bg-black/80 px-2 py-1 text-[10px] font-black text-fuchsia-400 backdrop-blur-md">
                                 {opcao.total_votos} votos
@@ -2950,11 +2902,9 @@ function App() {
 
             {abaAtual === 'dashboard' && (
               <div className="animate-fade-in mx-auto max-w-5xl space-y-8">
-                {/* 🚀 CABEÇALHO DO PERFIL CYBERPUNK */}
                 <div className="relative flex flex-col items-center gap-6 overflow-hidden rounded-3xl border border-purple-500/30 bg-gradient-to-r from-purple-900/20 via-zinc-900 to-zinc-900 p-6 shadow-2xl md:flex-row md:p-8">
                   <div className="pointer-events-none absolute -left-10 -top-10 h-40 w-40 rounded-full bg-purple-600/10 blur-3xl"></div>
 
-                  {/* Avatar Automático DiceBear */}
                   <div className="relative">
                     <div className="flex h-24 w-24 items-center justify-center overflow-hidden rounded-2xl border-2 border-purple-500/50 bg-zinc-950 p-1 shadow-[0_0_15px_rgba(168,85,247,0.3)]">
                       <img
@@ -2993,7 +2943,6 @@ function App() {
                   </div>
                 </div>
 
-                {/* 🚀 ALERTAS DE ALTERAÇÃO DE FILA REAIS */}
                 {notificacoes.map((notif) => (
                   <div
                     key={notif.id}
@@ -3527,7 +3476,7 @@ function App() {
                   </div>
                 </details>
 
-                <details className="group overflow-hidden rounded-3xl border border-l-4 border-amber-500/30 border-l-amber-500 bg-gradient-to-r from-amber-900/20 to-zinc-900 shadow-2xl shadow-amber-500/10 [&_summary::-webkit-details-marker]:hidden">
+                <details className="group overflow-hidden rounded-3xl border border-l-4 border-zinc-800 border-l-amber-500 bg-zinc-900/80 shadow-2xl shadow-amber-500/10 [&_summary::-webkit-details-marker]:hidden">
                   <summary className="flex cursor-pointer select-none items-center justify-between p-6 transition-colors hover:bg-amber-900/10 md:p-8">
                     <span className="flex items-center gap-3 text-lg font-black tracking-tight text-amber-400">
                       ⏳ Minhas Reservas (Fila de Espera)
@@ -3917,7 +3866,7 @@ function App() {
                     </div>
                   </details>
 
-                  <details className="group rounded-3xl border border-rose-500/30 bg-rose-950/20 shadow-xl transition-transform duration-300 hover:-translate-y-1 [&_summary::-webkit-details-marker]:hidden">
+                  <details className="group rounded-3xl border border-zinc-800 bg-zinc-900 shadow-xl transition-transform duration-300 hover:-translate-y-1 [&_summary::-webkit-details-marker]:hidden">
                     <summary className="flex cursor-pointer items-center justify-between p-6 text-rose-400 transition-colors hover:text-rose-300 md:p-8">
                       <span className="text-base font-bold tracking-tight md:text-lg">
                         🚨 O que acontece se eu esquecer de desativar a conta do meu videogame?
@@ -4186,7 +4135,6 @@ function App() {
                     onChange={(e) => {
                       const novoPeriodo = e.target.value;
                       setPeriodoFiltroEstatisticas(novoPeriodo);
-                      // 🚀 Força a busca instantânea sem esperar o React piscar
                       fetch(
                         `https://borajogar-api.onrender.com/admin/estatisticas?periodo=${novoPeriodo}`,
                         { headers: getAuthHeaders() },
