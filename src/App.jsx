@@ -2332,14 +2332,19 @@ function App() {
                     </p>
                   </div>
 
+                  {/* 📣 FAIXA DE ANÚNCIO: ESTILO GLASSMORPHISM (TRANSPARENTE) */}
                   {configSistema.anuncio_ativo && configSistema.mensagem_anuncio && (
                     <div className="absolute bottom-0 left-0 z-30 w-full border-t border-white/10 bg-black/30 py-6 backdrop-blur-md md:py-8">
                       <div className="flex items-center justify-center gap-4 px-6 text-center">
-                        <span className="animate-pulse text-xl md:text-2xl">📣</span>
-                        <h2 className="bg-gradient-to-r from-amber-300 via-white to-rose-400 bg-clip-text text-sm font-black uppercase tracking-widest text-transparent md:text-xl lg:text-2xl">
+                        <span className="animate-pulse text-xl drop-shadow-[0_0_10px_rgba(249,115,22,0.8)] md:text-2xl">
+                          📣
+                        </span>
+                        <h2 className="bg-gradient-to-r from-orange-500 via-pink-500 to-fuchsia-500 bg-clip-text text-sm font-black uppercase tracking-widest text-transparent md:text-xl lg:text-2xl">
                           {configSistema.mensagem_anuncio}
                         </h2>
-                        <span className="animate-pulse text-xl md:text-2xl">🔥</span>
+                        <span className="animate-pulse text-xl drop-shadow-[0_0_10px_rgba(217,70,239,0.8)] md:text-2xl">
+                          🔥
+                        </span>
                       </div>
                     </div>
                   )}
