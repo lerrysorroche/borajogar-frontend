@@ -2475,7 +2475,7 @@ function App() {
                           </h3>
                         </div>
                         <p className="text-xs leading-relaxed text-zinc-300">
-                          Pague <strong className="text-white">apenas R$ 30</strong>, zere
+                          Pague <strong className="text-white">apenas R$ 40</strong>, zere
                           lançamentos e parta para o próximo jogo.
                         </p>
                       </div>
