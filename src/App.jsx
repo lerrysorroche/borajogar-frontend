@@ -1260,6 +1260,29 @@ function App() {
     }
   };
 
+  const ativarReservaManualmente = (reservaId, clienteNome, jogoTitulo) => {
+    if (
+      window.confirm(
+        `Deseja converter a reserva de ${jogoTitulo} para o cliente ${clienteNome} em um aluguel ATIVO agora?`,
+      )
+    ) {
+      mostrarToast('Processando ativação forçada...', 'aviso');
+
+      fetch(`https://borajogar-api.onrender.com/admin/reservas/${reservaId}/ativar-forçado`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+      }).then(async (res) => {
+        const data = await res.json();
+        if (res.ok) {
+          mostrarToast('🚀 Sucesso! O cliente já tem acesso ao jogo.', 'sucesso');
+          carregarDados(); // Recarrega para mover o cliente de "Reserva" para "Locação Ativa"
+        } else {
+          mostrarToast(data.detail || 'Erro ao ativar. Verifique se há estoque no cofre.', 'erro');
+        }
+      });
+    }
+  };
+
   const contasManutencaoFiltradas = contasManutencao
     .filter(
       (c) =>
@@ -5070,6 +5093,37 @@ function App() {
                                     <span className="ml-1 font-normal text-zinc-500">
                                       ({reserva.dias_aluguel}d)
                                     </span>
+                                  </td>
+                                  {/* Onde você mapeia as reservasAdminFiltradas */}
+                                  <td className="py-4 text-right">
+                                    <div className="flex justify-end gap-2">
+                                      {/* NOVO BOTÃO DE ATIVAÇÃO FORÇADA */}
+                                      <button
+                                        onClick={() =>
+                                          ativarReservaManualmente(
+                                            reserva.id,
+                                            reserva.cliente,
+                                            reserva.jogo,
+                                          )
+                                        }
+                                        className="rounded-lg border border-blue-500/30 bg-blue-600/30 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-blue-400 shadow transition-colors hover:bg-blue-600 hover:text-white"
+                                      >
+                                        🚀 Ativar Agora
+                                      </button>
+
+                                      <button
+                                        onClick={() =>
+                                          cancelarReservaAdmin(
+                                            reserva.id,
+                                            reserva.cliente,
+                                            reserva.jogo,
+                                          )
+                                        }
+                                        className="rounded-lg border border-rose-500/30 bg-rose-900/30 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-rose-400 shadow transition-colors hover:bg-rose-600 hover:text-white"
+                                      >
+                                        Cancelar
+                                      </button>
+                                    </div>
                                   </td>
                                   <td className="py-4 text-right">
                                     <button
