@@ -1,0 +1,32 @@
+name: CI de Validação - Bora Jogar
+
+# O robô só vai acordar quando você tentar mandar algo para a "main"
+on:
+  pull_request:
+    branches: ['main']
+
+jobs:
+  build_e_testes:
+    name: Compilação de Segurança
+    runs-on: ubuntu-latest
+
+    steps:
+      # Passo 1: O robô baixa o seu código
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      # Passo 2: O robô instala o Node.js (ambiente do React/Vite)
+      - name: Setup do Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: 'npm'
+
+      # Passo 3: O robô instala os pacotes do projeto
+      - name: Instalar Dependências
+        run: npm ci || npm install
+
+      # Passo 4: O TESTE DE FOGO! Ele tenta construir o projeto
+      # Se quebrar aqui, o GitHub cancela tudo e te avisa.
+      - name: Compilar Projeto (Build)
+        run: npm run build
