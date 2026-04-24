@@ -1,6 +1,7 @@
 // ==============================================================================
 // BORA JOGAR! - FRONTEND (React)
 // ==============================================================================
+// Ambiente de Staging ativado com sucesso!
 
 import { useState, useEffect } from 'react';
 
