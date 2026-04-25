@@ -1138,6 +1138,8 @@ function App() {
   const hojeGlobal = new Date();
   hojeGlobal.setHours(0, 0, 0, 0);
 
+  // 1. O React apenas filtra (busca, plataforma, disponibilidade),
+  // mas MANTÉM a ordem perfeita que veio do Backend.
   const filtradosBase = jogos
     .filter((jogo) => jogo.titulo.toLowerCase().includes(termoBusca.toLowerCase()))
     .filter((jogo) => {
@@ -1150,66 +1152,26 @@ function App() {
     .filter((jogo) => {
       if (filtroDisponibilidade === 'TODOS') return true;
       if (filtroDisponibilidade === 'DISPONIVEL') {
-        const dataLanc = jogo.data_lancamento ? new Date(jogo.data_lancamento + 'T00:00:00') : null;
-        const isFuturo = dataLanc && dataLanc > hojeGlobal;
-        if (isFuturo) return true;
+        // Se for Pré-venda (prioridade 1), sempre mostra
+        if (jogo.prioridade_vitrine === 1) return true;
+        // Se não, só mostra se tiver estoque
         return jogo.estoque > 0;
       }
       return true;
     });
 
-  const jogosFuturos = filtradosBase
-    .filter((j) => {
-      const dataLanc = j.data_lancamento ? new Date(j.data_lancamento + 'T00:00:00') : null;
-      return dataLanc && dataLanc > hojeGlobal;
-    })
-    .sort((a, b) => new Date(a.data_lancamento) - new Date(b.data_lancamento));
-
-  const jogosNormais = filtradosBase.filter((j) => {
-    const dataLanc = j.data_lancamento ? new Date(j.data_lancamento + 'T00:00:00') : null;
-    return !(dataLanc && dataLanc > hojeGlobal);
-  });
-
-  const idsLancamentos = [...jogosNormais]
-    .sort((a, b) => b.id - a.id)
-    .slice(0, 3)
-    .map((j) => j.id);
-
-  jogosNormais.sort((a, b) => {
-    const aLancamento = idsLancamentos.includes(a.id);
-    const bLancamento = idsLancamentos.includes(b.id);
-
-    if (aLancamento && !bLancamento) return -1;
-    if (!aLancamento && bLancamento) return 1;
-
-    const aDisponivel = a.estoque > 0;
-    const bDisponivel = b.estoque > 0;
-    if (aDisponivel && !bDisponivel) return -1;
-    if (!aDisponivel && bDisponivel) return 1;
-
-    const popA = a.popularidade || 0;
-    const popB = b.popularidade || 0;
-
-    if (popB !== popA) {
-      return popB - popA;
-    }
-
-    return b.id - a.id;
-  });
-
-  const totalPaginas = Math.ceil(jogosNormais.length / JOGOS_POR_PAGINA);
+  // 2. Como o array já está ordenado, basta fatiar para a paginação! Adeus código complexo!
+  const totalPaginas = Math.ceil(filtradosBase.length / JOGOS_POR_PAGINA);
   const indiceUltimoJogo = paginaAtual * JOGOS_POR_PAGINA;
   const indicePrimeiroJogo = indiceUltimoJogo - JOGOS_POR_PAGINA;
-  const normaisDaPagina = jogosNormais.slice(indicePrimeiroJogo, indiceUltimoJogo);
 
-  const jogosDaPagina =
-    paginaAtual === 1 ? [...jogosFuturos, ...normaisDaPagina] : [...normaisDaPagina];
-
-  const jogosFiltrados = [...jogosFuturos, ...jogosNormais];
+  const jogosDaPagina = filtradosBase.slice(indicePrimeiroJogo, indiceUltimoJogo);
+  const jogosFiltrados = filtradosBase; // Usado para o contador de "Mostrando X jogos"
 
   const jogosEstoqueFiltrados = jogos.filter((jogo) =>
     jogo.titulo.toLowerCase().includes(buscaEstoque.toLowerCase()),
   );
+
   const locacoesAtivasFiltradas = todasLocacoes
     .filter((loc) => loc.status === 'ATIVA')
     .filter(
@@ -1302,7 +1264,7 @@ function App() {
       if (filtroStatusCatalogo === 'todos') return true;
       if (filtroStatusCatalogo === 'disponiveis') return j.estoque > 0;
       if (filtroStatusCatalogo === 'alugados') return j.estoque === 0;
-      if (filtroStatusCatalogo === 'lancamentos') return idsLancamentos.includes(j.id);
+      if (filtroStatusCatalogo === 'lancamentos') return j.prioridade_vitrine === 2; // Agora usa o banco de dados!
       return true;
     });
 
@@ -2630,12 +2592,14 @@ function App() {
 
                 <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
                   {jogosDaPagina.map((jogo) => {
-                    const isLancamento = idsLancamentos.includes(jogo.id);
+                    // Graças ao backend inteligente, tudo ficou absurdamente simples:
+                    const isEmBreve = jogo.prioridade_vitrine === 1;
+                    const isLancamento = jogo.prioridade_vitrine === 2;
 
                     const dataLanc = jogo.data_lancamento
                       ? new Date(jogo.data_lancamento + 'T00:00:00')
                       : null;
-                    const isEmBreve = dataLanc && dataLanc > hojeGlobal;
+
                     const dataFormatada = dataLanc
                       ? dataLanc.toLocaleDateString('pt-BR', {
                           day: '2-digit',
