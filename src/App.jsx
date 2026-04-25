@@ -684,7 +684,8 @@ function App() {
   };
 
   const carregarDados = () => {
-    fetch('https://borajogar-api.onrender.com/jogos')
+    // 1. Vitrine em tempo real (Sem cache)
+    fetch('https://borajogar-api.onrender.com/jogos', { cache: 'no-store' })
       .then(async (res) => {
         if (!res.ok) {
           const erroText = await res.text();
@@ -702,7 +703,8 @@ function App() {
         setCarregandoJogos(false);
       });
 
-    fetch('https://borajogar-api.onrender.com/configuracoes')
+    // 2. Configurações em tempo real (Sem cache)
+    fetch('https://borajogar-api.onrender.com/configuracoes', { cache: 'no-store' })
       .then((res) => (res.ok ? res.json() : {}))
       .then((dados) => setConfigSistema(dados));
 
