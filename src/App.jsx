@@ -3089,8 +3089,12 @@ function App() {
                       <div className="animate-fade-in z-10 mb-auto mt-auto flex flex-col items-center justify-center rounded-2xl border border-emerald-500/30 bg-zinc-950 p-6 shadow-inner">
                         {/* A imagem do QR Code agora vem da Efí */}
                         <img
-                          src={`data:image/png;base64,${pixPendente.qr_code}`}
-                          alt="QR Code PIX Efí"
+                          src={
+                            pixPendente.qr_code.startsWith('data:')
+                              ? pixPendente.qr_code
+                              : `data:image/png;base64,${pixPendente.qr_code}`
+                          }
+                          alt="QR Code PIX"
                           className="mb-4 h-40 w-40 rounded-xl border border-zinc-800 bg-white p-2 shadow-lg"
                         />
                         <p className="mb-4 text-center text-[11px] font-medium leading-relaxed text-zinc-400">
