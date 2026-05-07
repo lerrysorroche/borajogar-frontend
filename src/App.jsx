@@ -4,6 +4,9 @@
 // Ambiente de Staging ativado com sucesso!
 
 import { useState, useEffect } from 'react';
+import ReactGA from 'react-ga4';
+
+ReactGA.initialize('G-QGNBJ6L7JZ');
 
 function App() {
   const NUMERO_WHATSAPP_SUPORTE = '5541995948532';
@@ -67,6 +70,8 @@ function App() {
   const [meuVoto, setMeuVoto] = useState(null);
   const [novaOpcaoEnqueteTitulo, setNovaOpcaoEnqueteTitulo] = useState('');
   const [novaOpcaoEnqueteImagem, setNovaOpcaoEnqueteImagem] = useState('');
+
+  const [carregandoGateway, setCarregandoGateway] = useState(false);
 
   const [configSistema, setConfigSistema] = useState({
     devolucao_dinamica: false,
@@ -193,6 +198,16 @@ function App() {
       }
     });
   };
+
+  useEffect(() => {
+    ReactGA.send({ hitType: 'pageview', page: `/${abaAtual}` });
+  }, [abaAtual]);
+
+  useEffect(() => {
+    if (usuarioLogado?.id) {
+      ReactGA.set({ userId: usuarioLogado.id.toString() });
+    }
+  }, [usuarioLogado?.id]);
 
   useEffect(() => {
     let intervalId;
@@ -375,6 +390,95 @@ function App() {
       preco14: 0,
       diasEscolhidos: 7,
     });
+  };
+
+  const solicitarRecargaCartao = async (e) => {
+    e.preventDefault();
+    const valorReal = parseFloat(valorRecarga);
+    if (isNaN(valorReal) || valorReal < 30) {
+      mostrarToast('O valor mínimo para recarga é de R$ 30,00', 'erro');
+      return;
+    }
+
+    setCarregandoGateway(true);
+    mostrarToast('Preparando ambiente seguro de pagamento...', 'aviso');
+
+    // Manda evento para o Analytics
+    ReactGA.event({ category: 'Checkout', action: 'Click_Stripe_Card', value: valorReal });
+
+    try {
+      const res = await fetch('https://borajogar-api.onrender.com/recarga/cartao', {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({
+          utilizador_id: usuarioLogado.id,
+          valor: valorReal,
+          cupom: cupomRecarga,
+          cpf: cpfRecarga || '00000000000', // Stripe não exige CPF, mandamos um placeholder se vazio
+        }),
+      });
+      const data = await res.json();
+
+      if (res.ok && data.checkout_url) {
+        // O redirecionamento mágico para o ambiente da Stripe!
+        window.location.href = data.checkout_url;
+      } else {
+        mostrarToast(data.detail || 'Erro ao gerar checkout', 'erro');
+        setCarregandoGateway(false);
+      }
+    } catch (err) {
+      mostrarToast('Erro de conexão.', 'erro');
+      setCarregandoGateway(false);
+    }
+  };
+
+  const solicitarRecargaPix = async (e) => {
+    e.preventDefault();
+    const valorReal = parseFloat(valorRecarga);
+    if (isNaN(valorReal) || valorReal < 30) {
+      mostrarToast('O valor mínimo para recarga é de R$ 30,00', 'erro');
+      return;
+    }
+
+    const cpfLimpo = cpfRecarga.replace(/\D/g, '');
+    if (cpfLimpo.length !== 11) {
+      mostrarToast('A Efí exige um CPF válido com 11 números para o Pix.', 'erro');
+      return;
+    }
+
+    setCarregandoGateway(true);
+    mostrarToast('Gerando código PIX dinâmico...', 'aviso');
+
+    // Manda evento para o Analytics
+    ReactGA.event({ category: 'Checkout', action: 'Click_Efi_Pix', value: valorReal });
+
+    try {
+      const res = await fetch('https://borajogar-api.onrender.com/recarga/pix', {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({
+          utilizador_id: usuarioLogado.id,
+          valor: valorReal,
+          cupom: cupomRecarga,
+          cpf: cpfLimpo,
+        }),
+      });
+      const data = await res.json();
+
+      if (res.ok && data.payment_id) {
+        setPixPendente({
+          payment_id: data.payment_id,
+          qr_code: data.qr_code,
+          copia_cola: data.copia_cola,
+        });
+      } else {
+        mostrarToast(data.detail || 'Erro ao gerar Pix', 'erro');
+      }
+    } catch (err) {
+      mostrarToast('Erro de conexão.', 'erro');
+    } finally {
+      setCarregandoGateway(false);
+    }
   };
 
   const executarAluguel = (jogoId, precoJogo, dias) => {
@@ -595,6 +699,13 @@ function App() {
         localStorage.setItem('token_locadora', data.token);
         setAbaAtual(data.usuario.is_admin ? 'admin' : 'vitrine');
         mostrarToast(`Bem-vindo, ${data.usuario.nome}!`, 'sucesso');
+
+        // Dispara evento de login para o Analytics
+        ReactGA.event({
+          category: 'User',
+          action: 'Login_Success',
+          label: data.usuario.email,
+        });
       } else {
         mostrarToast(data.detail, 'erro');
       }
@@ -1107,7 +1218,7 @@ function App() {
     if (!telefone) return;
     let numeroLimpo = telefone.replace(/\D/g, '');
     if (!numeroLimpo.startsWith('55')) numeroLimpo = '55' + numeroLimpo;
-    const mensagem = `Olá, ${nome}! Aqui é da locadora *BORA JOGAR!* 🎮\n\nSeu tempo com o jogo *${jogo}* terminou, mas notamos que a conta ainda está ativada como "Principal" no seu console.\n\n⚠️ Concedemos um *prazo de tolerância de 1 hora* para você entrar na conta e desativar. Caso não seja feito, o sistema aplicará uma multa automática de R$ 50,00 e sua carteira será bloqueada.\n\nComo fazer a desativação:\n\nNo PS5: Vá em Configurações > Usuários e Contas > Outros > Compartilhamento do console e jogo offline e desative.\n\nNo PS4: Vá em Configurações > Gerenciamento da conta > Ativar como seu PS4 principal e desative.\n\nMe avise aqui assim que desativar!`;
+    const mensagem = `Olá, ${nome}! Aqui é da locadora *BORA JOGAR!* 🎮\n\nSeu tempo com o jogo *${jogo}* terminou, mas notamos que a conta ainda está ativada como "Principal" no seu console.\n\nComo fazer a desativação:\n\nNo PS5: Vá em Configurações > Usuários e Contas > Outros > Compartilhamento do console e jogo offline e desative.\n\nNo PS4: Vá em Configurações > Gerenciamento da conta > Ativar como seu PS4 principal e desative.\n\nMe avise aqui assim que desativar!`;
     const url = `https://wa.me/${numeroLimpo}?text=${encodeURIComponent(mensagem)}`;
     window.open(url, '_blank');
   };
@@ -2951,23 +3062,24 @@ function App() {
                       💸
                     </div>
                     <h3 className="mb-2 flex items-center gap-2 text-lg font-black tracking-tight text-cyan-400">
-                      💰 Adicionar Saldo via PIX
+                      💰 Adicionar Saldo na Carteira
                     </h3>
                     <p className="mb-4 text-xs leading-relaxed text-zinc-400">
-                      Recarregue sua carteira instantaneamente para alugar jogos sem filas.
+                      Escolha o método de pagamento para alugar seus jogos sem filas.
                     </p>
 
                     {pixPendente ? (
-                      <div className="animate-fade-in z-10 mb-auto mt-auto flex flex-col items-center justify-center rounded-2xl border border-cyan-500/30 bg-zinc-950 p-6 shadow-inner">
+                      <div className="animate-fade-in z-10 mb-auto mt-auto flex flex-col items-center justify-center rounded-2xl border border-emerald-500/30 bg-zinc-950 p-6 shadow-inner">
+                        {/* A imagem do QR Code agora vem da Efí */}
                         <img
-                          src={`data:image/png;base64,${pixPendente.qr_code}`}
-                          alt="QR Code PIX"
+                          src={pixPendente.qr_code}
+                          alt="QR Code PIX Efí"
                           className="mb-4 h-40 w-40 rounded-xl border border-zinc-800 bg-white p-2 shadow-lg"
                         />
                         <p className="mb-4 text-center text-[11px] font-medium leading-relaxed text-zinc-400">
-                          Escaneie o QR Code ou copie o código abaixo.{' '}
-                          <strong className="mt-1 block animate-pulse text-xs font-bold text-cyan-400">
-                            Aguardando pagamento...
+                          Escaneie o QR Code no app do seu banco.{' '}
+                          <strong className="mt-1 block animate-pulse text-xs font-bold text-emerald-400">
+                            Aguardando compensação automática...
                           </strong>
                         </p>
 
@@ -2979,7 +3091,7 @@ function App() {
                             }}
                             className="flex-1 rounded-xl border border-zinc-700 bg-zinc-800 py-3 text-[10px] font-bold uppercase tracking-wide text-white transition-colors hover:bg-zinc-700"
                           >
-                            📋 Copiar Código
+                            📋 Copiar Linha Digitável
                           </button>
                           <button
                             onClick={() => setPixPendente(null)}
@@ -2990,10 +3102,8 @@ function App() {
                         </div>
                       </div>
                     ) : (
-                      <form
-                        onSubmit={solicitarGeracaoPix}
-                        className="relative z-10 mt-auto flex flex-col gap-3"
-                      >
+                      <div className="relative z-10 mt-auto flex flex-col gap-3">
+                        {/* Usamos div em vez de form para podermos ter 2 botões de submit diferentes */}
                         <div>
                           <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-wider text-zinc-500">
                             Valor da Recarga (R$)
@@ -3009,14 +3119,14 @@ function App() {
                               value={valorRecarga}
                               onChange={(e) => setValorRecarga(e.target.value)}
                               className="w-full rounded-xl border border-zinc-800 bg-zinc-950 py-3 pl-12 pr-4 text-base font-black text-white outline-none transition-all focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500"
-                              required
+                              disabled={carregandoGateway}
                             />
                           </div>
                         </div>
 
                         <div>
                           <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-wider text-zinc-500">
-                            Seu CPF (Exigência do Banco Central)
+                            Seu CPF (Exigido pelo Banco Central)
                           </label>
                           <input
                             type="text"
@@ -3025,7 +3135,7 @@ function App() {
                             onChange={(e) => setCpfRecarga(e.target.value)}
                             maxLength="14"
                             className="w-full rounded-xl border border-zinc-800 bg-zinc-950 px-4 py-3 text-sm font-bold text-white placeholder-zinc-600 outline-none transition-all focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500"
-                            required
+                            disabled={carregandoGateway}
                           />
                         </div>
 
@@ -3035,32 +3145,42 @@ function App() {
                           </label>
                           <input
                             type="text"
-                            placeholder="Ex: BORA20"
+                            placeholder="Opcional"
                             value={cupomRecarga}
                             onChange={(e) => setCupomRecarga(e.target.value.toUpperCase())}
-                            className="w-full rounded-xl border border-zinc-800 bg-zinc-950 px-4 py-3 text-sm font-bold uppercase text-white placeholder-zinc-600 outline-none transition-all placeholder:normal-case focus:border-purple-500 focus:ring-2 focus:ring-purple-500"
+                            className="w-full rounded-xl border border-zinc-800 bg-zinc-950 px-4 py-3 text-sm font-bold uppercase text-white placeholder-zinc-600 outline-none transition-all focus:border-purple-500"
+                            disabled={carregandoGateway}
                           />
                         </div>
 
-                        <button
-                          type="submit"
-                          className="mt-1 flex w-full items-center justify-center gap-2 rounded-xl bg-cyan-600 px-6 py-3.5 text-xs font-black uppercase tracking-wider text-white shadow-lg shadow-cyan-600/20 transition-all hover:bg-cyan-500"
-                        >
-                          <span>Gerar PIX</span> <span className="text-base">⚡</span>
-                        </button>
+                        {/* 🚀 ARQUITETURA HÍBRIDA DE BOTÕES */}
+                        <div className="mt-2 flex flex-col gap-3 sm:flex-row">
+                          <button
+                            onClick={solicitarRecargaCartao}
+                            disabled={carregandoGateway}
+                            className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-3.5 text-[11px] font-black uppercase tracking-wider text-white shadow-lg shadow-blue-600/20 transition-all hover:bg-blue-500 disabled:opacity-50"
+                          >
+                            💳 Pagar c/ Cartão (Stripe)
+                          </button>
+
+                          <button
+                            onClick={solicitarRecargaPix}
+                            disabled={carregandoGateway}
+                            className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-3.5 text-[11px] font-black uppercase tracking-wider text-white shadow-lg shadow-emerald-600/20 transition-all hover:bg-emerald-500 disabled:opacity-50"
+                          >
+                            ⚡ Gerar Pix (Zero Taxas)
+                          </button>
+                        </div>
 
                         <div className="mt-3 flex flex-col items-center gap-1 border-t border-zinc-800/50 pt-3 opacity-80">
                           <div className="flex items-center gap-2 text-[9px] font-bold uppercase tracking-widest text-zinc-400">
-                            <span>🔒 Pagamento 100% Seguro</span>
-                            <span className="text-zinc-700">•</span>
-                            <span>🪙 PIX</span>
+                            <span>🔒 Transação Blindada</span>
                           </div>
                           <div className="flex items-center gap-1 text-center text-[9px] font-medium text-zinc-500">
-                            Processado por{' '}
-                            <strong className="text-white">Asaas Instituição de Pagamento</strong>
+                            Infraestrutura de alta disponibilidade gerida por Stripe & Efí S.A.
                           </div>
                         </div>
-                      </form>
+                      </div>
                     )}
                   </section>
 
