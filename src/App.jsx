@@ -432,6 +432,23 @@ function App() {
     }
   };
 
+  const registrarWebhookEfi = () => {
+    mostrarToast('Avisando a Efí sobre nosso servidor...', 'aviso');
+    fetch('https://borajogar-api.onrender.com/admin/registrar-webhook-efi', {
+      headers: getAuthHeaders(),
+    })
+      .then(async (res) => {
+        const data = await res.json();
+        if (res.ok) {
+          mostrarToast('✅ Conexão Webhook Efí selada com sucesso!', 'sucesso');
+          console.log('Resposta Efí:', data);
+        } else {
+          mostrarToast(`Erro Efí: ${data.detail}`, 'erro');
+        }
+      })
+      .catch(() => mostrarToast('Erro de conexão com o Render.', 'erro'));
+  };
+
   const solicitarRecargaPix = async (e) => {
     e.preventDefault();
     const valorReal = parseFloat(valorRecarga);
@@ -3072,7 +3089,7 @@ function App() {
                       <div className="animate-fade-in z-10 mb-auto mt-auto flex flex-col items-center justify-center rounded-2xl border border-emerald-500/30 bg-zinc-950 p-6 shadow-inner">
                         {/* A imagem do QR Code agora vem da Efí */}
                         <img
-                          src={pixPendente.qr_code}
+                          src={`data:image/png;base64,${pixPendente.qr_code}`}
                           alt="QR Code PIX Efí"
                           className="mb-4 h-40 w-40 rounded-xl border border-zinc-800 bg-white p-2 shadow-lg"
                         />
@@ -4213,9 +4230,17 @@ function App() {
 
             {abaAtual === 'admin' && usuarioLogado.is_admin && (
               <div className="animate-fade-in mx-auto mt-2 max-w-6xl">
-                <h2 className="mb-8 text-2xl font-black tracking-tight text-white md:text-3xl">
-                  Administração do Sistema
-                </h2>
+                <div className="mb-8 flex flex-col justify-between gap-4 md:flex-row md:items-center">
+                  <h2 className="text-2xl font-black tracking-tight text-white md:text-3xl">
+                    Administração do Sistema
+                  </h2>
+                  <button
+                    onClick={registrarWebhookEfi}
+                    className="rounded-xl bg-emerald-600 px-6 py-3 text-xs font-bold uppercase tracking-wider text-white shadow-lg transition-all hover:bg-emerald-500"
+                  >
+                    🔗 Registrar Webhook Efí
+                  </button>
+                </div>
                 {/* 📊 BLOCOS ESTATISTICAS DO SISTEMA */}
                 <div className="mb-4 flex justify-end">
                   <select
