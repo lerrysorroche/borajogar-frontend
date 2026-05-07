@@ -247,6 +247,44 @@ function App() {
     return () => clearInterval(intervalId);
   }, [pixPendente]);
 
+  // NOVO EFFECT: Lê os parâmetros da URL quando o cliente volta da Stripe
+  useEffect(() => {
+    // Pega as informações invisíveis na URL
+    const params = new URLSearchParams(window.location.search);
+    const aba = params.get('aba');
+    const stripeSession = params.get('stripe_session');
+    const stripeCancelado = params.get('stripe_cancelado');
+
+    // Se a Stripe mandou abrir o dashboard, a gente abre!
+    if (aba) {
+      setAbaAtual(aba);
+      // Limpa a URL do navegador para o usuário não ver os códigos feios
+      window.history.replaceState(null, '', window.location.pathname);
+    }
+
+    if (stripeCancelado) {
+      mostrarToast('Operação de pagamento com cartão cancelada.', 'aviso');
+    }
+
+    // Se a Stripe devolveu o cliente com sucesso, vamos bater no nosso novo Fallback
+    if (stripeSession) {
+      mostrarToast('Verificando seu pagamento na Stripe...', 'aviso');
+
+      fetch(`https://borajogar-api.onrender.com/recarga/status-stripe/${stripeSession}`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.status === 'PAGO') {
+            mostrarToast('✅ Pagamento Confirmado! Saldo atualizado com sucesso.', 'sucesso');
+            carregarDados(); // Puxa o saldo atualizado
+          } else {
+            // Se por acaso a Stripe atrasar, tentamos de novo em 5 segundos
+            setTimeout(() => carregarDados(), 5000);
+          }
+        })
+        .catch(() => console.error('Falha ao checar Stripe'));
+    }
+  }, []);
+
   useEffect(() => {
     const urls = configSistema.banners_url
       ? configSistema.banners_url
