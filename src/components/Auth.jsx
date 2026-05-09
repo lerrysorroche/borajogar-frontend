@@ -30,9 +30,31 @@ export default function Auth({
   const subtitleCyberClass =
     'text-[11px] font-mono-tech font-bold text-center mb-10 tracking-[0.2em] uppercase bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent animate-neon-flicker block select-none';
 
+  // ==================================================================
+  // MÁSCARA INTELIGENTE DE WHATSAPP (DD) XXXXX-XXXX
+  // ==================================================================
+  const handleTelefoneChange = (e) => {
+    let valor = e.target.value.replace(/\D/g, ''); // Arranca letras e símbolos
+    if (valor.length > 11) valor = valor.slice(0, 11); // Trava em 11 números
+
+    // Aplica a formatação visual
+    if (valor.length > 10) {
+      valor = valor.replace(/^(\d{2})(\d{5})(\d{4}).*/, '($1) $2-$3');
+    } else if (valor.length > 6) {
+      valor = valor.replace(/^(\d{2})(\d{4})(\d{0,4}).*/, '($1) $2-$3');
+    } else if (valor.length > 2) {
+      valor = valor.replace(/^(\d{2})(\d{0,5})/, '($1) $2');
+    } else if (valor.length > 0) {
+      valor = valor.replace(/^(\d{0,2})/, '($1');
+    }
+
+    setCadTelefone(valor);
+  };
+
   const registrarConta = (e) => {
     e.preventDefault();
 
+    // 1. Validação de Senha Criptografada
     if (cadSenha !== cadSenhaConfirmacao) {
       mostrarToast('As senhas não coincidem. Digite novamente.', 'erro');
       return;
@@ -47,6 +69,13 @@ export default function Auth({
       return;
     }
 
+    // 2. Validação Rigorosa de Telefone (Gargalo de Negócio)
+    const telefoneLimpo = cadTelefone.replace(/\D/g, '');
+    if (telefoneLimpo.length < 10) {
+      mostrarToast('Por favor, informe um número de WhatsApp válido com o DDD.', 'erro');
+      return;
+    }
+
     fetch('https://borajogar-api.onrender.com/usuarios', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -54,7 +83,7 @@ export default function Auth({
         nome: cadNome,
         email: cadEmail,
         senha: cadSenha,
-        telefone: cadTelefone,
+        telefone: telefoneLimpo, // Enviamos limpo para o banco de dados
         codigo_indicacao: cadCodigoConvite,
       }),
     }).then(async (res) => {
@@ -216,11 +245,13 @@ export default function Auth({
               className={inputClass}
               required
             />
+
+            {/* O Campo Blindado */}
             <input
               type="text"
-              placeholder="WhatsApp (DDD+Número)"
+              placeholder="WhatsApp com DDD"
               value={cadTelefone}
-              onChange={(e) => setCadTelefone(e.target.value)}
+              onChange={handleTelefoneChange}
               className={inputClass}
               required
             />
