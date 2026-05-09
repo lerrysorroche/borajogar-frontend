@@ -95,12 +95,26 @@ export default function Auth({
   };
 
   const finalizarCadastroGoogle = (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
+    console.log('👉 Botão Concluir clicado!');
+
     const telLimpo = telefoneGoogle.replace(/\D/g, '');
+    console.log('👉 Telefone digitado:', telLimpo);
+
     if (telLimpo.length < 10) {
-      mostrarToast('Por favor, informe um WhatsApp válido.', 'erro');
+      console.log('❌ Bloqueado: Telefone muito curto.');
+      mostrarToast('Por favor, informe um WhatsApp válido com o DDD.', 'erro');
       return;
     }
+
+    if (!dadosGoogleTemp) {
+      console.log('❌ Bloqueado: Perdeu os dados do Google da memória.');
+      mostrarToast('Sessão expirada. Volte e clique em Entrar com Google novamente.', 'erro');
+      setPedindoTelefoneGoogle(false);
+      return;
+    }
+
+    console.log('✅ Tudo certo! Disparando para o Backend...');
     enviarGoogleParaBackend(dadosGoogleTemp.email, dadosGoogleTemp.nome, telLimpo);
   };
 
@@ -217,7 +231,8 @@ export default function Auth({
               required
             />
             <button
-              type="submit"
+              type="button"
+              onClick={finalizarCadastroGoogle}
               className="w-full rounded-xl bg-emerald-600 py-4 text-sm font-bold uppercase tracking-wide text-white shadow-lg transition-all hover:bg-emerald-500"
             >
               Concluir Cadastro
