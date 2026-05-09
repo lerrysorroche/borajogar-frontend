@@ -91,6 +91,8 @@ export default function Auth({
       setDadosGoogleTemp({ email: user.email, nome: user.displayName });
       enviarGoogleParaBackend(user.email, user.displayName, '');
     } catch (error) {
+      // 👇 ESSA LINHA É NOVA 👇
+      console.error('ERRO DO FIREBASE:', error.code, error.message);
       mostrarToast('Login com Google cancelado ou falhou.', 'erro');
     }
   };
