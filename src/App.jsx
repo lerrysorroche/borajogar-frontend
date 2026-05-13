@@ -995,7 +995,7 @@ function App() {
 
   const cadastrarConta = (e) => {
     e.preventDefault();
-    fetch('https://borajogar-api.onrender.com/contas', {
+    fetch('https://borajogar-api.onrender.com/admin/contas', {
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify({
