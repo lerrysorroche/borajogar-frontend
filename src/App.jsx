@@ -71,6 +71,10 @@ function App() {
     valor_por_dia: 2.0,
     anuncio_ativo: false,
     mensagem_anuncio: '',
+    banners_url: '',
+    enquete_titulo: 'Próximas Adições: Você Decide!',
+    enquete_subtitulo:
+      'Vote no jogo que você mais quer ver no catálogo e ajude a BORA JOGAR! a crescer.',
   });
   const [estatisticasAdmin, setEstatisticasAdmin] = useState({
     faturamento: 0,
@@ -2241,11 +2245,11 @@ function App() {
                   <div className="animate-fade-in relative mb-12 overflow-hidden rounded-3xl border border-zinc-800 bg-zinc-900/40 p-6 shadow-xl md:p-8">
                     <div className="absolute left-0 top-0 h-full w-1 bg-gradient-to-b from-fuchsia-500 to-blue-500"></div>
                     <h3 className="mb-2 text-xl font-black uppercase tracking-tight text-white md:text-2xl">
-                      Próximas Adições: Você Decide!
+                      {configSistema.enquete_titulo || 'Próximas Adições: Você Decide!'}
                     </h3>
                     <p className="mb-6 text-sm font-medium text-zinc-400">
-                      Vote no jogo que você mais quer ver no catálogo e ajude a BORA JOGAR! a
-                      crescer.
+                      {configSistema.enquete_subtitulo ||
+                        'Vote no jogo que você mais quer ver no catálogo e ajude a BORA JOGAR! a crescer.'}
                     </p>
 
                     <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
@@ -3459,6 +3463,38 @@ function App() {
                             })
                           }
                           className={`${adminInputClass} h-24 resize-none border-zinc-700 bg-zinc-950 text-sm focus:ring-orange-500`}
+                        />
+                      </div>
+
+                      <div className="mt-8 border-t border-zinc-800/50 pt-6">
+                        <h4 className="text-base font-bold tracking-tight text-white">
+                          📊 Textos da Enquete
+                        </h4>
+                        <p className="mb-4 mt-1 text-xs font-medium text-zinc-400">
+                          Personalize as frases que aparecem na votação dos jogos.
+                        </p>
+                        <input
+                          type="text"
+                          placeholder="Título (ex: Próximas Adições: Você Decide!)"
+                          value={configSistema.enquete_titulo || ''}
+                          onChange={(e) =>
+                            setConfigSistema({
+                              ...configSistema,
+                              enquete_titulo: e.target.value,
+                            })
+                          }
+                          className={`${adminInputClass} mb-3 border-zinc-700 bg-zinc-950 focus:ring-orange-500`}
+                        />
+                        <textarea
+                          placeholder="Subtítulo..."
+                          value={configSistema.enquete_subtitulo || ''}
+                          onChange={(e) =>
+                            setConfigSistema({
+                              ...configSistema,
+                              enquete_subtitulo: e.target.value,
+                            })
+                          }
+                          className={`${adminInputClass} h-16 resize-none border-zinc-700 bg-zinc-950 text-sm focus:ring-orange-500`}
                         />
                       </div>
 
