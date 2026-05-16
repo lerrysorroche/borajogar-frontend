@@ -2125,7 +2125,7 @@ function App() {
                 <div className="mb-12 grid grid-cols-1 gap-6 md:grid-cols-3">
                   {/* BLOCO 1: INSTAGRAM */}
                   <a
-                    href="hhttps://www.instagram.com/locadoraborajogar/"
+                    href="https://www.instagram.com/locadoraborajogar/"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="group relative flex h-full flex-col justify-center overflow-hidden rounded-3xl border border-fuchsia-500/30 bg-gradient-to-br from-fuchsia-600/20 via-pink-600/10 to-orange-500/10 p-4 shadow-lg shadow-fuchsia-500/5 transition-all duration-300 hover:-translate-y-1 hover:border-fuchsia-500/60 hover:shadow-[0_0_25px_rgba(217,70,239,0.2)] md:p-5"
@@ -2144,7 +2144,8 @@ function App() {
                           Siga a BORA JOGAR!
                         </h3>
                         <p className="text-[11px] font-medium leading-relaxed text-zinc-400">
-                          Veja o que os clientes dizem, ganhe cupons e ajude a crescer.
+                          Veja o que os clientes estão dizendo, fique por dentro de promoções, ganhe
+                          cupons e ajude a locadora a crescer.
                         </p>
                       </div>
                     </div>
@@ -2169,7 +2170,8 @@ function App() {
                           Fale com a Gente
                         </h3>
                         <p className="text-[11px] font-medium leading-relaxed text-zinc-400">
-                          Dúvidas, sugestões ou bate-papo? Entre em contato e vamos conversar.
+                          Estamos apenas começando! Quer indicar um jogo, tirar uma dúvida ou
+                          papear? Entre em contato agora.
                         </p>
                       </div>
                     </div>
@@ -2194,7 +2196,7 @@ function App() {
                           Indique e Ganhe
                         </h3>
                         <p className="text-[11px] font-medium leading-relaxed text-zinc-400">
-                          Traga seus amigos e ganhe{' '}
+                          Traga seus amigos para a locadora e ganhe{' '}
                           <strong className="text-cyan-400">10% de Cashback</strong> direto na
                           carteira!
                         </p>
