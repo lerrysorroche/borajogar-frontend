@@ -2144,8 +2144,8 @@ function App() {
                           Siga a BORA JOGAR!
                         </h3>
                         <p className="text-[11px] font-medium leading-relaxed text-zinc-400">
-                          Veja o que os clientes estão dizendo, fique por dentro de promoções, ganhe
-                          cupons e ajude a locadora a crescer.
+                          Veja o que os clientes estão dizendo, ganhe cupons e ajude a locadora a
+                          crescer.
                         </p>
                       </div>
                     </div>
@@ -2170,8 +2170,7 @@ function App() {
                           Fale com a Gente
                         </h3>
                         <p className="text-[11px] font-medium leading-relaxed text-zinc-400">
-                          Estamos apenas começando! Quer indicar um jogo, tirar uma dúvida ou
-                          papear? Entre em contato agora.
+                          Quer indicar um jogo, tirar uma dúvida ou papear? Entre em contato agora.
                         </p>
                       </div>
                     </div>
