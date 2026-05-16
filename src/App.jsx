@@ -2179,8 +2179,14 @@ function App() {
                   {/* BLOCO 3: CLUBE DE VANTAGENS */}
                   <div
                     onClick={() => {
-                      setAbaAtual('login');
-                      setModoLogin(false);
+                      if (!usuarioLogado) {
+                        // Se não estiver logado, manda pro Cadastro
+                        setAbaAtual('login');
+                        setModoLogin(false);
+                      } else {
+                        // Se estiver logado, manda pro Dashboard (Meus Acessos)
+                        setAbaAtual('dashboard');
+                      }
                       window.scrollTo(0, 0);
                     }}
                     className="group relative flex h-full cursor-pointer flex-col justify-center overflow-hidden rounded-3xl border border-blue-500/30 bg-gradient-to-br from-blue-600/20 to-purple-900/10 p-4 shadow-lg shadow-blue-500/5 transition-all duration-300 hover:-translate-y-1 hover:border-blue-500/60 hover:shadow-[0_0_25px_rgba(59,130,246,0.2)] md:p-5"
