@@ -2125,7 +2125,7 @@ function App() {
                 <div className="mb-12 grid grid-cols-1 gap-6 md:grid-cols-3">
                   {/* BLOCO 1: INSTAGRAM */}
                   <a
-                    href="https://instagram.com/SEU_USUARIO"
+                    href="hhttps://www.instagram.com/locadoraborajogar/"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="group relative flex h-full flex-col justify-center overflow-hidden rounded-3xl border border-fuchsia-500/30 bg-gradient-to-br from-fuchsia-600/20 via-pink-600/10 to-orange-500/10 p-4 shadow-lg shadow-fuchsia-500/5 transition-all duration-300 hover:-translate-y-1 hover:border-fuchsia-500/60 hover:shadow-[0_0_25px_rgba(217,70,239,0.2)] md:p-5"
