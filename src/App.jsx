@@ -59,6 +59,8 @@ function App() {
   const [extrato, setExtrato] = useState([]);
   const [notificacoes, setNotificacoes] = useState([]);
 
+  const [modalDevolucao, setModalDevolucao] = useState(null);
+
   const [enqueteOpcoes, setEnqueteOpcoes] = useState([]);
   const [meuVoto, setMeuVoto] = useState(null);
   const [novaOpcaoEnqueteTitulo, setNovaOpcaoEnqueteTitulo] = useState('');
@@ -540,33 +542,33 @@ function App() {
     });
   };
 
-  const devolverAntecipado = (locacaoId, dataFim) => {
-    const horasRestantes = (new Date(dataFim) - new Date()) / (1000 * 60 * 60);
-    const diasRestantes = Math.floor(horasRestantes / 24);
-    let msg = 'Atenção: Tem certeza que deseja devolver este jogo agora e encerrar seu acesso?';
-    if (diasRestantes > 0) {
-      msg += `\n\n🎁 Você receberá um cashback de R$ ${(diasRestantes * configSistema.valor_por_dia).toFixed(2)} direto na sua carteira assim que o Admin verificar sua conta!`;
-    } else {
-      msg += '\n\n⚠️ Faltam menos de 24h para o fim do prazo, não haverá cashback.';
-    }
-    if (window.confirm(msg)) {
-      fetch('https://borajogar-api.onrender.com/devolver', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          locacao_id: locacaoId,
-          utilizador_id: usuarioLogado.id,
-        }),
-      }).then(async (res) => {
-        const data = await res.json();
-        if (res.ok) {
-          mostrarToast(data.mensagem, 'sucesso');
-          carregarDados();
-        } else {
-          mostrarToast(data.detail, 'erro');
-        }
-      });
-    }
+  const abrirModalDevolucao = (locacaoId, dataFim) => {
+    setModalDevolucao({ locacaoId, dataFim });
+  };
+
+  const confirmarDevolucao = () => {
+    if (!modalDevolucao) return;
+
+    fetch('https://borajogar-api.onrender.com/devolver', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        locacao_id: modalDevolucao.locacaoId,
+        utilizador_id: usuarioLogado.id,
+      }),
+    }).then(async (res) => {
+      const data = await res.json();
+      if (res.ok) {
+        mostrarToast(
+          'Devolução iniciada! A recompensa cairá na sua carteira após a nossa verificação.',
+          'sucesso',
+        );
+        carregarDados();
+        setModalDevolucao(null);
+      } else {
+        mostrarToast(data.detail, 'erro');
+      }
+    });
   };
 
   const gerarCodigo2FA = async (locacaoId) => {
@@ -1791,6 +1793,84 @@ function App() {
                       className={`flex-1 rounded-xl py-3 text-xs font-bold uppercase tracking-wide text-white shadow-lg transition-all ${!temSaldo ? 'cursor-not-allowed bg-zinc-600 opacity-50' : modalConfirmacao.tipo === 'aluguel' ? 'bg-blue-600 shadow-blue-600/20 hover:bg-blue-500' : 'bg-amber-600 shadow-amber-600/20 hover:bg-amber-500'}`}
                     >
                       {temSaldo ? 'Confirmar' : 'Sem Saldo'}
+                    </button>
+                  </div>
+                </>
+              );
+            })()}
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* MODAL DE DEVOLUÇÃO GAMIFICADA E INSTRUÇÕES                                */}
+      {/* ========================================================================= */}
+      {modalDevolucao && (
+        <div className="animate-fade-in fixed inset-0 z-[250] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
+          <div className="custom-scrollbar max-h-[90vh] w-full max-w-xl overflow-y-auto rounded-3xl border border-emerald-500/30 bg-gradient-to-br from-emerald-900/20 to-zinc-900 p-6 shadow-2xl shadow-emerald-500/10 md:p-8">
+            <h3 className="mb-2 flex items-center gap-3 text-xl font-black tracking-tight text-emerald-400">
+              ♻️ Devolução Premium
+            </h3>
+
+            {(() => {
+              const horasRestantes =
+                (new Date(modalDevolucao.dataFim) - new Date()) / (1000 * 60 * 60);
+              const diasAntecipados = Math.max(0, Math.floor(horasRestantes / 24));
+              const valorRecompensa = 2.0 + diasAntecipados * 2.0;
+
+              return (
+                <>
+                  <p className="mb-6 text-sm font-medium leading-relaxed text-zinc-300">
+                    Siga o passo a passo abaixo para devolver a conta corretamente e faturar{' '}
+                    <strong className="text-emerald-400">
+                      R$ {valorRecompensa.toFixed(2)} de recompensa
+                    </strong>{' '}
+                    direto na sua carteira!
+                  </p>
+
+                  <div className="mb-6 space-y-4 rounded-2xl border border-zinc-800 bg-black/50 p-5">
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-500">
+                      Como desativar a conta:
+                    </h4>
+
+                    <div className="space-y-3 text-sm text-zinc-300">
+                      <p>
+                        <strong className="text-white">🎮 No PS5:</strong> Vá em Configurações &gt;
+                        Usuários e Contas &gt; Outros &gt; Compartilhamento do console... &gt;{' '}
+                        <strong className="text-rose-400">Desabilitar</strong>.
+                      </p>
+                      <div className="h-px w-full bg-zinc-800"></div>
+                      <p>
+                        <strong className="text-white">🎮 No PS4:</strong> Vá em Configurações &gt;
+                        Gerenciamento da conta &gt;{' '}
+                        <strong className="text-rose-400">Desativar</strong> como seu PS4 principal.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="mb-8 rounded-2xl border border-rose-500/30 bg-rose-950/30 p-5 text-center">
+                    <span className="mb-2 block text-3xl">🛑</span>
+                    <h4 className="mb-1 text-sm font-black uppercase text-rose-400">
+                      Você já desativou a conta no console?
+                    </h4>
+                    <p className="text-xs text-zinc-400">
+                      Se você confirmar sem ter desativado, o sistema aplicará uma multa na sua
+                      carteira em vez da recompensa.
+                    </p>
+                  </div>
+
+                  <div className="flex flex-col gap-3 sm:flex-row">
+                    <button
+                      onClick={() => setModalDevolucao(null)}
+                      className="flex-1 rounded-xl bg-zinc-800 py-3.5 text-xs font-bold uppercase tracking-wide text-zinc-300 transition-colors hover:bg-zinc-700 hover:text-white"
+                    >
+                      Ainda não, vou desativar
+                    </button>
+                    <button
+                      onClick={confirmarDevolucao}
+                      className="flex-1 rounded-xl bg-emerald-600 py-3.5 text-xs font-bold uppercase tracking-wide text-white shadow-lg shadow-emerald-600/20 transition-colors hover:bg-emerald-500"
+                    >
+                      ✅ Sim, já desativei e quero devolver
                     </button>
                   </div>
                 </>
@@ -3108,23 +3188,12 @@ function App() {
                                   {new Date(item.data_fim).toLocaleString()}
                                 </span>
                               </div>
-                              {(() => {
-                                const jogoDetalhes = jogos.find((j) => j.titulo === item.jogo);
-                                const temFila = jogoDetalhes && jogoDetalhes.tamanho_fila > 0;
-                                if (temFila) {
-                                  return (
-                                    <button
-                                      onClick={() =>
-                                        devolverAntecipado(item.locacao_id, item.data_fim)
-                                      }
-                                      className="animate-fade-in flex w-full items-center justify-center gap-2 rounded-xl border border-emerald-500/30 bg-emerald-900/40 px-8 py-3.5 text-xs font-bold uppercase tracking-wider text-emerald-400 shadow-lg transition-all hover:bg-emerald-600 hover:text-white sm:w-auto"
-                                    >
-                                      ♻️ Devolver (Cashback Ativo)
-                                    </button>
-                                  );
-                                }
-                                return null;
-                              })()}
+                              <button
+                                onClick={() => abrirModalDevolucao(item.locacao_id, item.data_fim)}
+                                className="animate-fade-in flex w-full items-center justify-center gap-2 rounded-xl border border-emerald-500/30 bg-emerald-900/40 px-8 py-3.5 text-xs font-bold uppercase tracking-wider text-emerald-400 shadow-lg transition-all hover:bg-emerald-600 hover:text-white sm:w-auto"
+                              >
+                                ♻️ Devolver e Ganhar Saldo
+                              </button>
                             </div>
 
                             <details className="group/tut mt-6 overflow-hidden rounded-2xl border border-emerald-500/40 bg-gradient-to-r from-emerald-900/30 to-zinc-900 shadow-[0_0_20px_rgba(16,185,129,0.2)] transition-all duration-300 hover:shadow-[0_0_30px_rgba(16,185,129,0.3)] [&_summary::-webkit-details-marker]:hidden">
