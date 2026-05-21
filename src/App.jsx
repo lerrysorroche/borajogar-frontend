@@ -3190,22 +3190,23 @@ function App() {
                               </div>
                               <button
                                 onClick={() => abrirModalDevolucao(item.locacao_id, item.data_fim)}
-                                className="animate-fade-in flex w-full items-center justify-center gap-2 rounded-xl border border-emerald-500/30 bg-emerald-900/40 px-8 py-3.5 text-xs font-bold uppercase tracking-wider text-emerald-400 shadow-lg transition-all hover:bg-emerald-600 hover:text-white sm:w-auto"
+                                className="animate-fade-in flex w-full items-center justify-center gap-2 rounded-xl border border-fuchsia-400/50 bg-gradient-to-r from-fuchsia-600 to-purple-600 px-8 py-3.5 text-xs font-bold uppercase tracking-wider text-white shadow-[0_0_15px_rgba(192,38,211,0.4)] transition-all hover:scale-[1.02] hover:shadow-[0_0_25px_rgba(192,38,211,0.6)] sm:w-auto"
                               >
                                 ♻️ Devolver e Ganhar Saldo
                               </button>
                             </div>
 
-                            <details className="group/tut mt-6 overflow-hidden rounded-2xl border border-emerald-500/40 bg-gradient-to-r from-emerald-900/30 to-zinc-900 shadow-[0_0_20px_rgba(16,185,129,0.2)] transition-all duration-300 hover:shadow-[0_0_30px_rgba(16,185,129,0.3)] [&_summary::-webkit-details-marker]:hidden">
-                              <summary className="flex cursor-pointer select-none items-center justify-between p-5 text-xs font-black uppercase tracking-wider text-emerald-400 transition-colors hover:bg-emerald-900/30 md:text-sm">
-                                <span className="animate-pulse-slow flex items-center gap-2">
-                                  📖 PASSO A PASSO DE COMO ENTRAR NA CONTA E JOGAR (PS4/PS5)
+                            <details className="group/tut mt-6 overflow-hidden rounded-2xl border border-zinc-700/50 bg-zinc-900/50 transition-all duration-300 hover:border-zinc-600 [&_summary::-webkit-details-marker]:hidden">
+                              <summary className="flex cursor-pointer select-none items-center justify-between p-5 text-xs font-black uppercase tracking-wider text-zinc-400 transition-colors hover:bg-zinc-800/50 md:text-sm">
+                                <span className="flex items-center gap-2">
+                                  📖 TUTORIAL: Passo a passo de como entrar na conta e jogar
+                                  (PS4/PS5)
                                 </span>
                                 <span className="transition duration-300 group-open/tut:-rotate-180">
                                   ▼
                                 </span>
                               </summary>
-                              <div className="space-y-5 border-t border-emerald-500/30 bg-black/60 p-5 text-xs text-zinc-300 md:p-8">
+                              <div className="space-y-5 border-t border-zinc-700/50 bg-black/40 p-5 text-xs text-zinc-300 md:p-8">
                                 <p className="mb-4 flex items-center gap-3 border-b border-rose-500/30 pb-4 text-sm font-black uppercase tracking-wider text-rose-400">
                                   <span className="animate-pulse text-xl">⚠️</span> ATENÇÃO: NUNCA
                                   ENTRE COMO CONVIDADO!
