@@ -1374,10 +1374,7 @@ function App() {
         .map((u) => u.trim())
         .filter((u) => u)
     : [];
-  const currentBanner =
-    bannerUrls.length > 0
-      ? bannerUrls[indiceBanner]
-      : 'https://cinesiageek.com.br/wp-content/uploads/2024/09/playstation5.jpeg';
+  const currentBanner = bannerUrls.length > 0 ? bannerUrls[indiceBanner] : '/banner-padrao.jpg';
 
   return (
     <div className="relative min-h-screen overflow-x-hidden bg-zinc-950 pb-10 font-sans text-zinc-300 antialiased">
