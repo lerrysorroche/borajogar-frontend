@@ -97,6 +97,9 @@ function App() {
   const [novoJogoNota, setNovoJogoNota] = useState('');
   const [novoJogoDataLancamento, setNovoJogoDataLancamento] = useState('');
 
+  const [novidades, setNovidades] = useState([]);
+  const [novoJogoRecomendacao, setNovoJogoRecomendacao] = useState(false);
+
   const [novaContaJogoId, setNovaContaJogoId] = useState('');
   const [novaContaEmail, setNovaContaEmail] = useState('');
   const [novaContaSenha, setNovaContaSenha] = useState('');
@@ -754,6 +757,10 @@ function App() {
       .then((res) => (res.ok ? res.json() : {}))
       .then((dados) => setConfigSistema(dados));
 
+    fetch('https://borajogar-api.onrender.com/jogos/novidades')
+      .then((res) => (res.ok ? res.json() : []))
+      .then((dados) => setNovidades(Array.isArray(dados) ? dados : []));
+
     let urlEnquete = 'https://borajogar-api.onrender.com/enquete';
     if (usuarioLogado && usuarioLogado.id) urlEnquete += `?usuario_id=${usuarioLogado.id}`;
     fetch(urlEnquete)
@@ -920,6 +927,7 @@ function App() {
         tempo_jogo: novoJogoTempo,
         nota: parseFloat(novoJogoNota) || 0,
         data_lancamento: novoJogoDataLancamento || null,
+        recomendacao_cliente: novoJogoRecomendacao,
       }),
     }).then((res) => {
       if (res.ok) {
@@ -933,6 +941,7 @@ function App() {
         setNovoJogoTempo('');
         setNovoJogoNota('');
         setNovoJogoDataLancamento('');
+        setNovoJogoRecomendacao(false);
       } else {
         mostrarToast('Erro ao cadastrar.', 'erro');
       }
@@ -2418,6 +2427,55 @@ function App() {
                 {/* =========================================================
                     5. ZONA DE CONSUMO: VITRINE E PAGINAÇÃO
                 ========================================================== */}
+                {/* =========================================================
+                    🌟 NOVIDADES DA LOCADORA (5 JOGOS)
+                ========================================================== */}
+                {novidades.length > 0 && (
+                  <div className="animate-fade-in mb-12">
+                    <h3 className="mb-6 flex items-center gap-3 text-xl font-black uppercase tracking-tight text-white md:text-2xl">
+                      🌟 Novidades que chegaram à locadora
+                    </h3>
+
+                    <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+                      {novidades.map((novidade) => (
+                        <div
+                          key={`nov-${novidade.id}`}
+                          className="group relative flex flex-col overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900/50 shadow-lg transition-all duration-300 hover:-translate-y-1 hover:border-blue-500/50"
+                        >
+                          {/* Quadrado da Imagem */}
+                          <div className="relative aspect-square w-full overflow-hidden bg-zinc-800">
+                            {novidade.url_imagem ? (
+                              <img
+                                src={novidade.url_imagem}
+                                alt={novidade.titulo}
+                                className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+                              />
+                            ) : (
+                              <div className="flex h-full w-full items-center justify-center bg-zinc-800/80">
+                                <span className="text-4xl opacity-50">🎮</span>
+                              </div>
+                            )}
+
+                            {/* Etiqueta Amarelo Neon de Recomendação */}
+                            {novidade.recomendacao_cliente && (
+                              <div className="absolute right-2 top-2 z-10 rounded-lg bg-yellow-400 px-2 py-1 text-[9px] font-black uppercase tracking-wider text-zinc-900 shadow-[0_0_15px_rgba(250,204,21,0.8)]">
+                                💡 Recomendação
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Título embaixo da imagem */}
+                          <div className="flex flex-1 items-center justify-center p-3 text-center">
+                            <h4 className="line-clamp-2 text-xs font-bold leading-tight tracking-tight text-zinc-300 group-hover:text-white">
+                              {novidade.titulo}
+                            </h4>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 {carregandoJogos && (
                   <div className="animate-fade-in mb-8 flex flex-col items-center justify-center rounded-3xl border border-zinc-800 bg-zinc-900/50 py-20 text-center shadow-xl">
                     <div className="mb-6 h-16 w-16 animate-spin rounded-full border-4 border-blue-500/20 border-t-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.5)]"></div>
@@ -3984,6 +4042,26 @@ function App() {
                         className={`${adminInputClass} h-24 resize-none`}
                         required
                       />
+
+                      <label className="flex w-max cursor-pointer items-center gap-3 rounded-xl border border-zinc-800 bg-zinc-950 px-4 py-3 transition-colors hover:border-yellow-500/50">
+                        <input
+                          type="checkbox"
+                          checked={novoJogoRecomendacao}
+                          onChange={(e) => setNovoJogoRecomendacao(e.target.checked)}
+                          className="h-4 w-4 rounded border-zinc-700 bg-zinc-900 text-yellow-500 focus:ring-yellow-500 focus:ring-offset-zinc-950"
+                        />
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">
+                          Jogo recomendado por cliente?
+                        </span>
+                      </label>
+
+                      <button
+                        type="submit"
+                        className="mt-auto w-full rounded-xl bg-blue-600 py-4 text-xs font-bold uppercase tracking-wider text-white shadow-lg shadow-blue-500/20 transition-colors hover:bg-blue-500"
+                      >
+                        Salvar no Catálogo
+                      </button>
+
                       <button
                         type="submit"
                         className="mt-auto w-full rounded-xl bg-blue-600 py-4 text-xs font-bold uppercase tracking-wider text-white shadow-lg shadow-blue-500/20 transition-colors hover:bg-blue-500"
