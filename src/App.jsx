@@ -650,6 +650,31 @@ function App() {
     }
   };
 
+  const buscarImagemEnquete = async () => {
+    if (!novaOpcaoEnqueteTitulo) {
+      mostrarToast('Digite o título do jogo para buscar a imagem!', 'aviso');
+      return;
+    }
+    const RAWG_API_KEY = '8638e63fc8cf45459e0fb1cf9db3de42';
+    try {
+      mostrarToast('Procurando capa oficial na RAWG...', 'aviso');
+      const resBusca = await fetch(
+        `https://api.rawg.io/api/games?key=${RAWG_API_KEY}&search=${encodeURIComponent(novaOpcaoEnqueteTitulo)}&page_size=1`,
+      );
+      const dadosBusca = await resBusca.json();
+
+      if (dadosBusca.results && dadosBusca.results.length > 0) {
+        const jogoEncontrado = dadosBusca.results[0];
+        setNovaOpcaoEnqueteImagem(jogoEncontrado.background_image || '');
+        mostrarToast('Capa encontrada e preenchida com sucesso!', 'sucesso');
+      } else {
+        mostrarToast('Jogo não encontrado na base de dados.', 'erro');
+      }
+    } catch (erro) {
+      mostrarToast('Erro ao conectar com a API RAWG.', 'erro');
+    }
+  };
+
   const sair = () => {
     setUsuarioLogado(null);
     setAbaAtual('vitrine');
@@ -3625,22 +3650,35 @@ function App() {
                           <h4 className="mb-2 text-sm font-bold tracking-tight text-white">
                             Adicionar Opção (Máx. Recomendado: 5)
                           </h4>
-                          <input
-                            type="text"
-                            placeholder="Título do Jogo"
-                            value={novaOpcaoEnqueteTitulo}
-                            onChange={(e) => setNovaOpcaoEnqueteTitulo(e.target.value)}
-                            className={adminInputClass}
-                            required
-                          />
+
+                          {/* Novo layout com botão Buscar lado a lado */}
+                          <div className="flex gap-3">
+                            <input
+                              type="text"
+                              placeholder="Título do Jogo"
+                              value={novaOpcaoEnqueteTitulo}
+                              onChange={(e) => setNovaOpcaoEnqueteTitulo(e.target.value)}
+                              className={adminInputClass}
+                              required
+                            />
+                            <button
+                              type="button"
+                              onClick={buscarImagemEnquete}
+                              className="whitespace-nowrap rounded-xl bg-amber-500 px-5 text-[10px] font-bold uppercase tracking-wider text-zinc-900 shadow-lg shadow-amber-500/20 transition-colors hover:bg-amber-400"
+                            >
+                              ✨ Buscar
+                            </button>
+                          </div>
+
                           <input
                             type="url"
-                            placeholder="URL da Capa"
+                            placeholder="URL da Capa (Preenchimento Automático)"
                             value={novaOpcaoEnqueteImagem}
                             onChange={(e) => setNovaOpcaoEnqueteImagem(e.target.value)}
                             className={adminInputClass}
                             required
                           />
+
                           <button
                             type="submit"
                             className="mt-2 rounded-xl bg-fuchsia-600 py-3.5 text-xs font-bold uppercase tracking-wider text-white shadow-lg shadow-fuchsia-500/20 transition-colors hover:bg-fuchsia-500"
