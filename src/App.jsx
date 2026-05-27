@@ -4061,13 +4061,6 @@ function App() {
                       >
                         Salvar no Catálogo
                       </button>
-
-                      <button
-                        type="submit"
-                        className="mt-auto w-full rounded-xl bg-blue-600 py-4 text-xs font-bold uppercase tracking-wider text-white shadow-lg shadow-blue-500/20 transition-colors hover:bg-blue-500"
-                      >
-                        Salvar no Catálogo
-                      </button>
                     </form>
                   </div>
 
