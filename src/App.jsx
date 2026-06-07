@@ -865,7 +865,7 @@ function App() {
             }
           });
       })
-      .catch(() => console.error("Falha silenciosa na sincronização."));
+      .catch(() => console.error('Falha silenciosa na sincronização.'));
   };
 
   const manterReserva = (notificacaoId) => {
@@ -1988,7 +1988,7 @@ function App() {
                       onClick={() => setAbaAtual('faq')}
                       className={`${navBtnClass} ${abaAtual === 'faq' ? 'bg-purple-600 text-white shadow-md shadow-purple-600/20' : 'text-zinc-400 hover:bg-zinc-800 hover:text-white'}`}
                     >
-                      📖 Como Funciona
+                      📖 Como Funciona?
                     </button>
                   </div>
                 </div>
@@ -2146,7 +2146,7 @@ function App() {
                     }}
                     className={`rounded-xl p-4 text-left text-sm font-bold uppercase tracking-wider shadow-md transition-all ${abaAtual === 'faq' ? 'bg-purple-600 text-white shadow-purple-600/20' : 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700 hover:text-white'}`}
                   >
-                    📖 Como Funciona
+                    📖 Como Funciona?
                   </button>
 
                   {usuarioLogado.is_admin && (

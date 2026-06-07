@@ -14,19 +14,85 @@ export default function Faq({ configSistema }) {
         <details className="group rounded-3xl border border-zinc-800 bg-zinc-900 shadow-xl transition-transform duration-300 hover:-translate-y-1 [&_summary::-webkit-details-marker]:hidden">
           <summary className="flex cursor-pointer items-center justify-between p-6 text-white transition-colors hover:text-purple-400 md:p-8">
             <span className="text-base font-bold tracking-tight md:text-lg">
-              🎮 Como funciona o aluguel no BORA JOGAR!?
+              🎮 Como alugo um jogo no BORA JOGAR!?
             </span>
             <span className="text-lg text-purple-500 transition duration-300 group-open:-rotate-180">
               ▼
             </span>
           </summary>
           <div className="border-t border-zinc-800/50 px-6 pb-6 pt-6 text-xs leading-relaxed text-zinc-400 md:px-8 md:pb-8 md:text-sm">
-            É super simples! Você adiciona saldo à sua carteira digital, escolhe o jogo na vitrine,
-            escolhe o número de dias que quer ficar com o jogo (7 ou 14 dias) e clica em{' '}
-            <strong className="text-white">"ALUGAR"</strong>. O valor é descontado e os dados da
-            conta (E-mail e Senha) aparecem imediatamente na sua aba{' '}
-            <strong className="text-emerald-400">🔑 MEUS ACESSOS</strong>. O aluguel dura 7 ou 14
-            dias corridos a partir do momento da compra.
+            É muito simples! Veja o passo a passo:
+            <ol className="list-decimal space-y-3 pl-5 font-medium text-zinc-300">
+              <li>
+                Entre na página <strong className="text-emerald-400">🔑 MEUS ACESSOS</strong>{' '}
+                (Precisa ter feito o cadastro no site).
+              </li>
+              <li>Adicione saldo à sua carteira digital via PIX ou cartão de crédito.</li>
+              <li>
+                Agora que você tem saldo na sua carteira, escolha um jogo disponível na página
+                principal e clique em <strong className="text-white">"ALUGAR"</strong> (7 ou 14
+                dias).
+              </li>
+              <li>
+                O valor do aluguel será descontado do seu saldo. Acesse novamente a página{' '}
+                <strong className="text-emerald-400">🔑 MEUS ACESSOS</strong> para ver as
+                informações da conta (Login, Senha e Código de Acesso 2FA).
+              </li>
+              <li>
+                Entre no seu PS4 ou PS5 com a conta da locadora. Se tiver alguma dúvida sobre como
+                entrar com a conta, veja o <strong className="text-white">📖 TUTORIAL</strong> que
+                está disponível logo abaixo das informações da conta na página Meus Acessos.
+              </li>
+              <li>
+                Pronto! Agora que você entrou na conta, é só ir na biblioteca e baixar o jogo.
+                Depois que baixou o jogo, você pode trocar para a sua conta e jogar na sua conta
+                para ganhar troféus!
+              </li>
+              <li>
+                <strong className="text-rose-400">ATENÇÃO!</strong> Lembre-se de sempre desativar a
+                conta antes de terminar o prazo da sua locação. Você ganha dinheiro de volta! Na
+                página <strong className="text-emerald-400">🔑 MEUS ACESSOS</strong>, logo abaixo
+                das informações da conta, você encontra um botão roxo{' '}
+                <strong className="text-purple-400">DEVOLVER E GANHAR SALDO</strong>. Clique nesse
+                botão para devolver o jogo e ganhar crédito que você pode usar para alugar novos
+                jogos!
+              </li>
+            </ol>
+          </div>
+        </details>
+
+        <details className="group rounded-3xl border border-zinc-800 bg-zinc-900 shadow-xl transition-transform duration-300 hover:-translate-y-1 [&_summary::-webkit-details-marker]:hidden">
+          <summary className="flex cursor-pointer items-center justify-between p-6 text-white transition-colors hover:text-purple-400 md:p-8">
+            <span className="text-base font-bold tracking-tight md:text-lg">
+              ⏳ E se o jogo que eu quero estiver "Alugado"?
+            </span>
+            <span className="text-lg text-purple-500 transition duration-300 group-open:-rotate-180">
+              ▼
+            </span>
+          </summary>
+          <ul className="list-disc space-y-4 pl-5 font-medium text-zinc-300">
+            <li>
+              Não se preocupe, você pode entrar na fila de espera! Na página principal, você
+              consegue ver quais jogos estão alugados ou não. Se os botões estiverem{' '}
+              <strong className="text-amber-400">DOURADO/LARANJA</strong>, signfica que o jogo está
+              alugado. Você consegue ver quantas pessoas estão na fila de espera, e a data que o
+              jogo estará disponível <strong className="text-white">(⏳ Próxima Vaga em)</strong>.
+            </li>
+            <li>
+              Clique no botão <strong className="text-amber-400">"RESERVAR"</strong> (7 ou 14 dias).
+              O valor do jogo será descontado do seu saldo e você entrará na fila de reserva.
+            </li>
+            <li>
+              Você verá uma área verde te informando que o jogo foi reservado, e também uma mensagem
+              informando quando o jogo estará diponível (
+              <strong className="text-white">SUA VEZ EM: ...</strong>). Lembre-se que nós temos um
+              sistema de devolução de jogo, então pode ser que o jogo seja devolvido antes do prazo,
+              assim o jogo é liberado pra você mais cedo do que o previsto! (SEMPRE mais cedo, NUNCA
+              mais tarde).
+            </li>
+          </ul>
+          <div className="border-t border-zinc-800/50 px-6 pb-6 pt-6 text-xs leading-relaxed text-zinc-400 md:px-8 md:pb-8 md:text-sm">
+            Você verá uma data de <em>Previsão de Liberação</em>.
           </div>
         </details>
 
@@ -104,132 +170,6 @@ export default function Faq({ configSistema }) {
         </details>
 
         <details className="group rounded-3xl border border-zinc-800 bg-zinc-900 shadow-xl transition-transform duration-300 hover:-translate-y-1 [&_summary::-webkit-details-marker]:hidden">
-          <summary className="flex cursor-pointer items-center justify-between p-6 text-white transition-colors hover:text-purple-400 md:p-8">
-            <span className="text-base font-bold tracking-tight md:text-lg">
-              🕹️ Como eu coloco a conta alugada no meu PlayStation?
-            </span>
-            <span className="text-lg text-purple-500 transition duration-300 group-open:-rotate-180">
-              ▼
-            </span>
-          </summary>
-          <div className="border-t border-zinc-800/50 px-6 pb-6 pt-6 text-xs leading-relaxed text-zinc-400 md:px-8 md:pb-8 md:text-sm">
-            <ol className="list-decimal space-y-3 pl-5 font-medium text-zinc-300">
-              <li>
-                Ligue o console. Selecione <strong className="text-white">ADICIONAR USUÁRIO</strong>
-                .
-              </li>
-              <li>
-                Selecione <strong className="text-white">VAMOS COMEÇAR</strong>.
-              </li>
-              <li>
-                Aceite os termos e selecione <strong className="text-white">CONFIRMAR</strong>.
-              </li>
-              <li>
-                Na tela com o QR Code, selecione{' '}
-                <strong className="text-white">INICIAR SESSÃO MANUALMENTE</strong>.
-              </li>
-              <li>Insira o E-mail e Senha da conta que estão disponíveis acima.</li>
-              <li>
-                Quando o console pedir o código (2FA), clique no botão verde{' '}
-                <strong className="text-emerald-400">"GERAR CÓDIGO DE ACESSO (2FA)"</strong> aqui no
-                site.
-              </li>
-              <li>Digite o código 2FA (6 dígitos) rapidamente.</li>
-              <li>
-                <strong className="text-rose-400">NÃO ATIVE MAIS NADA</strong>. Somente selecione
-                OK.
-              </li>
-              <li>
-                Para jogar na sua conta pessoal e ganhar os troféus, é OBRIGATÓRIO habilitar o
-                compartilhamento:
-                <ul className="ml-1 mt-3 list-disc space-y-3 border-l-2 border-zinc-700 pl-5 text-zinc-400">
-                  <li>
-                    <strong>No PS5:</strong> Configurações &gt; Usuários e contas &gt; Outros &gt;
-                    Compartilhamento do console... &gt;{' '}
-                    <strong className="text-white">HABILITAR</strong>.
-                  </li>
-                  <li>
-                    <strong>No PS4:</strong> Configurações &gt; Gerenciamento da conta &gt;{' '}
-                    <strong className="text-white">ATIVAR COMO SEU PS4 PRINCIPAL</strong>.
-                  </li>
-                  <li className="mt-3 flex items-center gap-3 rounded-xl border border-rose-500/20 bg-rose-950/30 p-3.5 font-bold text-rose-400">
-                    <span className="text-lg">⚠️</span> É aqui também, que no final do seu aluguel,
-                    você vai DESATIVAR o compartilhamento.
-                  </li>
-                </ul>
-              </li>
-              <li className="mt-6 rounded-xl border border-emerald-500/40 bg-emerald-950/40 p-5 text-sm font-black text-emerald-400 shadow-inner">
-                Vá na Biblioteca da conta, coloque o jogo para baixar, volte para o seu perfil
-                pessoal (a sua conta oficial) e divirta-se!
-              </li>
-            </ol>
-          </div>
-        </details>
-
-        <details className="group rounded-3xl border border-zinc-800 bg-zinc-900 shadow-xl transition-transform duration-300 hover:-translate-y-1 [&_summary::-webkit-details-marker]:hidden">
-          <summary className="flex cursor-pointer items-center justify-between p-6 text-white transition-colors hover:text-purple-400 md:p-8">
-            <span className="text-base font-bold tracking-tight md:text-lg">
-              🔐 O videogame pediu um código de verificação (2FA). O que eu faço?
-            </span>
-            <span className="text-lg text-purple-500 transition duration-300 group-open:-rotate-180">
-              ▼
-            </span>
-          </summary>
-          <div className="border-t border-zinc-800/50 px-6 pb-6 pt-6 text-xs leading-relaxed text-zinc-400 md:px-8 md:pb-8 md:text-sm">
-            A segurança vem em primeiro lugar! Na aba{' '}
-            <strong className="text-emerald-400">🔑 MEUS ACESSOS</strong>, embaixo das informações
-            da conta (Login e Senha), existe um botão verde chamado
-            <strong className="text-emerald-400"> "GERAR CÓDIGO DE ACESSO (2FA)"</strong>.
-            <br />
-            <br />
-            Basta clicar nele que um código de 6 dígitos vai aparecer na sua tela.
-          </div>
-        </details>
-
-        <details className="group rounded-3xl border border-zinc-800 bg-zinc-900 shadow-xl transition-transform duration-300 hover:-translate-y-1 [&_summary::-webkit-details-marker]:hidden">
-          <summary className="flex cursor-pointer items-center justify-between p-6 text-white transition-colors hover:text-purple-400 md:p-8">
-            <span className="text-base font-bold tracking-tight md:text-lg">
-              🏆 Posso jogar na minha conta pessoal e ganhar os troféus?
-            </span>
-            <span className="text-lg text-purple-500 transition duration-300 group-open:-rotate-180">
-              ▼
-            </span>
-          </summary>
-          <div className="border-t border-zinc-800/50 px-6 pb-6 pt-6 text-xs leading-relaxed text-zinc-400 md:px-8 md:pb-8 md:text-sm">
-            <strong className="text-white">Sim, com certeza!</strong> Para isso, logo após fazer o
-            login com a conta alugada no console:
-            <ul className="mt-4 list-disc space-y-3 pl-5 font-medium text-zinc-300">
-              <li>
-                <strong>No PS5:</strong> Vá em Configurações &gt; Usuários e Contas &gt; Outros &gt;{' '}
-                <em>Compartilhamento do console e jogo offline</em> &gt;{' '}
-                <strong className="text-emerald-400">HABILITAR</strong>.
-              </li>
-              <li>
-                <strong>No PS4:</strong> Vá em Configurações &gt; Gerenciamento da conta &gt;{' '}
-                <em>Ativar como seu PS4 principal</em> &gt;{' '}
-                <strong className="text-emerald-400">HABILITAR</strong>.
-              </li>
-            </ul>
-          </div>
-        </details>
-
-        <details className="group rounded-3xl border border-zinc-800 bg-zinc-900 shadow-xl transition-transform duration-300 hover:-translate-y-1 [&_summary::-webkit-details-marker]:hidden">
-          <summary className="flex cursor-pointer items-center justify-between p-6 text-white transition-colors hover:text-purple-400 md:p-8">
-            <span className="text-base font-bold tracking-tight md:text-lg">
-              ⏳ E se o jogo que eu quero estiver "Alugado"?
-            </span>
-            <span className="text-lg text-purple-500 transition duration-300 group-open:-rotate-180">
-              ▼
-            </span>
-          </summary>
-          <div className="border-t border-zinc-800/50 px-6 pb-6 pt-6 text-xs leading-relaxed text-zinc-400 md:px-8 md:pb-8 md:text-sm">
-            Não se preocupe, você pode garantir a sua vaga! Clique no botão{' '}
-            <strong className="text-amber-400">"RESERVAR"</strong> (7 ou 14 dias). O valor do jogo
-            será investido e você verá uma data de <em>Previsão de Liberação</em>.
-          </div>
-        </details>
-
-        <details className="group rounded-3xl border border-zinc-800 bg-zinc-900 shadow-xl transition-transform duration-300 hover:-translate-y-1 [&_summary::-webkit-details-marker]:hidden">
           <summary className="flex cursor-pointer items-center justify-between p-6 text-emerald-400 transition-colors hover:text-emerald-300 md:p-8">
             <span className="text-base font-bold tracking-tight md:text-lg">
               ♻️ Posso devolver um jogo antes do prazo e receber cashback?
@@ -239,18 +179,27 @@ export default function Faq({ configSistema }) {
             </span>
           </summary>
           <div className="border-t border-emerald-800/50 px-6 pb-6 pt-6 text-xs leading-relaxed text-zinc-400 md:px-8 md:pb-8 md:text-sm">
-            Nós possuímos um sistema de <strong className="text-white">DEVOLUÇÃO DINÂMICA</strong>!
-            Essa opção fica ativa automaticamente apenas quando o jogo que você alugou está com{' '}
-            <strong className="text-rose-400">ALTA DEMANDA</strong>.
+            Com certeza! Nós possuímos um sistema de{' '}
+            <strong className="text-white">DEVOLUÇÃO ANTECIPADA</strong>! Você pode devolver o jogo
+            antes de terminar o seu prazo, e você GANHA DINHEIRO DE VOLTA!
             <br />
             <br />
-            Se este for o caso, um botão verde{' '}
-            <strong className="text-emerald-400">"♻️ DEVOLVER"</strong> aparecerá. Ao fazer a
-            devolução antecipada para agilizar a fila, você ganha uma recompensa:{' '}
+            Na página <strong className="text-emerald-400">🔑 MEUS ACESSOS</strong>, logo abaixo das
+            informações da conta, você encontra o botão{' '}
+            <strong className="text-purple-400">DEVOLVER E GANHAR SALDO</strong>.
+            <br />
+            <br />
+            Clique nesse botão para devolver o jogo (siga o tutorial que aparece quando você clica
+            no botão). Ao fazer a devolução antecipada, você recebe as seguintes recompensas:{' '}
+            <strong className="text-emerald-400">R$ 2.00</strong> fixos por devolver antes MAIS{' '}
             <strong className="text-emerald-400">
               R$ {configSistema?.valor_por_dia?.toFixed(2)} de cashback por cada 24 horas
             </strong>{' '}
             que ainda restavam no seu prazo!
+            <br />
+            <br />
+            EXEMPLO: Você alugou por 7 dias. Jogou 4 dias e decidiu devolver. Você recebe R$ 2.00
+            fixos + R$ 6.00 (3 x R$ 2.00). TOTAL = R$ 8.00!
           </div>
         </details>
 
@@ -274,6 +223,13 @@ export default function Faq({ configSistema }) {
               MULTA ADMINISTRATIVA AUTOMÁTICA DE R$ 50,00
             </strong>{' '}
             direto na sua carteira digital.
+            <br />
+            <br />
+            Nós vamos entrar em contato com você por Whatsapp (por isso é importante fazer o seu
+            cadastro com um número de Whatsapp real) e vamos te dar um prazo para você fazer a
+            desativação. Caso não seja feita a desativação, nós iremos solicitar a Sony para fazer a
+            desativação e você será <strong className="text-white">BANIDO</strong> da locadora (Ban
+            de IP).
           </div>
         </details>
       </div>
