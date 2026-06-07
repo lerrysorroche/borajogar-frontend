@@ -846,20 +846,26 @@ function App() {
       .then((res) => (res.ok ? res.json() : []))
       .then((dados) => setNotificacoes(Array.isArray(dados) ? dados : []));
 
-    fetch(`https://borajogar-api.onrender.com/usuarios/${usuarioLogado.id}/saldo`)
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => {
-        if (data && data.saldo !== undefined) {
-          const saldoReal = parseFloat(data.saldo);
-          setUsuarioLogado((prev) => ({ ...prev, saldo: saldoReal }));
+    // RECONCILIAÇÃO ATIVA: Tenta recuperar pagamentos no limbo ANTES de buscar o saldo
+    fetch(`https://borajogar-api.onrender.com/recarga/sincronizar/${usuarioLogado.id}`)
+      .then(() => {
+        // Agora sim, busca o saldo garantindo que qualquer pagamento atrasado já foi processado
+        fetch(`https://borajogar-api.onrender.com/usuarios/${usuarioLogado.id}/saldo`)
+          .then((res) => (res.ok ? res.json() : null))
+          .then((data) => {
+            if (data && data.saldo !== undefined) {
+              const saldoReal = parseFloat(data.saldo);
+              setUsuarioLogado((prev) => ({ ...prev, saldo: saldoReal }));
 
-          const userStorage = JSON.parse(localStorage.getItem('usuarioBoraJogar'));
-          if (userStorage) {
-            userStorage.saldo = saldoReal;
-            localStorage.setItem('usuarioBoraJogar', JSON.stringify(userStorage));
-          }
-        }
-      });
+              const userStorage = JSON.parse(localStorage.getItem('usuarioBoraJogar'));
+              if (userStorage) {
+                userStorage.saldo = saldoReal;
+                localStorage.setItem('usuarioBoraJogar', JSON.stringify(userStorage));
+              }
+            }
+          });
+      })
+      .catch(() => console.error("Falha silenciosa na sincronização."));
   };
 
   const manterReserva = (notificacaoId) => {
