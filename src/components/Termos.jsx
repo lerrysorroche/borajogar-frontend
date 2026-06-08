@@ -5,7 +5,7 @@ export default function Termos() {
         <h2 className="mb-4 text-3xl font-black tracking-tight text-white md:text-4xl">
           Termos de Uso
         </h2>
-        <p className="text-sm font-medium text-zinc-400">Última atualização: Abril de 2026</p>
+        <p className="text-sm font-medium text-zinc-400">Última atualização: Junho de 2026</p>
       </div>
 
       <div className="space-y-8 text-sm leading-relaxed text-zinc-300 md:text-base">
@@ -25,7 +25,7 @@ export default function Termos() {
           <h3 className="mb-3 text-xl font-bold tracking-tight text-blue-400">
             2. Regras de Instalação e Uso
           </h3>
-          <ul className="list-disc space-y-2 pl-5 text-zinc-400">
+          <ul className="list-disc space-y-2 pl-5 text-zinc-300">
             <li>
               É expressamente <strong className="text-rose-400">PROIBIDO</strong> entrar na conta
               fornecida utilizando a opção "Jogar como Convidado".
@@ -57,7 +57,7 @@ export default function Termos() {
           </p>
           <div className="mt-4 rounded-xl border border-rose-500/30 bg-rose-950/20 p-4">
             <strong className="mb-1 block text-rose-400">Cláusula de Multa Administrativa:</strong>
-            <p className="text-sm text-zinc-400">
+            <p className="text-sm text-zinc-300">
               A não desativação da conta prende a licença no console do usuário, impedindo que o
               próximo cliente da fila jogue. Caso isso ocorra, o sistema aplicará uma{' '}
               <strong className="text-white">Multa Administrativa Automática de R$ 50,00</strong>. O
@@ -69,13 +69,13 @@ export default function Termos() {
 
         <section>
           <h3 className="mb-3 text-xl font-bold tracking-tight text-emerald-400">
-            4. Sistema de Devolução Dinâmica (Cashback)
+            4. Sistema de Devolução Antecipada (Cashback)
           </h3>
           <p>
-            Caso o jogo alugado possua fila de espera, o botão "Devolver" ficará ativo no painel do
-            usuário. Ao optar pela devolução antecipada para agilizar a fila, o usuário receberá um
-            reembolso em créditos na carteira digital (Cashback) de acordo com os dias inteiros não
-            utilizados, conforme tabela vigente no site no momento da devolução.
+            O botão "Devolver e Ganhar Saldo" está presente no painel do usuário. Ao optar pela
+            devolução antecipada para agilizar a fila, o usuário receberá um reembolso em créditos
+            na carteira digital (Cashback) de acordo com os dias inteiros não utilizados, conforme
+            tabela vigente no site no momento da devolução.
           </p>
         </section>
 

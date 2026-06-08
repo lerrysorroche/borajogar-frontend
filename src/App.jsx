@@ -2981,7 +2981,7 @@ function App() {
                             disabled={carregandoGateway}
                             className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-3.5 text-[11px] font-black uppercase tracking-wider text-white shadow-lg shadow-blue-600/20 transition-all hover:bg-blue-500 disabled:opacity-50"
                           >
-                            💳 Pagar c/ Cartão (Stripe)
+                            💳 Pagar com Cartão
                           </button>
 
                           <button
@@ -2989,7 +2989,7 @@ function App() {
                             disabled={carregandoGateway}
                             className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-3.5 text-[11px] font-black uppercase tracking-wider text-white shadow-lg shadow-emerald-600/20 transition-all hover:bg-emerald-500 disabled:opacity-50"
                           >
-                            ⚡ Gerar Pix (Zero Taxas)
+                            ⚡ Pagar com Pix
                           </button>
                         </div>
 
@@ -3283,7 +3283,7 @@ function App() {
                             </div>
 
                             <details className="group/tut mt-6 overflow-hidden rounded-2xl border border-zinc-700/50 bg-zinc-900/50 transition-all duration-300 hover:border-zinc-600 [&_summary::-webkit-details-marker]:hidden">
-                              <summary className="flex cursor-pointer select-none items-center justify-between p-5 text-xs font-black uppercase tracking-wider text-zinc-400 transition-colors hover:bg-zinc-800/50 md:text-sm">
+                              <summary className="flex cursor-pointer select-none items-center justify-between p-5 text-xs font-black uppercase tracking-wider text-zinc-300 transition-colors hover:bg-zinc-800/50 md:text-sm">
                                 <span className="flex items-center gap-2">
                                   📖 TUTORIAL: Passo a passo de como entrar na conta e jogar
                                   (PS4/PS5)
@@ -3432,12 +3432,12 @@ function App() {
                 </details>
 
                 {historicoAlugueis.length > 0 && (
-                  <details className="group overflow-hidden rounded-3xl border border-zinc-800 bg-zinc-900/80 shadow-lg [&_summary::-webkit-details-marker]:hidden">
-                    <summary className="flex cursor-pointer select-none items-center justify-between p-6 transition-colors hover:bg-zinc-800/50 md:p-8">
-                      <span className="flex items-center gap-3 text-xs font-bold uppercase tracking-wider text-zinc-500">
+                  <details className="group overflow-hidden rounded-3xl border border-l-4 border-zinc-800 border-l-blue-500 bg-zinc-900/80 shadow-2xl shadow-blue-500/10 [&_summary::-webkit-details-marker]:hidden">
+                    <summary className="flex cursor-pointer select-none items-center justify-between p-6 transition-colors hover:bg-blue-900/10 md:p-8">
+                      <span className="flex items-center gap-3 text-lg font-black tracking-tight text-blue-400">
                         🕰️ Últimos 5 Aluguéis
                       </span>
-                      <span className="text-base text-zinc-600 transition duration-300 group-open:-rotate-180">
+                      <span className="text-lg text-blue-500 transition duration-300 group-open:-rotate-180">
                         ▼
                       </span>
                     </summary>

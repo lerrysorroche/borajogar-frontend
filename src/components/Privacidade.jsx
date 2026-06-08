@@ -5,12 +5,12 @@ export default function Privacidade() {
         <h2 className="mb-4 text-3xl font-black tracking-tight text-white md:text-4xl">
           Política de Privacidade
         </h2>
-        <p className="text-sm font-medium text-zinc-400">Última atualização: Abril de 2026</p>
+        <p className="text-sm font-medium text-zinc-400">Última atualização: Junho de 2026</p>
       </div>
 
       <div className="space-y-8 text-sm leading-relaxed text-zinc-300 md:text-base">
         <section>
-          <p className="text-zinc-400">
+          <p className="text-zinc-300">
             A sua privacidade é nossa prioridade. Esta política descreve como a BORA JOGAR! coleta,
             utiliza e protege os seus dados pessoais ao utilizar nossa plataforma, em total
             conformidade com a Lei Geral de Proteção de Dados (LGPD - Lei nº 13.709/2018).
@@ -25,7 +25,7 @@ export default function Privacidade() {
             Para o funcionamento da plataforma e liberação das locações, coletamos as seguintes
             informações no momento do seu cadastro:
           </p>
-          <ul className="mt-2 list-disc space-y-1 pl-5 text-zinc-400">
+          <ul className="mt-2 list-disc space-y-1 pl-5 text-zinc-300">
             <li>Nome Completo</li>
             <li>Endereço de E-mail</li>
             <li>Número de Telefone (WhatsApp)</li>
@@ -41,7 +41,7 @@ export default function Privacidade() {
             2. Como Utilizamos seus Dados
           </h3>
           <p>As informações coletadas são estritamente utilizadas para:</p>
-          <ul className="mt-2 list-disc space-y-1 pl-5 text-zinc-400">
+          <ul className="mt-2 list-disc space-y-1 pl-5 text-zinc-300">
             <li>Criar e gerenciar sua carteira digital dentro da plataforma.</li>
             <li>Enviar credenciais de acesso aos jogos alugados.</li>
             <li>
@@ -59,7 +59,7 @@ export default function Privacidade() {
             A BORA JOGAR! <strong className="text-white">NÃO armazena</strong> dados bancários,
             números de cartão de crédito ou chaves PIX de suas contas pessoais. Todo o processamento
             financeiro é realizado em ambiente blindado e seguro através da instituição de pagamento
-            parceira oficial (Asaas/Stripe/Efí).
+            parceira oficial (Stripe/Efí).
           </p>
         </section>
 
