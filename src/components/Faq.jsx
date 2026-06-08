@@ -20,9 +20,11 @@ export default function Faq({ configSistema }) {
               ▼
             </span>
           </summary>
-          <div className="border-t border-zinc-800/50 px-6 pb-6 pt-6 text-xs leading-relaxed text-zinc-400 md:px-8 md:pb-8 md:text-sm">
+          <div className="font-xs border-t border-zinc-800/50 px-6 pb-6 pt-6 leading-relaxed text-zinc-400 md:px-8 md:pb-8 md:text-sm">
             É muito simples! Veja o passo a passo:
-            <ol className="list-decimal space-y-3 pl-5 font-medium text-zinc-300">
+            <br />
+            <br />
+            <ol className="list-decimal space-y-3 pl-5 font-medium text-zinc-400">
               <li>
                 Entre na página <strong className="text-emerald-400">🔑 MEUS ACESSOS</strong>{' '}
                 (Precisa ter feito o cadastro no site).
@@ -52,7 +54,7 @@ export default function Faq({ configSistema }) {
                 <strong className="text-rose-400">ATENÇÃO!</strong> Lembre-se de sempre desativar a
                 conta antes de terminar o prazo da sua locação. Você ganha dinheiro de volta! Na
                 página <strong className="text-emerald-400">🔑 MEUS ACESSOS</strong>, logo abaixo
-                das informações da conta, você encontra um botão roxo{' '}
+                das informações da conta, você encontra o botão{' '}
                 <strong className="text-purple-400">DEVOLVER E GANHAR SALDO</strong>. Clique nesse
                 botão para devolver o jogo e ganhar crédito que você pode usar para alugar novos
                 jogos!
@@ -70,29 +72,26 @@ export default function Faq({ configSistema }) {
               ▼
             </span>
           </summary>
-          <ul className="list-disc space-y-4 pl-5 font-medium text-zinc-300">
-            <li>
-              Não se preocupe, você pode entrar na fila de espera! Na página principal, você
-              consegue ver quais jogos estão alugados ou não. Se os botões estiverem{' '}
-              <strong className="text-amber-400">DOURADO/LARANJA</strong>, signfica que o jogo está
-              alugado. Você consegue ver quantas pessoas estão na fila de espera, e a data que o
-              jogo estará disponível <strong className="text-white">(⏳ Próxima Vaga em)</strong>.
-            </li>
-            <li>
-              Clique no botão <strong className="text-amber-400">"RESERVAR"</strong> (7 ou 14 dias).
-              O valor do jogo será descontado do seu saldo e você entrará na fila de reserva.
-            </li>
-            <li>
-              Você verá uma área verde te informando que o jogo foi reservado, e também uma mensagem
-              informando quando o jogo estará diponível (
-              <strong className="text-white">SUA VEZ EM: ...</strong>). Lembre-se que nós temos um
-              sistema de devolução de jogo, então pode ser que o jogo seja devolvido antes do prazo,
-              assim o jogo é liberado pra você mais cedo do que o previsto! (SEMPRE mais cedo, NUNCA
-              mais tarde).
-            </li>
-          </ul>
           <div className="border-t border-zinc-800/50 px-6 pb-6 pt-6 text-xs leading-relaxed text-zinc-400 md:px-8 md:pb-8 md:text-sm">
-            Você verá uma data de <em>Previsão de Liberação</em>.
+            Não se preocupe, você pode entrar na fila de espera! Na página principal, você consegue
+            ver quais jogos estão alugados ou não. Se os botões estiverem{' '}
+            <strong className="text-amber-400">DOURADO/LARANJA</strong>, signfica que o jogo está
+            alugado. Você consegue ver quantas pessoas estão na fila de espera, e a data que o jogo
+            estará disponível <strong className="text-white">(⏳ Próxima Vaga em)</strong>.
+            <br />
+            <br />
+            Clique no botão <strong className="text-amber-400">"RESERVAR"</strong> (7 ou 14 dias). O
+            valor do jogo será descontado do seu saldo e você entrará na fila de reserva.
+            <br />
+            <br />
+            Você verá uma área verde te informando que o jogo foi reservado, e também uma mensagem
+            informando quando o jogo estará diponível (
+            <strong className="text-white">SUA VEZ EM: ...</strong>). Lembre-se que nós temos um
+            sistema de devolução de jogo, então pode ser que o jogo seja devolvido antes do prazo,
+            assim o jogo é liberado pra você mais cedo do que o previsto! (SEMPRE mais cedo, NUNCA
+            mais tarde).
+            <br />
+            <br />
           </div>
         </details>
 
@@ -154,7 +153,7 @@ export default function Faq({ configSistema }) {
               </div>
             </div>
             <strong className="mb-2 block text-sm text-white">Quais são os benefícios?</strong>
-            <ul className="list-disc space-y-4 pl-5 font-medium text-zinc-300">
+            <ul className="list-disc space-y-4 pl-5 font-medium text-zinc-400">
               <li>
                 <strong className="text-blue-400">ACESSO ANTECIPADO:</strong> As reservas de jogos
                 em <strong>PRÉ-VENDA</strong> são exclusivas para clientes a partir do Rank{' '}
