@@ -188,17 +188,31 @@ export default function Faq({ configSistema }) {
             <strong className="text-purple-400">DEVOLVER E GANHAR SALDO</strong>.
             <br />
             <br />
-            Clique nesse botão para devolver o jogo (siga o tutorial que aparece quando você clica
-            no botão). Ao fazer a devolução antecipada, você recebe as seguintes recompensas:{' '}
-            <strong className="text-emerald-400">R$ 2.00</strong> fixos por devolver antes MAIS{' '}
-            <strong className="text-emerald-400">
-              R$ {configSistema?.valor_por_dia?.toFixed(2)} de cashback por cada 24 horas
-            </strong>{' '}
-            que ainda restavam no seu prazo!
-            <br />
-            <br />
-            EXEMPLO: Você alugou por 7 dias. Jogou 4 dias e decidiu devolver. Você recebe R$ 2.00
-            fixos + R$ 6.00 (3 x R$ 2.00). TOTAL = R$ 8.00!
+            {(() => {
+              // Puxa o valor do banco de dados (ou usa 2.00 como fallback de segurança)
+              const valorBase = configSistema?.valor_por_dia || 2.0;
+              const valorVezesTres = 3 * valorBase;
+              const totalExemplo = valorBase + valorVezesTres;
+
+              return (
+                <>
+                  Clique nesse botão para devolver o jogo (siga o tutorial que aparece quando você
+                  clica no botão). Ao fazer a devolução antecipada, você recebe as seguintes
+                  recompensas:{' '}
+                  <strong className="text-emerald-400">R$ {valorBase.toFixed(2)}</strong> fixos por
+                  devolver antes mais (+){' '}
+                  <strong className="text-emerald-400">
+                    R$ {valorBase.toFixed(2)} de cashback por cada 24 horas
+                  </strong>{' '}
+                  que ainda restavam no seu prazo!
+                  <br />
+                  <br />
+                  EXEMPLO: Você alugou por 7 dias. Jogou 4 dias e decidiu devolver. Você recebe R${' '}
+                  {valorBase.toFixed(2)} fixos + R$ {valorVezesTres.toFixed(2)} (3 x R${' '}
+                  {valorBase.toFixed(2)}). TOTAL = R$ {totalExemplo.toFixed(2)}!
+                </>
+              );
+            })()}
           </div>
         </details>
 
