@@ -1,7 +1,7 @@
 // ==============================================================================
 // BORA JOGAR! - FRONTEND (React)
 // ==============================================================================
-// Ambiente de Staging ativado com sucesso!
+// Ambiente de Produção / Staging
 
 import { useState, useEffect } from 'react';
 import ReactGA from 'react-ga4';
@@ -11,63 +11,72 @@ import Faq from './components/Faq';
 import Footer from './components/Footer';
 import Auth from './components/Auth';
 
+// Inicialização do Google Analytics
 ReactGA.initialize('G-QGNBJ6L7JZ');
 
 function App() {
+  // ==========================================================================
+  // 1. CONFIGURAÇÕES GLOBAIS E ESTADOS (MEMÓRIA DO REACT)
+  // ==========================================================================
   const NUMERO_WHATSAPP_SUPORTE = '5541995948532';
-  const JOGOS_POR_PAGINA = 12;
+  const JOGOS_POR_PAGINA = 15;
 
+  // --- Estados de Autenticação e Navegação ---
   const [usuarioLogado, setUsuarioLogado] = useState(() => {
     const usuarioSalvo = localStorage.getItem('usuario_locadora');
     return usuarioSalvo ? JSON.parse(usuarioSalvo) : null;
   });
-
   const [abaAtual, setAbaAtual] = useState('vitrine');
   const [modoLogin, setModoLogin] = useState(true);
-  const [toast, setToast] = useState({
-    visivel: false,
-    mensagem: '',
-    tipo: 'sucesso',
-  });
-  const [modalConfirmacao, setModalConfirmacao] = useState({
-    visivel: false,
-    tipo: '',
-    jogoId: null,
-    jogoTitulo: '',
-    preco7: 0,
-    preco14: 0,
-    diasEscolhidos: 7,
-  });
-  const [modalDescricao, setModalDescricao] = useState(null);
+  const [modoEsqueciSenha, setModoEsqueciSenha] = useState(false);
   const [menuMobileAberto, setMenuMobileAberto] = useState(false);
 
-  const [mudarSenhaNovaConfirmacao, setMudarSenhaNovaConfirmacao] = useState('');
+  // --- Estados de Interface (UI) ---
+  const [toast, setToast] = useState({ visivel: false, mensagem: '', tipo: 'sucesso' });
+  const [modalDescricao, setModalDescricao] = useState(null);
+  const [modalDevolucao, setModalDevolucao] = useState(null);
+  const [modalEdicaoJogo, setModalEdicaoJogo] = useState(null);
+  const [modalEdicaoCliente, setModalEdicaoCliente] = useState(null);
+  const [indiceBanner, setIndiceBanner] = useState(0);
 
-  const [verSenhaAtual, setVerSenhaAtual] = useState(false);
-  const [verSenhaNova, setVerSenhaNova] = useState(false);
-  const [verSenhaNovaConf, setVerSenhaNovaConf] = useState(false);
+  // [INFO] O modal agora guarda o JOGO INTEIRO para a lógica de vendas Top-Down (Primária/Secundária/Fila)
+  const [modalConfirmacao, setModalConfirmacao] = useState({
+    visivel: false,
+    jogo: null,
+    diasEscolhidos: 7,
+    tipoSlotSelecionado: 'PRIMARIA',
+  });
 
-  const [modoEsqueciSenha, setModoEsqueciSenha] = useState(false);
-
-  const [mudarSenhaAtual, setMudarSenhaAtual] = useState('');
-  const [mudarSenhaNova, setMudarSenhaNova] = useState('');
-
-  const [jogos, setJogos] = useState([]);
-  const [carregandoJogos, setCarregandoJogos] = useState(true);
+  // --- Estados de Dados do Cliente ---
   const [meusAlugueis, setMeusAlugueis] = useState([]);
   const [minhasReservas, setMinhasReservas] = useState([]);
   const [extrato, setExtrato] = useState([]);
   const [notificacoes, setNotificacoes] = useState([]);
+  const [codigosGerados2FA, setCodigosGerados2FA] = useState({});
 
-  const [modalDevolucao, setModalDevolucao] = useState(null);
+  // --- Estados do Catálogo e Filtros ---
+  const [jogos, setJogos] = useState([]);
+  const [novidades, setNovidades] = useState([]);
+  const [carregandoJogos, setCarregandoJogos] = useState(true);
+  const [paginaAtual, setPaginaAtual] = useState(1);
+  const [termoBusca, setTermoBusca] = useState('');
+  const [filtroPlataforma, setFiltroPlataforma] = useState('TODAS');
+  const [filtroDisponibilidade, setFiltroDisponibilidade] = useState('TODOS');
 
+  // --- Estados da Enquete ---
   const [enqueteOpcoes, setEnqueteOpcoes] = useState([]);
   const [meuVoto, setMeuVoto] = useState(null);
   const [novaOpcaoEnqueteTitulo, setNovaOpcaoEnqueteTitulo] = useState('');
   const [novaOpcaoEnqueteImagem, setNovaOpcaoEnqueteImagem] = useState('');
 
+  // --- Estados Financeiros e Pagamento ---
+  const [valorRecarga, setValorRecarga] = useState('30');
+  const [cupomRecarga, setCupomRecarga] = useState('');
+  const [cpfRecarga, setCpfRecarga] = useState('');
+  const [pixPendente, setPixPendente] = useState(null);
   const [carregandoGateway, setCarregandoGateway] = useState(false);
 
+  // --- Estados de Configuração e Painel Admin ---
   const [configSistema, setConfigSistema] = useState({
     devolucao_dinamica: false,
     valor_por_dia: 2.0,
@@ -83,76 +92,67 @@ function App() {
     total_clientes: 0,
     locacoes_ativas: 0,
   });
-  const [contasManutencao, setContasManutencao] = useState([]);
-  const [novasSenhasTemp, setNovasSenhasTemp] = useState({});
-  const [codigosGerados2FA, setCodigosGerados2FA] = useState({});
+  const [periodoFiltroEstatisticas, setPeriodoFiltroEstatisticas] = useState('mes');
 
+  // Admin: Gestão de Clientes e Locações
+  const [todasLocacoes, setTodasLocacoes] = useState([]);
+  const [todasReservas, setTodasReservas] = useState([]);
+  const [todosUsuarios, setTodosUsuarios] = useState([]);
+  const [contasManutencao, setContasManutencao] = useState([]);
+  const [listaCupons, setListaCupons] = useState([]);
+  const [paginaCatalogo, setPaginaCatalogo] = useState(0);
+  const [paginaClientes, setPaginaClientes] = useState(0);
+
+  // Admin: Filtros Internos
+  const [buscaEstoque, setBuscaEstoque] = useState('');
+  const [buscaLocacao, setBuscaLocacao] = useState('');
+  const [buscaCliente, setBuscaCliente] = useState('');
+  const [buscaManutencao, setBuscaManutencao] = useState('');
+  const [buscaReservaAdmin, setBuscaReservaAdmin] = useState('');
+  const [ordenacaoClientes, setOrdenacaoClientes] = useState('recentes');
+  const [filtroSaldoClientes, setFiltroSaldoClientes] = useState('todos');
+  const [ordenacaoLocacoes, setOrdenacaoLocacoes] = useState('expira_breve');
+  const [ordenacaoManutencao, setOrdenacaoManutencao] = useState('urgente');
+  const [ordenacaoReservaAdmin, setOrdenacaoReservaAdmin] = useState('antigas');
+  const [filtroStatusCatalogo, setFiltroStatusCatalogo] = useState('todos');
+
+  // Admin: Formulários de Cadastro
   const [novoJogoTitulo, setNovoJogoTitulo] = useState('');
   const [novoJogoPlataforma, setNovoJogoPlataforma] = useState('PS5');
   const [novoJogoPreco, setNovoJogoPreco] = useState('');
   const [novoJogoPreco14, setNovoJogoPreco14] = useState('');
+  const [novoJogoPrecoSec, setNovoJogoPrecoSec] = useState('');
+  const [novoJogoPrecoSec14, setNovoJogoPrecoSec14] = useState('');
   const [novoJogoDescricao, setNovoJogoDescricao] = useState('');
   const [novoJogoImagem, setNovoJogoImagem] = useState('');
   const [novoJogoTempo, setNovoJogoTempo] = useState('');
   const [novoJogoNota, setNovoJogoNota] = useState('');
   const [novoJogoDataLancamento, setNovoJogoDataLancamento] = useState('');
-
-  const [novidades, setNovidades] = useState([]);
   const [novoJogoRecomendacao, setNovoJogoRecomendacao] = useState(false);
-
   const [novaContaJogoId, setNovaContaJogoId] = useState('');
   const [novaContaEmail, setNovaContaEmail] = useState('');
   const [novaContaSenha, setNovaContaSenha] = useState('');
   const [novaContaMfaSecret, setNovaContaMfaSecret] = useState('');
-
-  const [paginaCatalogo, setPaginaCatalogo] = useState(0);
-  const [paginaClientes, setPaginaClientes] = useState(0);
-
-  const [indiceBanner, setIndiceBanner] = useState(0);
-
-  const [modalEdicaoJogo, setModalEdicaoJogo] = useState(null);
-  const [modalEdicaoCliente, setModalEdicaoCliente] = useState(null);
-
-  const [termoBusca, setTermoBusca] = useState('');
-  const [buscaEstoque, setBuscaEstoque] = useState('');
-  const [buscaLocacao, setBuscaLocacao] = useState('');
-  const [buscaCliente, setBuscaCliente] = useState('');
-  const [ordenacaoClientes, setOrdenacaoClientes] = useState('recentes');
-  const [filtroSaldoClientes, setFiltroSaldoClientes] = useState('todos');
-
-  const [buscaManutencao, setBuscaManutencao] = useState('');
-  const [ordenacaoLocacoes, setOrdenacaoLocacoes] = useState('expira_breve');
-  const [ordenacaoManutencao, setOrdenacaoManutencao] = useState('urgente');
-  const [todasReservas, setTodasReservas] = useState([]);
-  const [buscaReservaAdmin, setBuscaReservaAdmin] = useState('');
-  const [ordenacaoReservaAdmin, setOrdenacaoReservaAdmin] = useState('antigas');
-
-  const [todasLocacoes, setTodasLocacoes] = useState([]);
-  const [todosUsuarios, setTodosUsuarios] = useState([]);
-
-  const [valorRecarga, setValorRecarga] = useState('30');
-  const [cupomRecarga, setCupomRecarga] = useState('');
-  const [cpfRecarga, setCpfRecarga] = useState('');
-  const [listaCupons, setListaCupons] = useState([]);
   const [novoCupomCodigo, setNovoCupomCodigo] = useState('');
   const [novoCupomTipo, setNovoCupomTipo] = useState('PORCENTAGEM');
   const [novoCupomValor, setNovoCupomValor] = useState('');
+  const [novasSenhasTemp, setNovasSenhasTemp] = useState({});
 
-  const [filtroStatusCatalogo, setFiltroStatusCatalogo] = useState('todos');
-  const [periodoFiltroEstatisticas, setPeriodoFiltroEstatisticas] = useState('mes');
+  // Senhas
+  const [mudarSenhaAtual, setMudarSenhaAtual] = useState('');
+  const [mudarSenhaNova, setMudarSenhaNova] = useState('');
+  const [mudarSenhaNovaConfirmacao, setMudarSenhaNovaConfirmacao] = useState('');
+  const [verSenhaAtual, setVerSenhaAtual] = useState(false);
+  const [verSenhaNova, setVerSenhaNova] = useState(false);
+  const [verSenhaNovaConf, setVerSenhaNovaConf] = useState(false);
 
-  const [pixPendente, setPixPendente] = useState(null);
-
-  const [paginaAtual, setPaginaAtual] = useState(1);
-  const [filtroPlataforma, setFiltroPlataforma] = useState('TODAS');
-  const [filtroDisponibilidade, setFiltroDisponibilidade] = useState('TODOS');
+  // ==========================================================================
+  // 2. FUNÇÕES UTILITÁRIAS E DE UI (USER INTERFACE)
+  // ==========================================================================
 
   const getAuthHeaders = () => {
     const token = localStorage.getItem('token_locadora');
-    return {
-      'Content-Type': 'application/json',
-      Authorization: token ? `Bearer ${token}` : '',
-    };
+    return { 'Content-Type': 'application/json', Authorization: token ? `Bearer ${token}` : '' };
   };
 
   const mostrarToast = (mensagem, tipo = 'sucesso') => {
@@ -162,55 +162,65 @@ function App() {
     }, 3500);
   };
 
-  const solicitarGeracaoPix = (e) => {
-    e.preventDefault();
-    const valorReal = parseFloat(valorRecarga);
-    if (isNaN(valorReal) || valorReal < 30) {
-      mostrarToast('O valor mínimo para recarga é de R$ 30,00', 'erro');
-      return;
-    }
-
-    const cpfLimpo = cpfRecarga.replace(/\D/g, '');
-    if (cpfLimpo.length !== 11) {
-      mostrarToast('Por favor, digite um CPF válido com 11 números.', 'erro');
-      return;
-    }
-
-    mostrarToast('Gerando código PIX seguro...', 'aviso');
-
-    fetch('https://borajogar-api.onrender.com/recarga/gerar-pix', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        utilizador_id: usuarioLogado.id,
-        valor: valorReal,
-        cupom: cupomRecarga,
-        cpf: cpfLimpo,
-      }),
-    }).then(async (res) => {
-      const data = await res.json();
-      if (res.ok) {
-        setPixPendente({
-          payment_id: data.payment_id,
-          qr_code: data.qr_code,
-          copia_cola: data.copia_cola,
-        });
-      } else {
-        mostrarToast(data.detail, 'erro');
-      }
-    });
+  const sair = () => {
+    setUsuarioLogado(null);
+    setAbaAtual('vitrine');
+    localStorage.removeItem('usuario_locadora');
+    localStorage.removeItem('token_locadora');
   };
 
+  const lidarComFiltroPlataforma = (plat) => {
+    setFiltroPlataforma(plat);
+    setPaginaAtual(1);
+  };
+  const lidarComFiltroDisp = (disp) => {
+    setFiltroDisponibilidade(disp);
+    setPaginaAtual(1);
+  };
+  const lidarComBusca = (e) => {
+    setTermoBusca(e.target.value);
+    setPaginaAtual(1);
+  };
+
+  // ==========================================================================
+  // 3. EFEITOS DE CICLO DE VIDA (USE EFFECT)
+  // ==========================================================================
+
+  // Dispara visualizações de página no Google Analytics
   useEffect(() => {
     ReactGA.send({ hitType: 'pageview', page: `/${abaAtual}` });
   }, [abaAtual]);
 
   useEffect(() => {
-    if (usuarioLogado?.id) {
-      ReactGA.set({ userId: usuarioLogado.id.toString() });
-    }
+    if (usuarioLogado?.id) ReactGA.set({ userId: usuarioLogado.id.toString() });
   }, [usuarioLogado?.id]);
 
+  // Carrega os dados sempre que a aba mudar ou o usuário logar
+  useEffect(() => {
+    carregarDados();
+  }, [usuarioLogado?.id]);
+
+  // Rola para o topo ao trocar de aba/página
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [abaAtual, paginaAtual]);
+
+  // Efeito do Banner Rotativo Automático
+  useEffect(() => {
+    const urls = configSistema.banners_url
+      ? configSistema.banners_url
+          .split(',')
+          .map((u) => u.trim())
+          .filter((u) => u)
+      : [];
+    if (urls.length <= 1) return;
+    const intervalo = setInterval(() => {
+      setIndiceBanner((prev) => (prev + 1) % urls.length);
+    }, 8000);
+    return () => clearInterval(intervalo);
+  }, [configSistema.banners_url]);
+
+  // Efeito Polling do Pix: Fica perguntando se o cliente já pagou o QR Code
   useEffect(() => {
     let intervalId;
     if (pixPendente) {
@@ -220,14 +230,11 @@ function App() {
           .then((data) => {
             if (data.status === 'PAGO') {
               mostrarToast('✅ Pagamento Confirmado! Saldo liberado.', 'sucesso');
-
-              if (window.fbq) {
+              if (window.fbq)
                 window.fbq('track', 'Purchase', {
                   value: parseFloat(valorRecarga),
                   currency: 'BRL',
                 });
-              }
-
               if (typeof window.gtag === 'function') {
                 window.gtag('event', 'conversion', {
                   send_to: 'AW-18093761831/3yJqCMGM9pwcEKfK47ND',
@@ -236,7 +243,6 @@ function App() {
                   transaction_id: pixPendente.payment_id,
                 });
               }
-
               setPixPendente(null);
               setCupomRecarga('');
               setValorRecarga('30');
@@ -248,37 +254,27 @@ function App() {
     return () => clearInterval(intervalId);
   }, [pixPendente]);
 
-  // NOVO EFFECT: Lê os parâmetros da URL quando o cliente volta da Stripe
+  // Efeito do Retorno do Checkout (Stripe)
   useEffect(() => {
-    // Pega as informações invisíveis na URL
     const params = new URLSearchParams(window.location.search);
     const aba = params.get('aba');
     const stripeSession = params.get('stripe_session');
     const stripeCancelado = params.get('stripe_cancelado');
 
-    // Se a Stripe mandou abrir o dashboard, a gente abre!
     if (aba) {
       setAbaAtual(aba);
-      // Limpa a URL do navegador para o usuário não ver os códigos feios
       window.history.replaceState(null, '', window.location.pathname);
     }
-
-    if (stripeCancelado) {
-      mostrarToast('Operação de pagamento com cartão cancelada.', 'aviso');
-    }
-
-    // Se a Stripe devolveu o cliente com sucesso, vamos bater no nosso novo Fallback
+    if (stripeCancelado) mostrarToast('Operação de pagamento com cartão cancelada.', 'aviso');
     if (stripeSession) {
       mostrarToast('Verificando seu pagamento na Stripe...', 'aviso');
-
       fetch(`https://borajogar-api.onrender.com/recarga/status-stripe/${stripeSession}`)
         .then((res) => res.json())
         .then((data) => {
           if (data.status === 'PAGO') {
             mostrarToast('✅ Pagamento Confirmado! Saldo atualizado com sucesso.', 'sucesso');
-            carregarDados(); // Puxa o saldo atualizado
+            carregarDados();
           } else {
-            // Se por acaso a Stripe atrasar, tentamos de novo em 5 segundos
             setTimeout(() => carregarDados(), 5000);
           }
         })
@@ -286,70 +282,117 @@ function App() {
     }
   }, []);
 
-  useEffect(() => {
-    const urls = configSistema.banners_url
-      ? configSistema.banners_url
-          .split(',')
-          .map((u) => u.trim())
-          .filter((u) => u)
-      : [];
-    if (urls.length <= 1) return;
+  // ==========================================================================
+  // 4. COMUNICAÇÃO COM O BACKEND (FETCH DE DADOS)
+  // ==========================================================================
 
-    const intervalo = setInterval(() => {
-      setIndiceBanner((prev) => (prev + 1) % urls.length);
-    }, 8000);
-
-    return () => clearInterval(intervalo);
-  }, [configSistema.banners_url]);
-
-  const alterarMinhaSenha = (e) => {
-    e.preventDefault();
-
-    if (mudarSenhaNova !== mudarSenhaNovaConfirmacao) {
-      mostrarToast('A nova senha e a confirmação não coincidem.', 'erro');
-      return;
-    }
-
-    const regexSenha = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-    if (!regexSenha.test(mudarSenhaNova)) {
-      mostrarToast(
-        'A nova senha deve ter no mínimo 8 caracteres, 1 letra maiúscula, 1 número e 1 caractere especial (Ex: @, #, !).',
-        'erro',
-      );
-      return;
-    }
-
-    fetch('https://borajogar-api.onrender.com/mudar-senha', {
-      method: 'POST',
-      headers: getAuthHeaders(),
-      body: JSON.stringify({
-        utilizador_id: usuarioLogado.id,
-        senha_atual: mudarSenhaAtual,
-        nova_senha: mudarSenhaNova,
-      }),
-    })
+  const carregarDados = () => {
+    // Vitrine
+    fetch('https://borajogar-api.onrender.com/jogos', { cache: 'no-store' })
       .then(async (res) => {
-        const data = await res.json();
-        if (res.ok) {
-          mostrarToast(data.mensagem, 'sucesso');
-          setMudarSenhaAtual('');
-          setMudarSenhaNova('');
-          setMudarSenhaNovaConfirmacao('');
-        } else {
-          mostrarToast(data.detail, 'erro');
+        if (!res.ok) {
+          const erroText = await res.text();
+          mostrarToast(`⚠️ Erro no Servidor: ${erroText}`, 'erro');
+          return [];
         }
+        return res.json();
       })
-      .catch(() => mostrarToast('Erro de conexão.', 'erro'));
+      .then((dados) => {
+        setJogos(Array.isArray(dados) ? dados : []);
+        setCarregandoJogos(false);
+      })
+      .catch(() => {
+        mostrarToast('Servidor conectando ou sem internet. Dê um F5.', 'aviso');
+        setCarregandoJogos(false);
+      });
+
+    // Configurações e Novidades
+    fetch('https://borajogar-api.onrender.com/configuracoes', { cache: 'no-store' })
+      .then((res) => (res.ok ? res.json() : {}))
+      .then((dados) => setConfigSistema(dados));
+
+    fetch('https://borajogar-api.onrender.com/jogos/novidades')
+      .then((res) => (res.ok ? res.json() : []))
+      .then((dados) => setNovidades(Array.isArray(dados) ? dados : []));
+
+    // Enquete
+    let urlEnquete = 'https://borajogar-api.onrender.com/enquete';
+    if (usuarioLogado && usuarioLogado.id) urlEnquete += `?usuario_id=${usuarioLogado.id}`;
+    fetch(urlEnquete)
+      .then((res) => (res.ok ? res.json() : { opcoes: [] }))
+      .then((dados) => {
+        setEnqueteOpcoes(dados.opcoes || []);
+        if (dados.voto_usuario) setMeuVoto(dados.voto_usuario);
+      });
+
+    if (!usuarioLogado) return;
+
+    // Dados do Admin
+    if (usuarioLogado.is_admin) {
+      fetch('https://borajogar-api.onrender.com/admin/locacoes', { headers: getAuthHeaders() })
+        .then((res) => (res.ok ? res.json() : []))
+        .then((dados) => setTodasLocacoes(Array.isArray(dados) ? dados : []));
+      fetch('https://borajogar-api.onrender.com/admin/reservas', { headers: getAuthHeaders() })
+        .then((res) => (res.ok ? res.json() : []))
+        .then((dados) => setTodasReservas(Array.isArray(dados) ? dados : []));
+      fetch(
+        `https://borajogar-api.onrender.com/admin/estatisticas?periodo=${periodoFiltroEstatisticas}`,
+        { headers: getAuthHeaders() },
+      )
+        .then((res) =>
+          res.ok ? res.json() : { faturamento: 0, total_clientes: 0, locacoes_ativas: 0 },
+        )
+        .then((dados) => setEstatisticasAdmin(dados));
+      fetch('https://borajogar-api.onrender.com/usuarios', { headers: getAuthHeaders() })
+        .then((res) => (res.ok ? res.json() : []))
+        .then((dados) => setTodosUsuarios(Array.isArray(dados) ? dados : []));
+      fetch('https://borajogar-api.onrender.com/admin/manutencao', { headers: getAuthHeaders() })
+        .then((res) => (res.ok ? res.json() : []))
+        .then((dados) => setContasManutencao(Array.isArray(dados) ? dados : []));
+      fetch('https://borajogar-api.onrender.com/admin/cupons', { headers: getAuthHeaders() })
+        .then((res) => (res.ok ? res.json() : []))
+        .then((dados) => setListaCupons(Array.isArray(dados) ? dados : []));
+    }
+
+    // Dados Pessoais do Cliente
+    fetch(`https://borajogar-api.onrender.com/meus-alugueis/${usuarioLogado.id}`)
+      .then((res) => (res.ok ? res.json() : []))
+      .then((dados) => setMeusAlugueis(Array.isArray(dados) ? dados : []));
+    fetch(`https://borajogar-api.onrender.com/minhas-reservas/${usuarioLogado.id}`)
+      .then((res) => (res.ok ? res.json() : []))
+      .then((dados) => setMinhasReservas(Array.isArray(dados) ? dados : []));
+    fetch(`https://borajogar-api.onrender.com/extrato/${usuarioLogado.id}`)
+      .then((res) => (res.ok ? res.json() : []))
+      .then((dados) => setExtrato(Array.isArray(dados) ? dados : []));
+    fetch(`https://borajogar-api.onrender.com/notificacoes/${usuarioLogado.id}`)
+      .then((res) => (res.ok ? res.json() : []))
+      .then((dados) => setNotificacoes(Array.isArray(dados) ? dados : []));
+
+    // [INFO] Reconciliação Financeira Passiva (Lazy Sync)
+    fetch(`https://borajogar-api.onrender.com/recarga/sincronizar/${usuarioLogado.id}`)
+      .then(() => {
+        fetch(`https://borajogar-api.onrender.com/usuarios/${usuarioLogado.id}/saldo`)
+          .then((res) => (res.ok ? res.json() : null))
+          .then((data) => {
+            if (data && data.saldo !== undefined) {
+              const saldoReal = parseFloat(data.saldo);
+              setUsuarioLogado((prev) => ({ ...prev, saldo: saldoReal }));
+              const userStorage = JSON.parse(localStorage.getItem('usuario_locadora'));
+              if (userStorage) {
+                userStorage.saldo = saldoReal;
+                localStorage.setItem('usuario_locadora', JSON.stringify(userStorage));
+              }
+            }
+          });
+      })
+      .catch(() => console.error('Falha silenciosa na sincronização.'));
   };
 
-  const abrirConfirmacao = (
-    tipo,
-    jogoId,
-    jogoTitulo,
-    preco7,
-    preco14,
-    diasEscolhidosInicial = 7,
-  ) => {
+  // ==========================================================================
+  // 5. REGRAS DE NEGÓCIO: ALUGUEL E FILA (TOP-DOWN SELLING)
+  // ==========================================================================
+
+  const abrirConfirmacao = (jogo) => {
     if (!usuarioLogado) {
       mostrarToast('Faça login ou crie uma conta grátis para alugar jogos!', 'aviso');
       setModoLogin(true);
@@ -359,161 +402,65 @@ function App() {
       return;
     }
 
-    const precoAlvo = diasEscolhidosInicial === 14 ? preco14 : preco7;
-    if (usuarioLogado.saldo < precoAlvo) {
-      mostrarToast(
-        `Saldo insuficiente para ${diasEscolhidosInicial} dias!\nColoque créditos em "Meus Acessos"!`,
-        'erro',
-      );
-      return;
-    }
-    if (usuarioLogado.saldo < 0) {
-      mostrarToast(`Você está negativado!`, 'erro');
-      return;
-    }
+    // [INFO] Lógica Top-Down: Define o que será selecionado por padrão ao abrir o modal
+    let slotPadrao = 'FILA';
+    if (jogo.estoque_primaria > 0) slotPadrao = 'PRIMARIA';
+    else if (jogo.estoque_secundaria > 0) slotPadrao = 'SECUNDARIA';
+
     setModalConfirmacao({
       visivel: true,
-      tipo,
-      jogoId,
-      jogoTitulo,
-      preco7,
-      preco14,
-      diasEscolhidos: diasEscolhidosInicial,
+      jogo: jogo,
+      diasEscolhidos: 7,
+      tipoSlotSelecionado: slotPadrao,
     });
   };
 
   const confirmarTransacao = () => {
-    const precoFinal =
-      modalConfirmacao.diasEscolhidos === 7 ? modalConfirmacao.preco7 : modalConfirmacao.preco14;
+    const { jogo, diasEscolhidos, tipoSlotSelecionado } = modalConfirmacao;
+    let precoFinal = 0;
+
+    // [INFO] Descobre o preço baseado no que o cliente escolheu na tela do modal
+    if (tipoSlotSelecionado === 'PRIMARIA') {
+      precoFinal = diasEscolhidos === 14 ? jogo.preco_aluguel_14 : jogo.preco_aluguel;
+    } else if (tipoSlotSelecionado === 'SECUNDARIA') {
+      precoFinal = diasEscolhidos === 14 ? jogo.preco_secundaria_14 : jogo.preco_secundaria;
+    } else if (tipoSlotSelecionado === 'FILA') {
+      precoFinal = diasEscolhidos === 14 ? jogo.preco_aluguel_14 : jogo.preco_aluguel;
+    }
 
     if (usuarioLogado.saldo < precoFinal) {
-      mostrarToast('Saldo insuficiente para esta opção de dias!', 'erro');
+      mostrarToast('Saldo insuficiente para esta opção! Faça uma recarga.', 'erro');
       return;
     }
 
-    if (modalConfirmacao.tipo === 'aluguel') {
-      executarAluguel(modalConfirmacao.jogoId, precoFinal, modalConfirmacao.diasEscolhidos);
+    if (tipoSlotSelecionado === 'FILA') {
+      executarReserva(jogo.id, precoFinal, diasEscolhidos, 'PRIMARIA');
     } else {
-      executarReserva(modalConfirmacao.jogoId, precoFinal, modalConfirmacao.diasEscolhidos);
+      executarAluguel(jogo.id, precoFinal, diasEscolhidos, tipoSlotSelecionado);
     }
 
     setModalConfirmacao({
       visivel: false,
-      tipo: '',
-      jogoId: null,
-      jogoTitulo: '',
-      preco7: 0,
-      preco14: 0,
+      jogo: null,
       diasEscolhidos: 7,
+      tipoSlotSelecionado: 'PRIMARIA',
     });
   };
 
-  const solicitarRecargaCartao = async (e) => {
-    e.preventDefault();
-    const valorReal = parseFloat(valorRecarga);
-    if (isNaN(valorReal) || valorReal < 30) {
-      mostrarToast('O valor mínimo para recarga é de R$ 30,00', 'erro');
-      return;
-    }
-
-    setCarregandoGateway(true);
-    mostrarToast('Preparando ambiente seguro de pagamento...', 'aviso');
-
-    // Manda evento para o Analytics
-    ReactGA.event({ category: 'Checkout', action: 'Click_Stripe_Card', value: valorReal });
-
-    try {
-      const res = await fetch('https://borajogar-api.onrender.com/recarga/cartao', {
-        method: 'POST',
-        headers: getAuthHeaders(),
-        body: JSON.stringify({
-          utilizador_id: usuarioLogado.id,
-          valor: valorReal,
-          cupom: cupomRecarga,
-          cpf: cpfRecarga || '00000000000', // Stripe não exige CPF, mandamos um placeholder se vazio
-        }),
-      });
-      const data = await res.json();
-
-      if (res.ok && data.checkout_url) {
-        // O redirecionamento mágico para o ambiente da Stripe!
-        window.location.href = data.checkout_url;
-      } else {
-        mostrarToast(data.detail || 'Erro ao gerar checkout', 'erro');
-        setCarregandoGateway(false);
-      }
-    } catch (err) {
-      mostrarToast('Erro de conexão.', 'erro');
-      setCarregandoGateway(false);
-    }
-  };
-
-  const solicitarRecargaPix = async (e) => {
-    e.preventDefault();
-    const valorReal = parseFloat(valorRecarga);
-    if (isNaN(valorReal) || valorReal < 30) {
-      mostrarToast('O valor mínimo para recarga é de R$ 30,00', 'erro');
-      return;
-    }
-
-    const cpfLimpo = cpfRecarga.replace(/\D/g, '');
-    if (cpfLimpo.length !== 11) {
-      mostrarToast('A Efí exige um CPF válido com 11 números para o Pix.', 'erro');
-      return;
-    }
-
-    setCarregandoGateway(true);
-    mostrarToast('Gerando código PIX dinâmico...', 'aviso');
-
-    // Manda evento para o Analytics
-    ReactGA.event({ category: 'Checkout', action: 'Click_Efi_Pix', value: valorReal });
-
-    try {
-      const res = await fetch('https://borajogar-api.onrender.com/recarga/pix', {
-        method: 'POST',
-        headers: getAuthHeaders(),
-        body: JSON.stringify({
-          utilizador_id: usuarioLogado.id,
-          valor: valorReal,
-          cupom: cupomRecarga,
-          cpf: cpfLimpo,
-        }),
-      });
-      const data = await res.json();
-
-      if (res.ok && data.payment_id) {
-        setPixPendente({
-          payment_id: data.payment_id,
-          qr_code: data.qr_code,
-          copia_cola: data.copia_cola,
-        });
-      } else {
-        mostrarToast(data.detail || 'Erro ao gerar Pix', 'erro');
-      }
-    } catch (err) {
-      mostrarToast('Erro de conexão.', 'erro');
-    } finally {
-      setCarregandoGateway(false);
-    }
-  };
-
-  const executarAluguel = (jogoId, precoJogo, dias) => {
+  const executarAluguel = (jogoId, precoJogo, dias, tipoSlot) => {
     fetch('https://borajogar-api.onrender.com/locacoes', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders(),
       body: JSON.stringify({
         utilizador_id: usuarioLogado.id,
         jogo_id: jogoId,
         dias_aluguel: dias,
+        tipo_slot: tipoSlot,
       }),
     }).then(async (res) => {
       const data = await res.json();
       if (res.ok) {
         mostrarToast(data.mensagem, 'sucesso');
-        setUsuarioLogado({
-          ...usuarioLogado,
-          saldo: usuarioLogado.saldo - precoJogo,
-        });
         carregarDados();
       } else {
         mostrarToast(data.detail, 'erro');
@@ -521,23 +468,20 @@ function App() {
     });
   };
 
-  const executarReserva = (jogoId, precoJogo, dias) => {
+  const executarReserva = (jogoId, precoJogo, dias, tipoSlot) => {
     fetch('https://borajogar-api.onrender.com/reservas', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders(),
       body: JSON.stringify({
         utilizador_id: usuarioLogado.id,
         jogo_id: jogoId,
         dias_aluguel: dias,
+        tipo_slot: tipoSlot,
       }),
     }).then(async (res) => {
       const data = await res.json();
       if (res.ok) {
         mostrarToast(data.mensagem, 'sucesso');
-        setUsuarioLogado({
-          ...usuarioLogado,
-          saldo: usuarioLogado.saldo - precoJogo,
-        });
         carregarDados();
       } else {
         mostrarToast(data.detail, 'erro');
@@ -545,13 +489,10 @@ function App() {
     });
   };
 
-  const abrirModalDevolucao = (locacaoId, dataFim) => {
-    setModalDevolucao({ locacaoId, dataFim });
-  };
+  const abrirModalDevolucao = (locacaoId, dataFim) => setModalDevolucao({ locacaoId, dataFim });
 
   const confirmarDevolucao = () => {
     if (!modalDevolucao) return;
-
     fetch('https://borajogar-api.onrender.com/devolver', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -574,6 +515,113 @@ function App() {
     });
   };
 
+  const cancelarReservaComEstorno = (reservaId, notificacaoId) => {
+    if (
+      !window.confirm(
+        'Tem certeza que deseja cancelar esta reserva e receber o crédito de volta na carteira?',
+      )
+    )
+      return;
+    fetch('https://borajogar-api.onrender.com/reservas/cancelar', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        reserva_id: reservaId,
+        utilizador_id: usuarioLogado.id,
+        notificacao_id: notificacaoId,
+      }),
+    }).then(async (res) => {
+      const data = await res.json();
+      if (res.ok) {
+        mostrarToast(data.mensagem, 'sucesso');
+        carregarDados();
+      } else {
+        mostrarToast(data.detail, 'erro');
+      }
+    });
+  };
+
+  // ==========================================================================
+  // 6. INTEGRAÇÕES EXTERNAS (PAGAMENTOS, 2FA, RAWG)
+  // ==========================================================================
+
+  const solicitarRecargaCartao = async (e) => {
+    e.preventDefault();
+    const valorReal = parseFloat(valorRecarga);
+    if (isNaN(valorReal) || valorReal < 30) {
+      mostrarToast('O valor mínimo para recarga é de R$ 30,00', 'erro');
+      return;
+    }
+    setCarregandoGateway(true);
+    mostrarToast('Preparando ambiente seguro de pagamento...', 'aviso');
+    ReactGA.event({ category: 'Checkout', action: 'Click_Stripe_Card', value: valorReal });
+
+    try {
+      const res = await fetch('https://borajogar-api.onrender.com/recarga/cartao', {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({
+          utilizador_id: usuarioLogado.id,
+          valor: valorReal,
+          cupom: cupomRecarga,
+          cpf: cpfRecarga || '00000000000',
+        }),
+      });
+      const data = await res.json();
+      if (res.ok && data.checkout_url) window.location.href = data.checkout_url;
+      else {
+        mostrarToast(data.detail || 'Erro ao gerar checkout', 'erro');
+        setCarregandoGateway(false);
+      }
+    } catch (err) {
+      mostrarToast('Erro de conexão.', 'erro');
+      setCarregandoGateway(false);
+    }
+  };
+
+  const solicitarRecargaPix = async (e) => {
+    e.preventDefault();
+    const valorReal = parseFloat(valorRecarga);
+    if (isNaN(valorReal) || valorReal < 30) {
+      mostrarToast('O valor mínimo para recarga é de R$ 30,00', 'erro');
+      return;
+    }
+    const cpfLimpo = cpfRecarga.replace(/\D/g, '');
+    if (cpfLimpo.length !== 11) {
+      mostrarToast('A Efí exige um CPF válido com 11 números para o Pix.', 'erro');
+      return;
+    }
+
+    setCarregandoGateway(true);
+    mostrarToast('Gerando código PIX dinâmico...', 'aviso');
+    ReactGA.event({ category: 'Checkout', action: 'Click_Efi_Pix', value: valorReal });
+
+    try {
+      const res = await fetch('https://borajogar-api.onrender.com/recarga/pix', {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({
+          utilizador_id: usuarioLogado.id,
+          valor: valorReal,
+          cupom: cupomRecarga,
+          cpf: cpfLimpo,
+        }),
+      });
+      const data = await res.json();
+      if (res.ok && data.payment_id)
+        setPixPendente({
+          payment_id: data.payment_id,
+          qr_code: data.qr_code,
+          copia_cola: data.copia_cola,
+        });
+      else mostrarToast(data.detail || 'Erro ao gerar Pix', 'erro');
+    } catch (err) {
+      mostrarToast('Erro de conexão.', 'erro');
+    } finally {
+      setCarregandoGateway(false);
+    }
+  };
+
   const gerarCodigo2FA = async (locacaoId) => {
     try {
       const res = await fetch(
@@ -582,7 +630,7 @@ function App() {
       const data = await res.json();
       if (res.ok) {
         setCodigosGerados2FA((prev) => ({ ...prev, [locacaoId]: data.codigo }));
-        mostrarToast('Código gerado! Digite rápido.', 'aviso');
+        mostrarToast('Código gerado! Digite rápido no console.', 'aviso');
         setTimeout(() => {
           setCodigosGerados2FA((prev) => {
             const novo = { ...prev };
@@ -613,15 +661,12 @@ function App() {
       if (dadosBusca.results && dadosBusca.results.length > 0) {
         const jogoEncontrado = dadosBusca.results[0];
         setNovoJogoImagem(jogoEncontrado.background_image || '');
-
-        if (jogoEncontrado.released) {
-          setNovoJogoDataLancamento(jogoEncontrado.released);
-        }
-
+        if (jogoEncontrado.released) setNovoJogoDataLancamento(jogoEncontrado.released);
         const resDetalhes = await fetch(
           `https://api.rawg.io/api/games/${jogoEncontrado.id}?key=${RAWG_API_KEY}`,
         );
         const dadosDetalhes = await resDetalhes.json();
+
         if (dadosDetalhes.playtime) setNovoJogoTempo(`${dadosDetalhes.playtime}h`);
         else setNovoJogoTempo('');
         if (dadosDetalhes.rating) setNovoJogoNota(dadosDetalhes.rating);
@@ -637,7 +682,7 @@ function App() {
             setNovoJogoDescricao(descricaoPortugues);
           } catch (erroTraducao) {
             setNovoJogoDescricao(descricaoIngles);
-            mostrarToast('Capa importada.', 'aviso');
+            mostrarToast('Capa importada. Falha ao traduzir sinopse.', 'aviso');
             return;
           }
         }
@@ -662,10 +707,8 @@ function App() {
         `https://api.rawg.io/api/games?key=${RAWG_API_KEY}&search=${encodeURIComponent(novaOpcaoEnqueteTitulo)}&page_size=1`,
       );
       const dadosBusca = await resBusca.json();
-
       if (dadosBusca.results && dadosBusca.results.length > 0) {
-        const jogoEncontrado = dadosBusca.results[0];
-        setNovaOpcaoEnqueteImagem(jogoEncontrado.background_image || '');
+        setNovaOpcaoEnqueteImagem(dadosBusca.results[0].background_image || '');
         mostrarToast('Capa encontrada e preenchida com sucesso!', 'sucesso');
       } else {
         mostrarToast('Jogo não encontrado na base de dados.', 'erro');
@@ -675,243 +718,9 @@ function App() {
     }
   };
 
-  const sair = () => {
-    setUsuarioLogado(null);
-    setAbaAtual('vitrine');
-    localStorage.removeItem('usuario_locadora');
-    localStorage.removeItem('token_locadora');
-  };
-
-  const votarEnquete = (opcaoId) => {
-    if (!usuarioLogado) {
-      mostrarToast('Você precisa criar uma conta grátis ou fazer login para votar!', 'aviso');
-      setModoLogin(false);
-      setModoEsqueciSenha(false);
-      setAbaAtual('login');
-      window.scrollTo(0, 0);
-      return;
-    }
-    fetch('https://borajogar-api.onrender.com/enquete/votar', {
-      method: 'POST',
-      headers: getAuthHeaders(),
-      body: JSON.stringify({
-        utilizador_id: usuarioLogado.id,
-        opcao_id: opcaoId,
-      }),
-    }).then(async (res) => {
-      if (res.ok) {
-        mostrarToast('Voto registrado com sucesso! Obrigado.', 'sucesso');
-        setMeuVoto(opcaoId);
-        carregarDados();
-      } else {
-        const data = await res.json();
-        mostrarToast(data.detail, 'erro');
-      }
-    });
-  };
-
-  const adicionarOpcaoEnquete = (e) => {
-    e.preventDefault();
-    fetch('https://borajogar-api.onrender.com/admin/enquete', {
-      method: 'POST',
-      headers: getAuthHeaders(),
-      body: JSON.stringify({
-        titulo: novaOpcaoEnqueteTitulo,
-        url_imagem: novaOpcaoEnqueteImagem,
-      }),
-    }).then((res) => {
-      if (res.ok) {
-        mostrarToast('Opção adicionada à enquete!', 'sucesso');
-        setNovaOpcaoEnqueteTitulo('');
-        setNovaOpcaoEnqueteImagem('');
-        carregarDados();
-      } else {
-        mostrarToast('Erro ao adicionar.', 'erro');
-      }
-    });
-  };
-
-  const removerOpcaoEnquete = (id) => {
-    if (window.confirm('Remover esta opção da enquete?')) {
-      fetch(`https://borajogar-api.onrender.com/admin/enquete/${id}`, {
-        method: 'DELETE',
-        headers: getAuthHeaders(),
-      }).then((res) => {
-        if (res.ok) carregarDados();
-      });
-    }
-  };
-
-  const limparEnquete = () => {
-    if (
-      window.confirm(
-        'ATENÇÃO: Isso apagará TODOS os jogos da enquete e zerará TODOS os votos. Tem certeza?',
-      )
-    ) {
-      fetch('https://borajogar-api.onrender.com/admin/enquete', {
-        method: 'DELETE',
-        headers: getAuthHeaders(),
-      }).then((res) => {
-        if (res.ok) carregarDados();
-      });
-    }
-  };
-
-  const carregarDados = () => {
-    // 1. Vitrine em tempo real (Sem cache)
-    fetch('https://borajogar-api.onrender.com/jogos', { cache: 'no-store' })
-      .then(async (res) => {
-        if (!res.ok) {
-          const erroText = await res.text();
-          mostrarToast(`⚠️ Erro no Servidor: ${erroText}`, 'erro');
-          return [];
-        }
-        return res.json();
-      })
-      .then((dados) => {
-        setJogos(Array.isArray(dados) ? dados : []);
-        setCarregandoJogos(false);
-      })
-      .catch((err) => {
-        mostrarToast('Servidor conectando ou sem internet. Dê um F5.', 'aviso');
-        setCarregandoJogos(false);
-      });
-
-    // 2. Configurações em tempo real (Sem cache)
-    fetch('https://borajogar-api.onrender.com/configuracoes', { cache: 'no-store' })
-      .then((res) => (res.ok ? res.json() : {}))
-      .then((dados) => setConfigSistema(dados));
-
-    fetch('https://borajogar-api.onrender.com/jogos/novidades')
-      .then((res) => (res.ok ? res.json() : []))
-      .then((dados) => setNovidades(Array.isArray(dados) ? dados : []));
-
-    let urlEnquete = 'https://borajogar-api.onrender.com/enquete';
-    if (usuarioLogado && usuarioLogado.id) urlEnquete += `?usuario_id=${usuarioLogado.id}`;
-    fetch(urlEnquete)
-      .then((res) => (res.ok ? res.json() : { opcoes: [] }))
-      .then((dados) => {
-        setEnqueteOpcoes(dados.opcoes || []);
-        if (dados.voto_usuario) setMeuVoto(dados.voto_usuario);
-      });
-
-    if (!usuarioLogado) return;
-
-    if (usuarioLogado.is_admin) {
-      fetch('https://borajogar-api.onrender.com/admin/locacoes', {
-        headers: getAuthHeaders(),
-      })
-        .then((res) => (res.ok ? res.json() : []))
-        .then((dados) => setTodasLocacoes(Array.isArray(dados) ? dados : []));
-      fetch('https://borajogar-api.onrender.com/admin/reservas', {
-        headers: getAuthHeaders(),
-      })
-        .then((res) => (res.ok ? res.json() : []))
-        .then((dados) => setTodasReservas(Array.isArray(dados) ? dados : []));
-      fetch(
-        `https://borajogar-api.onrender.com/admin/estatisticas?periodo=${periodoFiltroEstatisticas}`,
-        { headers: getAuthHeaders() },
-      )
-        .then((res) =>
-          res.ok ? res.json() : { faturamento: 0, total_clientes: 0, locacoes_ativas: 0 },
-        )
-        .then((dados) => setEstatisticasAdmin(dados));
-      fetch('https://borajogar-api.onrender.com/usuarios', {
-        headers: getAuthHeaders(),
-      })
-        .then((res) => (res.ok ? res.json() : []))
-        .then((dados) => setTodosUsuarios(Array.isArray(dados) ? dados : []));
-      fetch('https://borajogar-api.onrender.com/admin/manutencao', {
-        headers: getAuthHeaders(),
-      })
-        .then((res) => (res.ok ? res.json() : []))
-        .then((dados) => setContasManutencao(Array.isArray(dados) ? dados : []));
-      fetch('https://borajogar-api.onrender.com/admin/cupons', {
-        headers: getAuthHeaders(),
-      })
-        .then((res) => (res.ok ? res.json() : []))
-        .then((dados) => setListaCupons(Array.isArray(dados) ? dados : []));
-    }
-
-    fetch(`https://borajogar-api.onrender.com/meus-alugueis/${usuarioLogado.id}`)
-      .then((res) => (res.ok ? res.json() : []))
-      .then((dados) => setMeusAlugueis(Array.isArray(dados) ? dados : []));
-    fetch(`https://borajogar-api.onrender.com/minhas-reservas/${usuarioLogado.id}`)
-      .then((res) => (res.ok ? res.json() : []))
-      .then((dados) => setMinhasReservas(Array.isArray(dados) ? dados : []));
-    fetch(`https://borajogar-api.onrender.com/extrato/${usuarioLogado.id}`)
-      .then((res) => (res.ok ? res.json() : []))
-      .then((dados) => setExtrato(Array.isArray(dados) ? dados : []));
-    fetch(`https://borajogar-api.onrender.com/notificacoes/${usuarioLogado.id}`)
-      .then((res) => (res.ok ? res.json() : []))
-      .then((dados) => setNotificacoes(Array.isArray(dados) ? dados : []));
-
-    // RECONCILIAÇÃO ATIVA: Tenta recuperar pagamentos no limbo ANTES de buscar o saldo
-    fetch(`https://borajogar-api.onrender.com/recarga/sincronizar/${usuarioLogado.id}`)
-      .then(() => {
-        // Agora sim, busca o saldo garantindo que qualquer pagamento atrasado já foi processado
-        fetch(`https://borajogar-api.onrender.com/usuarios/${usuarioLogado.id}/saldo`)
-          .then((res) => (res.ok ? res.json() : null))
-          .then((data) => {
-            if (data && data.saldo !== undefined) {
-              const saldoReal = parseFloat(data.saldo);
-              setUsuarioLogado((prev) => ({ ...prev, saldo: saldoReal }));
-
-              const userStorage = JSON.parse(localStorage.getItem('usuarioBoraJogar'));
-              if (userStorage) {
-                userStorage.saldo = saldoReal;
-                localStorage.setItem('usuarioBoraJogar', JSON.stringify(userStorage));
-              }
-            }
-          });
-      })
-      .catch(() => console.error('Falha silenciosa na sincronização.'));
-  };
-
-  const manterReserva = (notificacaoId) => {
-    fetch('https://borajogar-api.onrender.com/notificacoes/ler', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ notificacao_id: notificacaoId }),
-    }).then(() => {
-      mostrarToast('Perfeito! Acompanhe a nova data em Minhas Reservas.', 'sucesso');
-      carregarDados();
-    });
-  };
-
-  const cancelarReservaComEstorno = (reservaId, notificacaoId) => {
-    if (
-      !window.confirm(
-        'Tem certeza que deseja cancelar esta reserva e receber o crédito de volta na carteira?',
-      )
-    )
-      return;
-    fetch('https://borajogar-api.onrender.com/reservas/cancelar', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        reserva_id: reservaId,
-        utilizador_id: usuarioLogado.id,
-        notificacao_id: notificacaoId,
-      }),
-    }).then(async (res) => {
-      const data = await res.json();
-      if (res.ok) {
-        mostrarToast(data.mensagem, 'sucesso');
-        carregarDados();
-      } else {
-        mostrarToast(data.detail, 'erro');
-      }
-    });
-  };
-
-  useEffect(() => {
-    carregarDados();
-  }, [usuarioLogado?.id]);
-
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [abaAtual, paginaAtual]);
+  // ==========================================================================
+  // 7. FUNÇÕES ADMINISTRATIVAS (PAINEL ADMIN)
+  // ==========================================================================
 
   const salvarConfiguracoesDireto = (novaConfig, msgSucesso) => {
     fetch('https://borajogar-api.onrender.com/admin/configuracoes', {
@@ -919,19 +728,13 @@ function App() {
       headers: getAuthHeaders(),
       body: JSON.stringify(novaConfig),
     }).then((res) => {
-      if (res.ok) {
-        mostrarToast(msgSucesso, 'sucesso');
-      } else {
-        mostrarToast('Erro ao salvar.', 'erro');
-      }
+      if (res.ok) mostrarToast(msgSucesso, 'sucesso');
+      else mostrarToast('Erro ao salvar.', 'erro');
     });
   };
 
   const toggleAnuncio = () => {
-    const novaConfig = {
-      ...configSistema,
-      anuncio_ativo: !configSistema.anuncio_ativo,
-    };
+    const novaConfig = { ...configSistema, anuncio_ativo: !configSistema.anuncio_ativo };
     setConfigSistema(novaConfig);
     salvarConfiguracoesDireto(
       novaConfig,
@@ -939,9 +742,8 @@ function App() {
     );
   };
 
-  const salvarConfiguracoesGlobais = () => {
+  const salvarConfiguracoesGlobais = () =>
     salvarConfiguracoesDireto(configSistema, '💾 Texto do Anúncio Salvo!');
-  };
 
   const cadastrarJogo = (e) => {
     e.preventDefault();
@@ -953,6 +755,8 @@ function App() {
         plataforma: novoJogoPlataforma,
         preco_aluguel: parseFloat(novoJogoPreco),
         preco_aluguel_14: parseFloat(novoJogoPreco14) || 0.0,
+        preco_secundaria: parseFloat(novoJogoPrecoSec) || 0.0,
+        preco_secundaria_14: parseFloat(novoJogoPrecoSec14) || 0.0,
         descricao: novoJogoDescricao,
         url_imagem: novoJogoImagem,
         tempo_jogo: novoJogoTempo,
@@ -967,22 +771,21 @@ function App() {
         setNovoJogoTitulo('');
         setNovoJogoPreco('');
         setNovoJogoPreco14('');
+        setNovoJogoPrecoSec('');
+        setNovoJogoPrecoSec14('');
         setNovoJogoDescricao('');
         setNovoJogoImagem('');
         setNovoJogoTempo('');
         setNovoJogoNota('');
         setNovoJogoDataLancamento('');
         setNovoJogoRecomendacao(false);
-      } else {
-        mostrarToast('Erro ao cadastrar.', 'erro');
-      }
+      } else mostrarToast('Erro ao cadastrar.', 'erro');
     });
   };
 
   const salvarEdicaoJogo = (e) => {
     e.preventDefault();
     if (!modalEdicaoJogo) return;
-
     fetch(`https://borajogar-api.onrender.com/jogos/${modalEdicaoJogo.id}`, {
       method: 'PUT',
       headers: getAuthHeaders(),
@@ -991,6 +794,8 @@ function App() {
         plataforma: modalEdicaoJogo.plataforma,
         preco_aluguel: parseFloat(modalEdicaoJogo.preco_aluguel),
         preco_aluguel_14: parseFloat(modalEdicaoJogo.preco_aluguel_14) || 0.0,
+        preco_secundaria: parseFloat(modalEdicaoJogo.preco_secundaria) || 0.0,
+        preco_secundaria_14: parseFloat(modalEdicaoJogo.preco_secundaria_14) || 0.0,
         descricao: modalEdicaoJogo.descricao,
         url_imagem: modalEdicaoJogo.url_imagem,
         tempo_jogo: modalEdicaoJogo.tempo_jogo,
@@ -1014,7 +819,6 @@ function App() {
   const salvarEdicaoCliente = (e) => {
     e.preventDefault();
     if (!modalEdicaoCliente) return;
-
     fetch(`https://borajogar-api.onrender.com/usuarios/${modalEdicaoCliente.id}`, {
       method: 'PUT',
       headers: getAuthHeaders(),
@@ -1142,6 +946,23 @@ function App() {
     });
   };
 
+  const resetar2FAAdmin = (locacaoId) => {
+    if (window.confirm('Liberar uma nova tentativa de gerar o código 2FA para este cliente?')) {
+      fetch(`https://borajogar-api.onrender.com/admin/reset-2fa/${locacaoId}`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+      }).then(async (res) => {
+        const data = await res.json();
+        if (res.ok) {
+          mostrarToast(data.mensagem, 'sucesso');
+          carregarDados();
+        } else {
+          mostrarToast(data.detail, 'erro');
+        }
+      });
+    }
+  };
+
   const aplicarMultaCliente = (idUsuario, nomeUsuario) => {
     if (!idUsuario) return;
     if (
@@ -1188,15 +1009,93 @@ function App() {
     }
   };
 
+  // Enquete Admin
+  const votarEnquete = (opcaoId) => {
+    if (!usuarioLogado) {
+      mostrarToast('Você precisa criar uma conta grátis ou fazer login para votar!', 'aviso');
+      setModoLogin(false);
+      setModoEsqueciSenha(false);
+      setAbaAtual('login');
+      window.scrollTo(0, 0);
+      return;
+    }
+    fetch('https://borajogar-api.onrender.com/enquete/votar', {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ utilizador_id: usuarioLogado.id, opcao_id: opcaoId }),
+    }).then(async (res) => {
+      if (res.ok) {
+        mostrarToast('Voto registrado com sucesso! Obrigado.', 'sucesso');
+        setMeuVoto(opcaoId);
+        carregarDados();
+      } else {
+        const data = await res.json();
+        mostrarToast(data.detail, 'erro');
+      }
+    });
+  };
+
+  const adicionarOpcaoEnquete = (e) => {
+    e.preventDefault();
+    fetch('https://borajogar-api.onrender.com/admin/enquete', {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ titulo: novaOpcaoEnqueteTitulo, url_imagem: novaOpcaoEnqueteImagem }),
+    }).then((res) => {
+      if (res.ok) {
+        mostrarToast('Opção adicionada à enquete!', 'sucesso');
+        setNovaOpcaoEnqueteTitulo('');
+        setNovaOpcaoEnqueteImagem('');
+        carregarDados();
+      } else {
+        mostrarToast('Erro ao adicionar.', 'erro');
+      }
+    });
+  };
+
+  const removerOpcaoEnquete = (id) => {
+    if (window.confirm('Remover esta opção da enquete?')) {
+      fetch(`https://borajogar-api.onrender.com/admin/enquete/${id}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders(),
+      }).then((res) => {
+        if (res.ok) carregarDados();
+      });
+    }
+  };
+  const limparEnquete = () => {
+    if (
+      window.confirm(
+        'ATENÇÃO: Isso apagará TODOS os jogos da enquete e zerará TODOS os votos. Tem certeza?',
+      )
+    ) {
+      fetch('https://borajogar-api.onrender.com/admin/enquete', {
+        method: 'DELETE',
+        headers: getAuthHeaders(),
+      }).then((res) => {
+        if (res.ok) carregarDados();
+      });
+    }
+  };
+
+  // Utilitários de Comunicação
+  const manterReserva = (notificacaoId) => {
+    fetch('https://borajogar-api.onrender.com/notificacoes/ler', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ notificacao_id: notificacaoId }),
+    }).then(() => {
+      mostrarToast('Perfeito! Acompanhe a nova data em Minhas Reservas.', 'sucesso');
+      carregarDados();
+    });
+  };
   const cobrarNoWhatsApp = (nome, telefone, jogo) => {
     if (!telefone) return;
     let numeroLimpo = telefone.replace(/\D/g, '');
     if (!numeroLimpo.startsWith('55')) numeroLimpo = '55' + numeroLimpo;
     const mensagem = `Olá, ${nome}! Aqui é da locadora *BORA JOGAR!* 🎮\n\nSeu tempo com o jogo *${jogo}* terminou, mas notamos que a conta ainda está ativada como "Principal" no seu console.\n\nComo fazer a desativação:\n\nNo PS5: Vá em Configurações > Usuários e Contas > Outros > Compartilhamento do console e jogo offline e desative.\n\nNo PS4: Vá em Configurações > Gerenciamento da conta > Ativar como seu PS4 principal e desative.\n\nMe avise aqui assim que desativar!`;
-    const url = `https://wa.me/${numeroLimpo}?text=${encodeURIComponent(mensagem)}`;
-    window.open(url, '_blank');
+    window.open(`https://wa.me/${numeroLimpo}?text=${encodeURIComponent(mensagem)}`, '_blank');
   };
-
   const avisarLiberacao = (nomeCliente, jogoNome) => {
     const clienteObj = todosUsuarios.find((u) => u.nome === nomeCliente);
     if (!clienteObj || !clienteObj.telefone) {
@@ -1208,25 +1107,51 @@ function App() {
     const mensagem = `Fala, ${nomeCliente}! A sua vez na fila chegou e o seu acesso para o jogo *${jogoNome}* já está liberado! 🎮\n\nAcesse seu painel na locadora (aba Meus Acessos) para pegar o e-mail, a senha e gerar o código de acesso.\n\nBora Jogar! 🚀`;
     window.open(`https://wa.me/${numeroLimpo}?text=${encodeURIComponent(mensagem)}`, '_blank');
   };
+  const alterarMinhaSenha = (e) => {
+    e.preventDefault();
+    if (mudarSenhaNova !== mudarSenhaNovaConfirmacao) {
+      mostrarToast('A nova senha e a confirmação não coincidem.', 'erro');
+      return;
+    }
+    const regexSenha = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    if (!regexSenha.test(mudarSenhaNova)) {
+      mostrarToast(
+        'A nova senha deve ter no mínimo 8 caracteres, 1 letra maiúscula, 1 número e 1 caractere especial (Ex: @, #, !).',
+        'erro',
+      );
+      return;
+    }
+    fetch('https://borajogar-api.onrender.com/mudar-senha', {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({
+        utilizador_id: usuarioLogado.id,
+        senha_atual: mudarSenhaAtual,
+        nova_senha: mudarSenhaNova,
+      }),
+    })
+      .then(async (res) => {
+        const data = await res.json();
+        if (res.ok) {
+          mostrarToast(data.mensagem, 'sucesso');
+          setMudarSenhaAtual('');
+          setMudarSenhaNova('');
+          setMudarSenhaNovaConfirmacao('');
+        } else {
+          mostrarToast(data.detail, 'erro');
+        }
+      })
+      .catch(() => mostrarToast('Erro de conexão.', 'erro'));
+  };
 
-  const lidarComFiltroPlataforma = (plat) => {
-    setFiltroPlataforma(plat);
-    setPaginaAtual(1);
-  };
-  const lidarComFiltroDisp = (disp) => {
-    setFiltroDisponibilidade(disp);
-    setPaginaAtual(1);
-  };
-  const lidarComBusca = (e) => {
-    setTermoBusca(e.target.value);
-    setPaginaAtual(1);
-  };
+  // ==========================================================================
+  // 8. REGRAS DE FILTRAGEM E RENDERIZAÇÃO
+  // ==========================================================================
 
   const hojeGlobal = new Date();
   hojeGlobal.setHours(0, 0, 0, 0);
 
-  // 1. O React apenas filtra (busca, plataforma, disponibilidade),
-  // mas MANTÉM a ordem perfeita que veio do Backend.
+  // Filtro inteligente da Vitrine
   const filtradosBase = jogos
     .filter((jogo) => jogo.titulo.toLowerCase().includes(termoBusca.toLowerCase()))
     .filter((jogo) => {
@@ -1239,22 +1164,20 @@ function App() {
     .filter((jogo) => {
       if (filtroDisponibilidade === 'TODOS') return true;
       if (filtroDisponibilidade === 'DISPONIVEL') {
-        // Se for Pré-venda (prioridade 1), sempre mostra
-        if (jogo.prioridade_vitrine === 1) return true;
-        // Se não, só mostra se tiver estoque
-        return jogo.estoque > 0;
+        if (jogo.prioridade_vitrine === 1) return true; // Pré-venda mostra sempre
+        // [INFO] Filtra verificando se tem estoque em QUALQUER um dos slots
+        return jogo.estoque_primaria > 0 || jogo.estoque_secundaria > 0;
       }
       return true;
     });
 
-  // 2. Como o array já está ordenado, basta fatiar para a paginação! Adeus código complexo!
   const totalPaginas = Math.ceil(filtradosBase.length / JOGOS_POR_PAGINA);
   const indiceUltimoJogo = paginaAtual * JOGOS_POR_PAGINA;
   const indicePrimeiroJogo = indiceUltimoJogo - JOGOS_POR_PAGINA;
-
   const jogosDaPagina = filtradosBase.slice(indicePrimeiroJogo, indiceUltimoJogo);
-  const jogosFiltrados = filtradosBase; // Usado para o contador de "Mostrando X jogos"
+  const jogosFiltrados = filtradosBase;
 
+  // Filtros Admin
   const jogosEstoqueFiltrados = jogos.filter((jogo) =>
     jogo.titulo.toLowerCase().includes(buscaEstoque.toLowerCase()),
   );
@@ -1288,27 +1211,6 @@ function App() {
       if (ordenacaoReservaAdmin === 'az_cliente') return a.cliente.localeCompare(b.cliente);
       return 0;
     });
-
-  const cancelarReservaAdmin = (reservaId, nomeCliente, tituloJogo) => {
-    if (
-      window.confirm(
-        `Tem certeza que deseja CANCELAR a reserva de ${tituloJogo} do cliente ${nomeCliente}? O valor será devolvido à carteira dele.`,
-      )
-    ) {
-      fetch(`https://borajogar-api.onrender.com/admin/reservas/${reservaId}/cancelar`, {
-        method: 'POST',
-        headers: getAuthHeaders(),
-      }).then(async (res) => {
-        const data = await res.json();
-        if (res.ok) {
-          mostrarToast(data.mensagem, 'sucesso');
-          carregarDados();
-        } else {
-          mostrarToast(data.detail, 'erro');
-        }
-      });
-    }
-  };
 
   const contasManutencaoFiltradas = contasManutencao
     .filter(
@@ -1349,15 +1251,16 @@ function App() {
     .filter((j) => j.titulo.toLowerCase().includes(termoBusca.toLowerCase()))
     .filter((j) => {
       if (filtroStatusCatalogo === 'todos') return true;
-      if (filtroStatusCatalogo === 'disponiveis') return j.estoque > 0;
-      if (filtroStatusCatalogo === 'alugados') return j.estoque === 0;
-      if (filtroStatusCatalogo === 'lancamentos') return j.prioridade_vitrine === 2; // Agora usa o banco de dados!
+      if (filtroStatusCatalogo === 'disponiveis')
+        return j.estoque_primaria > 0 || j.estoque_secundaria > 0;
+      if (filtroStatusCatalogo === 'alugados')
+        return j.estoque_primaria === 0 && j.estoque_secundaria === 0;
+      if (filtroStatusCatalogo === 'lancamentos') return j.prioridade_vitrine === 2;
       return true;
     });
 
   const alugueisAtivos = meusAlugueis.filter((item) => item.status === 'ATIVA');
   const todosAlugueisExpirados = meusAlugueis.filter((item) => item.status === 'EXPIRADA');
-
   const totalAlugueis = todosAlugueisExpirados.length;
   const historicoAlugueis = todosAlugueisExpirados.slice(0, 5);
 
@@ -1369,11 +1272,7 @@ function App() {
         icon: '👑',
       };
     if (qtd >= 30)
-      return {
-        nome: 'VIP',
-        cor: 'bg-rose-900/40 text-rose-400 border-rose-500/50',
-        icon: '💎',
-      };
+      return { nome: 'VIP', cor: 'bg-rose-900/40 text-rose-400 border-rose-500/50', icon: '💎' };
     if (qtd >= 20)
       return {
         nome: 'Especial',
@@ -1387,27 +1286,14 @@ function App() {
         icon: '🏆',
       };
     if (qtd >= 1)
-      return {
-        nome: 'Membro',
-        cor: 'bg-blue-900/40 text-blue-400 border-blue-500/50',
-        icon: '🛡️',
-      };
-    return {
-      nome: 'Novato',
-      cor: 'bg-zinc-800 text-zinc-500 border-zinc-700',
-      icon: '🌱',
-    };
+      return { nome: 'Membro', cor: 'bg-blue-900/40 text-blue-400 border-blue-500/50', icon: '🛡️' };
+    return { nome: 'Novato', cor: 'bg-zinc-800 text-zinc-500 border-zinc-700', icon: '🌱' };
   };
   const meuRank = obterRankInfo(totalAlugueis);
 
-  const inputClass =
-    'w-full p-3 bg-zinc-900 border border-zinc-700 text-sm font-medium text-white rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all placeholder-zinc-500';
-  const subtitleCyberClass =
-    'text-[11px] font-mono-tech font-bold text-center mb-10 tracking-[0.2em] uppercase bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent animate-neon-flicker block select-none';
-  const navBtnClass = 'text-sm font-bold px-4 py-2 rounded-xl transition-all duration-300';
   const adminInputClass =
     'w-full px-4 py-2.5 text-sm font-medium bg-zinc-950 border border-zinc-800 text-white rounded-xl focus:ring-1 focus:ring-blue-500 focus:outline-none transition-all placeholder-zinc-600';
-
+  const navBtnClass = 'text-sm font-bold px-4 py-2 rounded-xl transition-all duration-300';
   const bannerUrls = configSistema.banners_url
     ? configSistema.banners_url
         .split(',')
@@ -1416,17 +1302,14 @@ function App() {
     : [];
   const currentBanner = bannerUrls.length > 0 ? bannerUrls[indiceBanner] : '/banner-padrao.jpg';
 
+  // ==========================================================================
+  // 9. RENDERIZAÇÃO DO COMPONENTE PRINCIPAL
+  // ==========================================================================
   return (
     <div className="relative min-h-screen overflow-x-hidden bg-zinc-950 pb-10 font-sans text-zinc-300 antialiased">
       {toast.visivel && (
         <div
-          className={`animate-fade-in fixed right-6 top-6 z-[150] flex max-w-sm items-center gap-3 rounded-xl border px-5 py-4 shadow-2xl transition-all duration-300 ${
-            toast.tipo === 'sucesso'
-              ? 'border-emerald-500/50 bg-emerald-950/90 text-emerald-100'
-              : toast.tipo === 'erro'
-                ? 'border-rose-500/50 bg-rose-950/90 text-rose-100'
-                : 'border-amber-500/50 bg-amber-950/90 text-amber-100'
-          } backdrop-blur-md`}
+          className={`animate-fade-in fixed right-6 top-6 z-[150] flex max-w-sm items-center gap-3 rounded-xl border px-5 py-4 shadow-2xl transition-all duration-300 ${toast.tipo === 'sucesso' ? 'border-emerald-500/50 bg-emerald-950/90 text-emerald-100' : toast.tipo === 'erro' ? 'border-rose-500/50 bg-rose-950/90 text-rose-100' : 'border-amber-500/50 bg-amber-950/90 text-amber-100'} backdrop-blur-md`}
         >
           <span className="text-xl">
             {toast.tipo === 'sucesso' ? '✅' : toast.tipo === 'erro' ? '❌' : '⚠️'}
@@ -1438,7 +1321,7 @@ function App() {
       )}
 
       {/* ========================================================================= */}
-      {/* NOVO MODAL DE EDIÇÃO DE JOGOS (ADMIN)                                     */}
+      {/* MODAL DE EDIÇÃO DE JOGOS (ADMIN)                                          */}
       {/* ========================================================================= */}
       {modalEdicaoJogo && (
         <div className="animate-fade-in fixed inset-0 z-[250] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
@@ -1455,10 +1338,7 @@ function App() {
                   type="text"
                   value={modalEdicaoJogo.titulo}
                   onChange={(e) =>
-                    setModalEdicaoJogo({
-                      ...modalEdicaoJogo,
-                      titulo: e.target.value,
-                    })
+                    setModalEdicaoJogo({ ...modalEdicaoJogo, titulo: e.target.value })
                   }
                   className={adminInputClass}
                   required
@@ -1473,10 +1353,7 @@ function App() {
                   <select
                     value={modalEdicaoJogo.plataforma}
                     onChange={(e) =>
-                      setModalEdicaoJogo({
-                        ...modalEdicaoJogo,
-                        plataforma: e.target.value,
-                      })
+                      setModalEdicaoJogo({ ...modalEdicaoJogo, plataforma: e.target.value })
                     }
                     className={adminInputClass}
                   >
@@ -1492,10 +1369,7 @@ function App() {
                     type="date"
                     value={modalEdicaoJogo.data_lancamento || ''}
                     onChange={(e) =>
-                      setModalEdicaoJogo({
-                        ...modalEdicaoJogo,
-                        data_lancamento: e.target.value,
-                      })
+                      setModalEdicaoJogo({ ...modalEdicaoJogo, data_lancamento: e.target.value })
                     }
                     className={adminInputClass}
                   />
@@ -1511,10 +1385,7 @@ function App() {
                     type="text"
                     value={modalEdicaoJogo.tempo_jogo}
                     onChange={(e) =>
-                      setModalEdicaoJogo({
-                        ...modalEdicaoJogo,
-                        tempo_jogo: e.target.value,
-                      })
+                      setModalEdicaoJogo({ ...modalEdicaoJogo, tempo_jogo: e.target.value })
                     }
                     className={adminInputClass}
                   />
@@ -1528,10 +1399,7 @@ function App() {
                     step="0.1"
                     value={modalEdicaoJogo.nota}
                     onChange={(e) =>
-                      setModalEdicaoJogo({
-                        ...modalEdicaoJogo,
-                        nota: e.target.value,
-                      })
+                      setModalEdicaoJogo({ ...modalEdicaoJogo, nota: e.target.value })
                     }
                     className={adminInputClass}
                   />
@@ -1541,17 +1409,14 @@ function App() {
               <div className="flex flex-col gap-4 md:flex-row">
                 <div className="relative w-full">
                   <label className="mb-1 block text-xs font-bold uppercase tracking-wider text-zinc-500">
-                    Preço 7 Dias (R$)
+                    Preço Primária 7 Dias
                   </label>
                   <input
                     type="number"
                     step="0.01"
                     value={modalEdicaoJogo.preco_aluguel}
                     onChange={(e) =>
-                      setModalEdicaoJogo({
-                        ...modalEdicaoJogo,
-                        preco_aluguel: e.target.value,
-                      })
+                      setModalEdicaoJogo({ ...modalEdicaoJogo, preco_aluguel: e.target.value })
                     }
                     className={adminInputClass}
                     required
@@ -1559,19 +1424,51 @@ function App() {
                 </div>
                 <div className="relative w-full">
                   <label className="mb-1 block text-xs font-bold uppercase tracking-wider text-zinc-500">
-                    Preço 14 Dias (R$)
+                    Preço Primária 14 Dias
                   </label>
                   <input
                     type="number"
                     step="0.01"
                     value={modalEdicaoJogo.preco_aluguel_14}
                     onChange={(e) =>
-                      setModalEdicaoJogo({
-                        ...modalEdicaoJogo,
-                        preco_aluguel_14: e.target.value,
-                      })
+                      setModalEdicaoJogo({ ...modalEdicaoJogo, preco_aluguel_14: e.target.value })
                     }
                     className={adminInputClass}
+                  />
+                </div>
+              </div>
+
+              {/* [INFO] Novos campos financeiros da Vaga Secundária (Edit Form) */}
+              <div className="mt-4 flex flex-col gap-4 md:flex-row">
+                <div className="relative w-full">
+                  <label className="mb-1 block text-xs font-bold uppercase tracking-wider text-fuchsia-500">
+                    Preço Secundária 7 Dias
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={modalEdicaoJogo.preco_secundaria}
+                    onChange={(e) =>
+                      setModalEdicaoJogo({ ...modalEdicaoJogo, preco_secundaria: e.target.value })
+                    }
+                    className={`${adminInputClass} border-fuchsia-500/30 focus:ring-fuchsia-500`}
+                  />
+                </div>
+                <div className="relative w-full">
+                  <label className="mb-1 block text-xs font-bold uppercase tracking-wider text-fuchsia-500">
+                    Preço Secundária 14 Dias
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={modalEdicaoJogo.preco_secundaria_14}
+                    onChange={(e) =>
+                      setModalEdicaoJogo({
+                        ...modalEdicaoJogo,
+                        preco_secundaria_14: e.target.value,
+                      })
+                    }
+                    className={`${adminInputClass} border-fuchsia-500/30 focus:ring-fuchsia-500`}
                   />
                 </div>
               </div>
@@ -1584,10 +1481,7 @@ function App() {
                   type="url"
                   value={modalEdicaoJogo.url_imagem}
                   onChange={(e) =>
-                    setModalEdicaoJogo({
-                      ...modalEdicaoJogo,
-                      url_imagem: e.target.value,
-                    })
+                    setModalEdicaoJogo({ ...modalEdicaoJogo, url_imagem: e.target.value })
                   }
                   className={adminInputClass}
                 />
@@ -1600,10 +1494,7 @@ function App() {
                 <textarea
                   value={modalEdicaoJogo.descricao}
                   onChange={(e) =>
-                    setModalEdicaoJogo({
-                      ...modalEdicaoJogo,
-                      descricao: e.target.value,
-                    })
+                    setModalEdicaoJogo({ ...modalEdicaoJogo, descricao: e.target.value })
                   }
                   className={`${adminInputClass} h-24 resize-none`}
                   required
@@ -1631,7 +1522,7 @@ function App() {
       )}
 
       {/* ========================================================================= */}
-      {/* NOVO MODAL DE EDIÇÃO DE CLIENTES (ADMIN)                                  */}
+      {/* MODAL DE EDIÇÃO DE CLIENTES (ADMIN)                                       */}
       {/* ========================================================================= */}
       {modalEdicaoCliente && (
         <div className="animate-fade-in fixed inset-0 z-[250] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
@@ -1648,16 +1539,12 @@ function App() {
                   type="text"
                   value={modalEdicaoCliente.nome}
                   onChange={(e) =>
-                    setModalEdicaoCliente({
-                      ...modalEdicaoCliente,
-                      nome: e.target.value,
-                    })
+                    setModalEdicaoCliente({ ...modalEdicaoCliente, nome: e.target.value })
                   }
                   className={adminInputClass}
                   required
                 />
               </div>
-
               <div className="flex flex-col gap-4 md:flex-row">
                 <div className="w-full">
                   <label className="mb-1 block text-xs font-bold uppercase tracking-wider text-zinc-500">
@@ -1667,10 +1554,7 @@ function App() {
                     type="email"
                     value={modalEdicaoCliente.email}
                     onChange={(e) =>
-                      setModalEdicaoCliente({
-                        ...modalEdicaoCliente,
-                        email: e.target.value,
-                      })
+                      setModalEdicaoCliente({ ...modalEdicaoCliente, email: e.target.value })
                     }
                     className={adminInputClass}
                     required
@@ -1684,16 +1568,12 @@ function App() {
                     type="text"
                     value={modalEdicaoCliente.telefone || ''}
                     onChange={(e) =>
-                      setModalEdicaoCliente({
-                        ...modalEdicaoCliente,
-                        telefone: e.target.value,
-                      })
+                      setModalEdicaoCliente({ ...modalEdicaoCliente, telefone: e.target.value })
                     }
                     className={adminInputClass}
                   />
                 </div>
               </div>
-
               <div className="flex flex-col gap-4 md:flex-row">
                 <div className="w-full">
                   <label className="mb-1 block text-xs font-bold uppercase tracking-wider text-zinc-500">
@@ -1704,16 +1584,12 @@ function App() {
                     step="0.01"
                     value={modalEdicaoCliente.saldo}
                     onChange={(e) =>
-                      setModalEdicaoCliente({
-                        ...modalEdicaoCliente,
-                        saldo: e.target.value,
-                      })
+                      setModalEdicaoCliente({ ...modalEdicaoCliente, saldo: e.target.value })
                     }
                     className={adminInputClass}
                     required
                   />
                 </div>
-
                 <div className="w-full">
                   <label className="mb-1 block text-xs font-bold uppercase tracking-wider text-zinc-500">
                     Motivo (Aparecerá no Extrato)
@@ -1732,7 +1608,6 @@ function App() {
                   />
                 </div>
               </div>
-
               <div className="mt-4 flex gap-3 border-t border-zinc-800 pt-4">
                 <button
                   type="button"
@@ -1753,42 +1628,154 @@ function App() {
         </div>
       )}
 
-      {modalConfirmacao.visivel && (
+      {/* ========================================================================= */}
+      {/* MODAL INTELIGENTE DE LOCAÇÃO E FILA (TOP-DOWN SELLING E UX)               */}
+      {/* ========================================================================= */}
+      {modalConfirmacao.visivel && modalConfirmacao.jogo && (
         <div className="animate-fade-in fixed inset-0 z-[200] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-sm rounded-3xl border border-zinc-700 bg-zinc-900 p-8 shadow-2xl">
+          <div className="custom-scrollbar max-h-[90vh] w-full max-w-md overflow-y-auto rounded-3xl border border-zinc-700 bg-zinc-900 p-6 shadow-2xl md:p-8">
             <h3 className="mb-2 text-xl font-black tracking-tight text-white">
-              {modalConfirmacao.tipo === 'aluguel'
-                ? '🎮 Confirmar Aluguel'
-                : '⏳ Confirmar Reserva'}
+              🎮 Configurar Acesso
             </h3>
             <p className="mb-6 text-sm leading-relaxed text-zinc-400">
-              Você está prestes a {modalConfirmacao.tipo === 'aluguel' ? 'alugar' : 'reservar'}{' '}
-              <strong className="text-white">{modalConfirmacao.jogoTitulo}</strong> por{' '}
-              <strong className="text-blue-400">{modalConfirmacao.diasEscolhidos} Dias</strong>.
+              Você selecionou <strong className="text-white">{modalConfirmacao.jogo.titulo}</strong>
+              . Como deseja prosseguir?
             </p>
 
+            {/* SELEÇÃO DO TIPO DE ACESSO */}
+            <div className="mb-6 space-y-3">
+              {/* OPÇÃO 1: VAGA PRIMÁRIA (Sempre a preferida) */}
+              {modalConfirmacao.jogo.estoque_primaria > 0 && (
+                <label
+                  className={`flex cursor-pointer flex-col rounded-2xl border-2 p-4 transition-all ${modalConfirmacao.tipoSlotSelecionado === 'PRIMARIA' ? 'border-blue-500 bg-blue-500/10' : 'border-zinc-800 bg-zinc-950 hover:border-zinc-700'}`}
+                >
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="radio"
+                      name="tipoSlot"
+                      value="PRIMARIA"
+                      checked={modalConfirmacao.tipoSlotSelecionado === 'PRIMARIA'}
+                      onChange={() =>
+                        setModalConfirmacao({
+                          ...modalConfirmacao,
+                          tipoSlotSelecionado: 'PRIMARIA',
+                        })
+                      }
+                      className="h-4 w-4 text-blue-500 focus:ring-blue-500"
+                    />
+                    <span className="font-black uppercase tracking-wider text-white">
+                      Vaga Primária
+                    </span>
+                    <span className="ml-auto rounded-lg bg-emerald-500/20 px-2 py-1 text-[9px] font-black uppercase text-emerald-400">
+                      Recomendado
+                    </span>
+                  </div>
+                  <p className="mt-2 pl-7 text-xs text-zinc-400">
+                    Jogue na sua conta pessoal. Ganhe os troféus no seu próprio perfil e jogue
+                    offline.
+                  </p>
+                </label>
+              )}
+
+              {/* OPÇÃO 2: VAGA SECUNDÁRIA (Aparece se Primária acabou OU se a Secundária tem estoque) */}
+              {modalConfirmacao.jogo.estoque_primaria === 0 &&
+                modalConfirmacao.jogo.estoque_secundaria > 0 && (
+                  <label
+                    className={`flex cursor-pointer flex-col rounded-2xl border-2 p-4 transition-all ${modalConfirmacao.tipoSlotSelecionado === 'SECUNDARIA' ? 'border-fuchsia-500 bg-fuchsia-500/10' : 'border-zinc-800 bg-zinc-950 hover:border-zinc-700'}`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="radio"
+                        name="tipoSlot"
+                        value="SECUNDARIA"
+                        checked={modalConfirmacao.tipoSlotSelecionado === 'SECUNDARIA'}
+                        onChange={() =>
+                          setModalConfirmacao({
+                            ...modalConfirmacao,
+                            tipoSlotSelecionado: 'SECUNDARIA',
+                          })
+                        }
+                        className="h-4 w-4 text-fuchsia-500 focus:ring-fuchsia-500"
+                      />
+                      <span className="font-black uppercase tracking-wider text-white">
+                        Vaga Secundária (Econômica)
+                      </span>
+                    </div>
+                    <p className="mt-2 pl-7 text-xs text-zinc-400">
+                      <strong className="text-fuchsia-400">⚠️ Atenção:</strong> Você precisará jogar
+                      obrigatoriamente logado na conta da locadora e estar sempre conectado à
+                      internet.
+                    </p>
+                  </label>
+                )}
+
+              {/* OPÇÃO 3: FILA DE ESPERA (Aparece se faltar estoque da Primária) */}
+              {modalConfirmacao.jogo.estoque_primaria === 0 && (
+                <label
+                  className={`flex cursor-pointer flex-col rounded-2xl border-2 p-4 transition-all ${modalConfirmacao.tipoSlotSelecionado === 'FILA' ? 'border-amber-500 bg-amber-500/10' : 'border-zinc-800 bg-zinc-950 hover:border-zinc-700'}`}
+                >
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="radio"
+                      name="tipoSlot"
+                      value="FILA"
+                      checked={modalConfirmacao.tipoSlotSelecionado === 'FILA'}
+                      onChange={() =>
+                        setModalConfirmacao({ ...modalConfirmacao, tipoSlotSelecionado: 'FILA' })
+                      }
+                      className="h-4 w-4 text-amber-500 focus:ring-amber-500"
+                    />
+                    <span className="font-black uppercase tracking-wider text-white">
+                      Entrar na Fila (Primária)
+                    </span>
+                  </div>
+                  <p className="mt-2 pl-7 text-xs text-zinc-400">
+                    Garanta o próximo acesso disponível. O valor será descontado da sua carteira
+                    agora para reservar a vaga.
+                  </p>
+                </label>
+              )}
+            </div>
+
+            {/* SELEÇÃO DE TEMPO (7 ou 14 Dias) */}
+            <div className="mb-6">
+              <label className="mb-3 block text-[10px] font-bold uppercase tracking-wider text-zinc-500">
+                Por quanto tempo?
+              </label>
+              <div className="flex rounded-xl border border-zinc-700/50 bg-zinc-950 p-1">
+                <button
+                  onClick={() => setModalConfirmacao({ ...modalConfirmacao, diasEscolhidos: 7 })}
+                  className={`flex-1 rounded-lg py-2.5 text-xs font-bold uppercase tracking-wider transition-all ${modalConfirmacao.diasEscolhidos === 7 ? 'bg-zinc-700 text-white shadow' : 'text-zinc-500 hover:text-white'}`}
+                >
+                  7 Dias
+                </button>
+                <button
+                  onClick={() => setModalConfirmacao({ ...modalConfirmacao, diasEscolhidos: 14 })}
+                  className={`flex-1 rounded-lg py-2.5 text-xs font-bold uppercase tracking-wider transition-all ${modalConfirmacao.diasEscolhidos === 14 ? 'bg-zinc-700 text-white shadow' : 'text-zinc-500 hover:text-white'}`}
+                >
+                  14 Dias
+                </button>
+              </div>
+            </div>
+
+            {/* RESUMO FINANCEIRO DINÂMICO */}
             {(() => {
-              const precoAtual =
-                modalConfirmacao.diasEscolhidos === 7
-                  ? modalConfirmacao.preco7
-                  : modalConfirmacao.preco14;
+              const { jogo, diasEscolhidos, tipoSlotSelecionado } = modalConfirmacao;
+              let precoAtual = 0;
+              if (tipoSlotSelecionado === 'PRIMARIA' || tipoSlotSelecionado === 'FILA') {
+                precoAtual = diasEscolhidos === 14 ? jogo.preco_aluguel_14 : jogo.preco_aluguel;
+              } else {
+                precoAtual =
+                  diasEscolhidos === 14 ? jogo.preco_secundaria_14 : jogo.preco_secundaria;
+              }
               const temSaldo = usuarioLogado.saldo >= precoAtual;
 
               return (
                 <>
-                  <div className="mb-8 rounded-2xl border border-zinc-800 bg-zinc-950 p-5 shadow-inner">
+                  <div className="mb-6 rounded-2xl border border-zinc-800 bg-zinc-950 p-5 shadow-inner">
                     <div className="mb-3 flex items-center justify-between">
                       <span className="text-xs font-bold uppercase tracking-wider text-zinc-400">
-                        Período:
-                      </span>
-                      <span className="text-sm font-black text-white">
-                        {modalConfirmacao.diasEscolhidos} Dias
-                      </span>
-                    </div>
-                    <div className="mb-3 h-px w-full bg-zinc-800/50"></div>
-                    <div className="mb-3 flex items-center justify-between">
-                      <span className="text-xs font-bold uppercase tracking-wider text-zinc-400">
-                        Valor a descontar:
+                        Total a descontar:
                       </span>
                       <span className="text-sm font-black text-rose-400">
                         - R$ {precoAtual.toFixed(2)}
@@ -1807,27 +1794,32 @@ function App() {
                     </div>
                   </div>
 
+                  {/* ALERTA ZERO TRUST PARA A SECUNDÁRIA */}
+                  {tipoSlotSelecionado === 'SECUNDARIA' && (
+                    <p className="mb-6 rounded-xl border border-rose-500/30 bg-rose-950/30 p-3 text-[10px] font-bold leading-relaxed text-rose-400">
+                      🚨 Você está alugando uma vaga SECUNDÁRIA. Tentar ativá-la como "Principal" no
+                      seu console resultará em bloqueio do jogo e multa de R$ 50,00 na sua carteira.
+                    </p>
+                  )}
+
                   <div className="flex gap-3">
                     <button
                       onClick={() =>
                         setModalConfirmacao({
                           visivel: false,
-                          tipo: '',
-                          jogoId: null,
-                          jogoTitulo: '',
-                          preco7: 0,
-                          preco14: 0,
+                          jogo: null,
                           diasEscolhidos: 7,
+                          tipoSlotSelecionado: 'PRIMARIA',
                         })
                       }
-                      className="flex-1 rounded-xl bg-zinc-800 py-3 text-xs font-bold uppercase tracking-wide text-zinc-300 transition-colors hover:bg-zinc-700 hover:text-white"
+                      className="flex-1 rounded-xl bg-zinc-800 py-3.5 text-xs font-bold uppercase tracking-wide text-zinc-300 transition-colors hover:bg-zinc-700 hover:text-white"
                     >
                       Cancelar
                     </button>
                     <button
                       onClick={confirmarTransacao}
                       disabled={!temSaldo}
-                      className={`flex-1 rounded-xl py-3 text-xs font-bold uppercase tracking-wide text-white shadow-lg transition-all ${!temSaldo ? 'cursor-not-allowed bg-zinc-600 opacity-50' : modalConfirmacao.tipo === 'aluguel' ? 'bg-blue-600 shadow-blue-600/20 hover:bg-blue-500' : 'bg-amber-600 shadow-amber-600/20 hover:bg-amber-500'}`}
+                      className={`flex-1 rounded-xl py-3.5 text-xs font-bold uppercase tracking-wide text-white shadow-lg transition-all ${!temSaldo ? 'cursor-not-allowed bg-zinc-600 opacity-50' : 'bg-blue-600 shadow-blue-600/20 hover:bg-blue-500'}`}
                     >
                       {temSaldo ? 'Confirmar' : 'Sem Saldo'}
                     </button>
@@ -1848,7 +1840,6 @@ function App() {
             <h3 className="mb-2 flex items-center gap-3 text-xl font-black tracking-tight text-emerald-400">
               ♻️ Devolução Premium
             </h3>
-
             {(() => {
               const horasRestantes =
                 (new Date(modalDevolucao.dataFim) - new Date()) / (1000 * 60 * 60);
@@ -1869,7 +1860,6 @@ function App() {
                     <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-500">
                       Como desativar a conta:
                     </h4>
-
                     <div className="space-y-3 text-sm text-zinc-300">
                       <p>
                         <strong className="text-white">🎮 No PS5:</strong> Vá em Configurações &gt;
@@ -1953,6 +1943,7 @@ function App() {
         </div>
       )}
 
+      {/* TELA DE LOGIN OU DASHBOARD */}
       {abaAtual === 'login' && !usuarioLogado ? (
         <Auth
           setUsuarioLogado={setUsuarioLogado}
@@ -2014,7 +2005,6 @@ function App() {
                         >
                           🔑 Meus Acessos
                         </button>
-
                         {usuarioLogado.is_admin && (
                           <button
                             onClick={() => setAbaAtual('admin')}
@@ -2099,6 +2089,7 @@ function App() {
               </div>
             </div>
 
+            {/* MENU MOBILE */}
             {menuMobileAberto && usuarioLogado && (
               <div className="animate-fade-in absolute left-0 top-16 flex w-full flex-col border-b border-zinc-800 bg-zinc-900 shadow-2xl md:hidden">
                 <div className="flex items-center justify-between border-b border-zinc-800/50 bg-zinc-950/50 p-5">
@@ -2148,7 +2139,6 @@ function App() {
                   >
                     📖 Como Funciona?
                   </button>
-
                   {usuarioLogado.is_admin && (
                     <button
                       onClick={() => {
@@ -2160,7 +2150,6 @@ function App() {
                       ⚙️ Painel Admin
                     </button>
                   )}
-
                   <button
                     onClick={() => {
                       sair();
@@ -2178,9 +2167,7 @@ function App() {
           <main className="mx-auto max-w-7xl px-4 pb-12 pt-24 md:px-8 md:pt-28">
             {abaAtual === 'vitrine' && (
               <div className="animate-fade-in pb-12">
-                {/* =========================================================
-                    1. ZONA DE ATRAÇÃO: HERO BANNER PRINCIPAL (GLASSM.)
-                ========================================================== */}
+                {/* HERO BANNER */}
                 <div
                   className="relative mb-8 flex min-h-[480px] w-full items-center overflow-hidden rounded-3xl border border-zinc-800 shadow-2xl transition-all duration-700 md:min-h-[600px]"
                   style={{
@@ -2190,7 +2177,6 @@ function App() {
                   }}
                 >
                   <div className="absolute inset-0 bg-gradient-to-t from-zinc-950/80 via-transparent to-black/20 md:bg-gradient-to-r md:from-zinc-950/90 md:via-zinc-950/40 md:to-transparent"></div>
-
                   <div className="relative z-10 w-full px-8 pb-20 md:px-14 md:pb-32">
                     <span className="mb-6 inline-block rounded-full border border-blue-500/30 bg-blue-500/20 px-4 py-1.5 font-mono-tech text-[10px] font-bold uppercase tracking-widest text-blue-400 shadow-[0_0_15px_rgba(59,130,246,0.3)]">
                       Catálogo Atualizado
@@ -2203,8 +2189,6 @@ function App() {
                       instantaneamente e comece a jogar sem sair de casa.
                     </p>
                   </div>
-
-                  {/* 📣 FAIXA DE ANÚNCIO: ESTILO GLASSMORPHISM (TRANSPARENTE) */}
                   {configSistema.anuncio_ativo && configSistema.mensagem_anuncio && (
                     <div className="absolute bottom-0 left-0 z-30 w-full border-t border-white/10 bg-black/30 py-6 backdrop-blur-md md:py-8">
                       <div className="flex items-center justify-center gap-4 px-6 text-center">
@@ -2220,7 +2204,6 @@ function App() {
                       </div>
                     </div>
                   )}
-
                   {bannerUrls.length > 1 && (
                     <div
                       className={`absolute left-1/2 z-20 flex -translate-x-1/2 gap-2 transition-all duration-500 ${configSistema.anuncio_ativo ? 'bottom-24 md:bottom-28' : 'bottom-6'}`}
@@ -2236,11 +2219,8 @@ function App() {
                   )}
                 </div>
 
-                {/* =========================================================
-                    2. ZONA DE COMUNIDADE, SUPORTE E CRESCIMENTO
-                ========================================================== */}
+                {/* ZONA DE COMUNIDADE */}
                 <div className="mb-12 grid grid-cols-1 gap-6 md:grid-cols-3">
-                  {/* BLOCO 1: INSTAGRAM */}
                   <a
                     href="https://www.instagram.com/locadoraborajogar/"
                     target="_blank"
@@ -2248,8 +2228,6 @@ function App() {
                     className="group relative flex h-full flex-col justify-center overflow-hidden rounded-3xl border border-fuchsia-500/30 bg-gradient-to-br from-fuchsia-600/20 via-pink-600/10 to-orange-500/10 p-4 shadow-lg shadow-fuchsia-500/5 transition-all duration-300 hover:-translate-y-1 hover:border-fuchsia-500/60 hover:shadow-[0_0_25px_rgba(217,70,239,0.2)] md:p-5"
                   >
                     <div className="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-gradient-to-br from-fuchsia-500 to-orange-500 opacity-20 blur-3xl transition-transform duration-500 group-hover:scale-150"></div>
-
-                    {/* Alterado de Grid para Flex */}
                     <div className="relative z-10 flex items-center gap-5">
                       <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-tr from-orange-500 via-pink-500 to-fuchsia-600 text-white shadow-lg shadow-pink-500/30 transition-transform duration-300 group-hover:rotate-6 group-hover:scale-110">
                         <svg className="h-8 w-8" fill="currentColor" viewBox="0 0 24 24">
@@ -2268,7 +2246,6 @@ function App() {
                     </div>
                   </a>
 
-                  {/* BLOCO 2: WHATSAPP */}
                   <a
                     href={`https://wa.me/${NUMERO_WHATSAPP_SUPORTE}`}
                     target="_blank"
@@ -2293,15 +2270,12 @@ function App() {
                     </div>
                   </a>
 
-                  {/* BLOCO 3: CLUBE DE VANTAGENS */}
                   <div
                     onClick={() => {
                       if (!usuarioLogado) {
-                        // Se não estiver logado, manda pro Cadastro
                         setAbaAtual('login');
                         setModoLogin(false);
                       } else {
-                        // Se estiver logado, manda pro Dashboard (Meus Acessos)
                         setAbaAtual('dashboard');
                       }
                       window.scrollTo(0, 0);
@@ -2327,9 +2301,7 @@ function App() {
                   </div>
                 </div>
 
-                {/* =========================================================
-                    🚀 3. NOVA POSIÇÃO: ENQUETE DE LANÇAMENTOS
-                ========================================================== */}
+                {/* ENQUETE */}
                 {enqueteOpcoes.length > 0 && (
                   <div className="animate-fade-in relative mb-12 overflow-hidden rounded-3xl border border-zinc-800 bg-zinc-900/40 p-6 shadow-xl md:p-8">
                     <div className="absolute left-0 top-0 h-full w-1 bg-gradient-to-b from-fuchsia-500 to-blue-500"></div>
@@ -2337,10 +2309,8 @@ function App() {
                       {configSistema.enquete_titulo || 'Próximas Adições: Você Decide!'}
                     </h3>
                     <p className="mb-6 text-sm font-medium text-zinc-400">
-                      {configSistema.enquete_subtitulo ||
-                        'Vote no jogo que você mais quer ver no catálogo e ajude a BORA JOGAR! a crescer.'}
+                      {configSistema.enquete_subtitulo}
                     </p>
-
                     <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
                       {enqueteOpcoes.map((opcao) => {
                         const isSelected = meuVoto === opcao.id;
@@ -2389,9 +2359,48 @@ function App() {
                   </div>
                 )}
 
-                {/* =========================================================
-                    4. ZONA DE AÇÃO: BARRA DE COMANDO DA VITRINE
-                ========================================================== */}
+                {/* NOVIDADES */}
+                {novidades.length > 0 && (
+                  <div className="animate-fade-in mb-12">
+                    <h3 className="mb-6 flex items-center gap-3 text-xl font-black uppercase tracking-tight text-white md:text-2xl">
+                      🌟 Novidades que chegaram à locadora
+                    </h3>
+                    <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+                      {novidades.map((novidade) => (
+                        <div
+                          key={`nov-${novidade.id}`}
+                          className="group relative flex flex-col overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900/50 shadow-lg transition-all duration-300 hover:-translate-y-1 hover:border-blue-500/50"
+                        >
+                          <div className="relative aspect-square w-full overflow-hidden bg-zinc-800">
+                            {novidade.url_imagem ? (
+                              <img
+                                src={novidade.url_imagem}
+                                alt={novidade.titulo}
+                                className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+                              />
+                            ) : (
+                              <div className="flex h-full w-full items-center justify-center bg-zinc-800/80">
+                                <span className="text-4xl opacity-50">🎮</span>
+                              </div>
+                            )}
+                            {novidade.recomendacao_cliente && (
+                              <div className="absolute right-2 top-2 z-10 rounded-lg bg-yellow-400 px-2 py-1 text-[9px] font-black uppercase tracking-wider text-zinc-900 shadow-[0_0_15px_rgba(250,204,21,0.8)]">
+                                💡 Recomendação
+                              </div>
+                            )}
+                          </div>
+                          <div className="flex flex-1 items-center justify-center p-3 text-center">
+                            <h4 className="line-clamp-2 text-xs font-bold leading-tight tracking-tight text-zinc-300 group-hover:text-white">
+                              {novidade.titulo}
+                            </h4>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* FILTROS DA VITRINE */}
                 <div className="mb-8 flex flex-col justify-between gap-4 rounded-2xl border border-zinc-800 bg-zinc-900/50 p-4 shadow-lg backdrop-blur-sm lg:flex-row lg:items-center">
                   <div className="text-center text-xs font-bold uppercase tracking-wider text-zinc-400 lg:text-left">
                     Mostrando{' '}
@@ -2400,7 +2409,6 @@ function App() {
                     </span>{' '}
                     jogo(s) encontrado(s)
                   </div>
-
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
                     <div className="relative w-full sm:w-64">
                       <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
@@ -2414,7 +2422,6 @@ function App() {
                         className="w-full rounded-xl border border-zinc-700/50 bg-zinc-950 py-2.5 pl-12 pr-4 text-sm font-medium text-white placeholder-zinc-500 transition-all focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                       />
                     </div>
-
                     <div className="flex flex-wrap gap-3">
                       <div className="scrollbar-hide flex overflow-x-auto rounded-xl border border-zinc-700/50 bg-zinc-950 p-1">
                         <button
@@ -2436,7 +2443,6 @@ function App() {
                           PS4/PS5
                         </button>
                       </div>
-
                       <div className="flex rounded-xl border border-zinc-700/50 bg-zinc-950 p-1">
                         <button
                           onClick={() => lidarComFiltroDisp('TODOS')}
@@ -2455,58 +2461,6 @@ function App() {
                   </div>
                 </div>
 
-                {/* =========================================================
-                    5. ZONA DE CONSUMO: VITRINE E PAGINAÇÃO
-                ========================================================== */}
-                {/* =========================================================
-                    🌟 NOVIDADES DA LOCADORA (5 JOGOS)
-                ========================================================== */}
-                {novidades.length > 0 && (
-                  <div className="animate-fade-in mb-12">
-                    <h3 className="mb-6 flex items-center gap-3 text-xl font-black uppercase tracking-tight text-white md:text-2xl">
-                      🌟 Novidades que chegaram à locadora
-                    </h3>
-
-                    <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
-                      {novidades.map((novidade) => (
-                        <div
-                          key={`nov-${novidade.id}`}
-                          className="group relative flex flex-col overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900/50 shadow-lg transition-all duration-300 hover:-translate-y-1 hover:border-blue-500/50"
-                        >
-                          {/* Quadrado da Imagem */}
-                          <div className="relative aspect-square w-full overflow-hidden bg-zinc-800">
-                            {novidade.url_imagem ? (
-                              <img
-                                src={novidade.url_imagem}
-                                alt={novidade.titulo}
-                                className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
-                              />
-                            ) : (
-                              <div className="flex h-full w-full items-center justify-center bg-zinc-800/80">
-                                <span className="text-4xl opacity-50">🎮</span>
-                              </div>
-                            )}
-
-                            {/* Etiqueta Amarelo Neon de Recomendação */}
-                            {novidade.recomendacao_cliente && (
-                              <div className="absolute right-2 top-2 z-10 rounded-lg bg-yellow-400 px-2 py-1 text-[9px] font-black uppercase tracking-wider text-zinc-900 shadow-[0_0_15px_rgba(250,204,21,0.8)]">
-                                💡 Recomendação
-                              </div>
-                            )}
-                          </div>
-
-                          {/* Título embaixo da imagem */}
-                          <div className="flex flex-1 items-center justify-center p-3 text-center">
-                            <h4 className="line-clamp-2 text-xs font-bold leading-tight tracking-tight text-zinc-300 group-hover:text-white">
-                              {novidade.titulo}
-                            </h4>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
                 {carregandoJogos && (
                   <div className="animate-fade-in mb-8 flex flex-col items-center justify-center rounded-3xl border border-zinc-800 bg-zinc-900/50 py-20 text-center shadow-xl">
                     <div className="mb-6 h-16 w-16 animate-spin rounded-full border-4 border-blue-500/20 border-t-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.5)]"></div>
@@ -2520,41 +2474,34 @@ function App() {
                   </div>
                 )}
 
+                {/* GRADE DE JOGOS */}
                 <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
                   {jogosDaPagina.map((jogo) => {
-                    // Graças ao backend inteligente, tudo ficou absurdamente simples:
                     const isEmBreve = jogo.prioridade_vitrine === 1;
                     const isLancamento = jogo.prioridade_vitrine === 2;
-
                     const dataLanc = jogo.data_lancamento
                       ? new Date(jogo.data_lancamento + 'T00:00:00')
                       : null;
-
                     const dataFormatada = dataLanc
-                      ? dataLanc.toLocaleDateString('pt-BR', {
-                          day: '2-digit',
-                          month: '2-digit',
-                        })
+                      ? dataLanc.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })
                       : '';
-                    const tituloLimpo = jogo.titulo;
 
-                    const ehJogoVIP = isEmBreve;
+                    // [INFO] Tem estoque se houver QUALQUER vaga livre (Primária ou Secundária)
+                    const temEstoque = jogo.estoque_primaria > 0 || jogo.estoque_secundaria > 0;
+
                     const isVeterano = usuarioLogado
                       ? usuarioLogado.is_admin || totalAlugueis >= 1
                       : false;
-                    const bloqueadoParaUsuario = ehJogoVIP && usuarioLogado && !isVeterano;
-
+                    const bloqueadoParaUsuario = isEmBreve && usuarioLogado && !isVeterano;
                     const minhaReservaAtiva = minhasReservas.find(
-                      (res) => res.jogo === tituloLimpo,
+                      (res) => res.jogo === jogo.titulo,
                     );
 
                     let dataVagaGlobal = isEmBreve ? new Date(dataLanc) : new Date();
-
                     if (jogo.proxima_devolucao) {
                       const pd = new Date(jogo.proxima_devolucao);
                       if (pd > dataVagaGlobal) dataVagaGlobal = pd;
                     }
-
                     const diasFilaEsperaMs = (jogo.fila_dias_espera || 0) * 24 * 60 * 60 * 1000;
                     const dataFinalExata = new Date(dataVagaGlobal.getTime() + diasFilaEsperaMs);
                     const dataVagaGlobalStr = dataFinalExata.toLocaleDateString('pt-BR');
@@ -2568,7 +2515,7 @@ function App() {
                           {jogo.url_imagem ? (
                             <img
                               src={jogo.url_imagem}
-                              alt={tituloLimpo}
+                              alt={jogo.titulo}
                               className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
                             />
                           ) : (
@@ -2595,7 +2542,8 @@ function App() {
                             </div>
 
                             <div className="flex flex-col items-end">
-                              {jogo.estoque > 0 && !isEmBreve ? (
+                              {/* [INFO] A tag visual avalia se existe qualquer vaga disponível */}
+                              {temEstoque && !isEmBreve ? (
                                 <span className="flex items-center gap-1.5 rounded-lg border border-emerald-400/50 bg-emerald-500/90 px-3 py-1.5 text-[10px] font-black uppercase tracking-wider text-white shadow-lg backdrop-blur-md [text-shadow:1px_1px_0px_black,-1px_-1px_0px_black,1px_-1px_0px_black,-1px_1px_0px_black]">
                                   <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-white"></span>
                                   DISPONÍVEL
@@ -2623,7 +2571,7 @@ function App() {
 
                         <div className="flex flex-1 flex-col p-6">
                           <h3 className="mb-2 text-lg font-black leading-tight tracking-tight text-white transition-colors group-hover:text-blue-400">
-                            {tituloLimpo}
+                            {jogo.titulo}
                           </h3>
                           <div className="mb-6">
                             <p
@@ -2641,7 +2589,7 @@ function App() {
                           </div>
 
                           <div className="mt-auto">
-                            {(jogo.estoque === 0 || isEmBreve) && (
+                            {(!temEstoque || isEmBreve) && (
                               <div className="mb-4 rounded-xl border border-zinc-800/80 bg-zinc-950 p-4 shadow-inner">
                                 <div className="mb-2 flex items-center justify-between">
                                   <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">
@@ -2662,98 +2610,42 @@ function App() {
                               </div>
                             )}
 
-                            <div className="mt-3 flex w-full gap-3">
+                            {/* [INFO] BOTÃO ÚNICO DA VITRINE: Delega a decisão de negócio para o Modal Top-Down */}
+                            <div className="mt-auto pt-4">
                               {minhaReservaAtiva ? (
-                                <div className="group relative flex h-[76px] flex-1 flex-col items-center justify-center overflow-hidden rounded-xl border border-emerald-500/30 bg-emerald-950/40 p-3 shadow-[0_0_15px_rgba(16,185,129,0.15)] transition-all">
+                                <div className="group relative flex h-[50px] flex-col items-center justify-center overflow-hidden rounded-xl border border-emerald-500/30 bg-emerald-950/40 px-4 shadow-[0_0_15px_rgba(16,185,129,0.15)] transition-all">
                                   <div className="absolute left-0 top-0 h-1 w-full bg-gradient-to-r from-emerald-500 to-cyan-500"></div>
-                                  <span className="mb-1 flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-emerald-500">
+                                  <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-emerald-500">
                                     ✅ Já Reservado
                                   </span>
-                                  <strong className="text-center text-sm font-black tracking-tight text-white">
-                                    Sua vez em:{' '}
-                                    <span className="text-emerald-400">
-                                      {minhaReservaAtiva.data_estimada_str}
-                                    </span>
-                                  </strong>
                                 </div>
                               ) : bloqueadoParaUsuario ? (
                                 <button
                                   onClick={() =>
                                     mostrarToast(
-                                      '🚨 Acesso Restrito! Este lançamento é exclusivo para clientes com Rank Membro ou superior. Complete pelo menos 1 aluguel para desbloquear.',
+                                      '🚨 Acesso Restrito! Este lançamento é exclusivo para clientes com Rank Membro ou superior.',
                                       'aviso',
                                     )
                                   }
-                                  className="group/lock flex h-[76px] flex-1 flex-col items-center justify-center rounded-xl border border-rose-500/20 bg-zinc-950/80 p-3 shadow-inner transition-all hover:bg-rose-950/30"
+                                  className="group/lock flex h-[50px] w-full flex-col items-center justify-center rounded-xl border border-rose-500/20 bg-zinc-950/80 shadow-inner transition-all hover:bg-rose-950/30"
                                 >
-                                  <span className="mb-1 text-[10px] font-bold uppercase tracking-widest text-zinc-500 transition-colors group-hover/lock:text-rose-400">
-                                    Acesso Restrito
-                                  </span>
-                                  <strong className="flex items-center gap-2 text-sm font-black uppercase tracking-tight text-rose-500">
-                                    🔒 Requer Rank
+                                  <strong className="flex items-center gap-2 text-xs font-black uppercase tracking-tight text-rose-500">
+                                    🔒 Requer Rank VIP
                                   </strong>
                                 </button>
                               ) : (
-                                <>
-                                  <button
-                                    onClick={() =>
-                                      abrirConfirmacao(
-                                        jogo.estoque > 0 && !isEmBreve ? 'aluguel' : 'reserva',
-                                        jogo.id,
-                                        tituloLimpo,
-                                        jogo.preco_aluguel,
-                                        jogo.preco_aluguel_14 || 0,
-                                        7,
-                                      )
-                                    }
-                                    className={`group flex h-[76px] flex-1 flex-col items-center justify-center rounded-xl border p-2.5 transition-all ${
-                                      jogo.estoque > 0 && !isEmBreve
-                                        ? 'border-blue-500 bg-blue-600/90 shadow-[0_0_15px_rgba(59,130,246,0.4)] hover:bg-blue-500'
-                                        : 'border-amber-400 bg-amber-500/90 shadow-[0_0_15px_rgba(245,158,11,0.5)] hover:bg-amber-400'
-                                    }`}
-                                  >
-                                    <span className="text-[10px] font-black uppercase tracking-wider text-white/90 transition-colors [text-shadow:1px_1px_0px_black,-1px_-1px_0px_black,1px_-1px_0px_black,-1px_1px_0px_black] group-hover:text-white">
-                                      {jogo.estoque > 0 && !isEmBreve ? 'Alugar' : 'Reservar'} 7
-                                      Dias
-                                    </span>
-                                    <strong className="mt-0.5 text-lg font-black tracking-tight text-white [text-shadow:1px_1px_0px_black,-1px_-1px_0px_black,1px_-1px_0px_black,-1px_1px_0px_black]">
-                                      R$ {jogo.preco_aluguel.toFixed(2)}
-                                    </strong>
-                                  </button>
-
-                                  {jogo.preco_aluguel_14 > 0 && (
-                                    <button
-                                      onClick={() =>
-                                        abrirConfirmacao(
-                                          jogo.estoque > 0 && !isEmBreve ? 'aluguel' : 'reserva',
-                                          jogo.id,
-                                          tituloLimpo,
-                                          jogo.preco_aluguel,
-                                          jogo.preco_aluguel_14,
-                                          14,
-                                        )
-                                      }
-                                      className={`group relative flex h-[76px] flex-1 flex-col items-center justify-center rounded-xl border p-2.5 transition-all ${
-                                        jogo.estoque > 0 && !isEmBreve
-                                          ? 'border-cyan-400 bg-cyan-600/90 shadow-[0_0_20px_rgba(6,182,212,0.4)] hover:bg-cyan-500'
-                                          : 'border-orange-400 bg-orange-500/80 shadow-[0_0_15px_rgba(249,115,22,0.4)] hover:bg-orange-400'
-                                      }`}
-                                    >
-                                      <span
-                                        className={`absolute -top-3 right-2 z-10 rounded-full border bg-zinc-950 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider shadow-lg ${jogo.estoque > 0 && !isEmBreve ? 'border-cyan-500/50 text-cyan-400' : 'border-orange-500/50 text-orange-400'}`}
-                                      >
-                                        PROMO
-                                      </span>
-                                      <span className="text-[10px] font-black uppercase tracking-wider text-white/90 transition-colors [text-shadow:1px_1px_0px_black,-1px_-1px_0px_black,1px_-1px_0px_black,-1px_1px_0px_black] group-hover:text-white">
-                                        {jogo.estoque > 0 && !isEmBreve ? 'Alugar' : 'Reservar'} 14
-                                        Dias
-                                      </span>
-                                      <strong className="mt-0.5 text-lg font-black tracking-tight text-white [text-shadow:1px_1px_0px_black,-1px_-1px_0px_black,1px_-1px_0px_black,-1px_1px_0px_black]">
-                                        R$ {jogo.preco_aluguel_14.toFixed(2)}
-                                      </strong>
-                                    </button>
-                                  )}
-                                </>
+                                <button
+                                  onClick={() => abrirConfirmacao(jogo)}
+                                  className={`w-full rounded-xl py-3.5 text-xs font-black uppercase tracking-wider text-white shadow-lg transition-all ${
+                                    temEstoque && !isEmBreve
+                                      ? 'bg-blue-600 shadow-blue-500/20 hover:-translate-y-0.5 hover:bg-blue-500'
+                                      : 'bg-amber-600 shadow-amber-500/20 hover:-translate-y-0.5 hover:bg-amber-500'
+                                  }`}
+                                >
+                                  {temEstoque && !isEmBreve
+                                    ? '🎮 Alugar Agora'
+                                    : '⏳ Entrar na Fila'}
+                                </button>
                               )}
                             </div>
                           </div>
@@ -2796,11 +2688,11 @@ function App() {
               </div>
             )}
 
+            {/* DASHBOARD CLIENTE */}
             {abaAtual === 'dashboard' && (
               <div className="animate-fade-in mx-auto max-w-5xl space-y-8">
                 <div className="relative flex flex-col items-center gap-6 overflow-hidden rounded-3xl border border-purple-500/30 bg-gradient-to-r from-purple-900/20 via-zinc-900 to-zinc-900 p-6 shadow-2xl md:flex-row md:p-8">
                   <div className="pointer-events-none absolute -left-10 -top-10 h-40 w-40 rounded-full bg-purple-600/10 blur-3xl"></div>
-
                   <div className="relative">
                     <div className="flex h-24 w-24 items-center justify-center overflow-hidden rounded-2xl border-2 border-purple-500/50 bg-zinc-950 p-1 shadow-[0_0_15px_rgba(168,85,247,0.3)]">
                       <img
@@ -2817,7 +2709,6 @@ function App() {
                       </div>
                     )}
                   </div>
-
                   <div className="z-10 flex-1 text-center md:text-left">
                     <h2 className="mb-2 text-2xl font-black leading-none tracking-tight text-white md:text-3xl">
                       {usuarioLogado.nome}
@@ -2825,7 +2716,6 @@ function App() {
                     <p className="mb-4 font-mono-tech text-sm text-zinc-400">
                       {usuarioLogado.email}
                     </p>
-
                     <div className="flex flex-wrap items-center justify-center gap-3 md:justify-start">
                       <span className="flex items-center gap-1.5 rounded-lg border border-zinc-800 bg-zinc-950 px-3 py-1.5 text-[10px] font-black uppercase tracking-wider text-white">
                         🎮 {totalAlugueis} Locações
@@ -2884,10 +2774,8 @@ function App() {
                     <p className="mb-4 text-xs leading-relaxed text-zinc-400">
                       Escolha o método de pagamento para alugar seus jogos sem filas.
                     </p>
-
                     {pixPendente ? (
                       <div className="animate-fade-in z-10 mb-auto mt-auto flex flex-col items-center justify-center rounded-2xl border border-emerald-500/30 bg-zinc-950 p-6 shadow-inner">
-                        {/* A imagem do QR Code agora vem da Efí */}
                         <img
                           src={
                             pixPendente.qr_code.startsWith('data:')
@@ -2903,7 +2791,6 @@ function App() {
                             Aguardando compensação automática...
                           </strong>
                         </p>
-
                         <div className="flex w-full gap-2">
                           <button
                             onClick={() => {
@@ -2924,7 +2811,6 @@ function App() {
                       </div>
                     ) : (
                       <div className="relative z-10 mt-auto flex flex-col gap-3">
-                        {/* Usamos div em vez de form para podermos ter 2 botões de submit diferentes */}
                         <div>
                           <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-wider text-zinc-500">
                             Valor da Recarga (R$)
@@ -2944,7 +2830,6 @@ function App() {
                             />
                           </div>
                         </div>
-
                         <div>
                           <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-wider text-zinc-500">
                             Seu CPF (Exigido pelo Banco Central)
@@ -2959,7 +2844,6 @@ function App() {
                             disabled={carregandoGateway}
                           />
                         </div>
-
                         <div>
                           <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-wider text-zinc-500">
                             Cupom Promocional
@@ -2973,8 +2857,6 @@ function App() {
                             disabled={carregandoGateway}
                           />
                         </div>
-
-                        {/* 🚀 ARQUITETURA HÍBRIDA DE BOTÕES */}
                         <div className="mt-2 flex flex-col gap-3 sm:flex-row">
                           <button
                             onClick={solicitarRecargaCartao}
@@ -2983,7 +2865,6 @@ function App() {
                           >
                             💳 Pagar com Cartão
                           </button>
-
                           <button
                             onClick={solicitarRecargaPix}
                             disabled={carregandoGateway}
@@ -2992,7 +2873,6 @@ function App() {
                             ⚡ Pagar com Pix
                           </button>
                         </div>
-
                         <div className="mt-3 flex flex-col items-center gap-1 border-t border-zinc-800/50 pt-3 opacity-80">
                           <div className="flex items-center gap-2 text-[9px] font-bold uppercase tracking-widest text-zinc-400">
                             <span>🔒 Transação Blindada</span>
@@ -3004,7 +2884,6 @@ function App() {
                       </div>
                     )}
                   </section>
-
                   <section className="flex h-[400px] flex-col rounded-3xl border border-zinc-700/30 bg-gradient-to-br from-zinc-800/20 to-zinc-900 p-8 shadow-2xl transition-transform duration-300 hover:-translate-y-1 lg:h-[540px]">
                     <h3 className="mb-8 flex items-center gap-2 text-lg font-black tracking-tight text-white">
                       🧾 Extrato da Conta
@@ -3052,11 +2931,7 @@ function App() {
                     <span className="relative z-10 text-lg text-rose-500 transition duration-300 group-open:-rotate-180">
                       ▼
                     </span>
-                    <div className="pointer-events-none absolute -right-8 -top-8 text-9xl opacity-5 transition-transform duration-500 group-open:scale-110">
-                      🔐
-                    </div>
                   </summary>
-
                   <div className="animate-fade-in relative z-10 border-t border-rose-500/20 px-6 pb-6 pt-8 md:px-8 md:pb-8">
                     <p className="mb-8 max-w-2xl text-xs leading-relaxed text-zinc-400">
                       Mantenha sua conta segura alterando sua senha regularmente ou troque a senha
@@ -3153,11 +3028,7 @@ function App() {
                       <span className="relative z-10 text-lg text-purple-400 transition duration-300 group-open:-rotate-180">
                         ▼
                       </span>
-                      <div className="pointer-events-none absolute -right-10 -top-10 text-9xl opacity-5 transition-transform duration-700 group-open:scale-110">
-                        🎁
-                      </div>
                     </summary>
-
                     <div className="animate-fade-in relative z-10 border-t border-purple-500/20 px-6 pb-6 pt-8 md:px-8 md:pb-8">
                       <p className="mb-8 max-w-3xl text-xs leading-relaxed text-zinc-300">
                         Mande o seu código para um amigo. Quando ele criar uma conta nova e fizer a{' '}
@@ -3200,7 +3071,6 @@ function App() {
                       ▼
                     </span>
                   </summary>
-
                   <div className="animate-fade-in border-t border-emerald-500/20 px-6 pb-6 pt-8 md:px-8 md:pb-8">
                     {alugueisAtivos.length > 0 && (
                       <div className="mb-8 flex items-start gap-4 rounded-2xl border border-rose-500/50 bg-rose-950/40 p-5 shadow-inner">
@@ -3217,7 +3087,6 @@ function App() {
                         </div>
                       </div>
                     )}
-
                     {alugueisAtivos.length === 0 ? (
                       <p className="text-sm font-medium text-zinc-500">
                         Nenhum jogo ativo no momento.
@@ -3226,12 +3095,20 @@ function App() {
                       <div className="grid grid-cols-1 gap-6">
                         {alugueisAtivos.map((item) => (
                           <div
-                            key={item.locacao_id}
+                            key={`aluguel-${item.locacao_id}`}
                             className="flex flex-col gap-6 rounded-3xl border border-emerald-500/30 bg-zinc-950/60 p-6 shadow-xl transition-colors hover:border-emerald-400/50 md:p-8"
                           >
-                            <h4 className="text-xl font-black leading-tight tracking-tight text-white">
-                              {item.jogo}
-                            </h4>
+                            <div>
+                              <span
+                                className={`mb-2 inline-block rounded-lg px-2 py-1 text-[9px] font-black uppercase tracking-wider ${item.tipo_slot === 'PRIMARIA' ? 'border border-blue-500/30 bg-blue-500/20 text-blue-400' : 'border border-fuchsia-500/30 bg-fuchsia-500/20 text-fuchsia-400'}`}
+                              >
+                                🕹️ Vaga {item.tipo_slot}
+                              </span>
+                              <h4 className="text-xl font-black leading-tight tracking-tight text-white">
+                                {item.jogo}
+                              </h4>
+                            </div>
+
                             <div className="flex flex-col gap-3 rounded-2xl border border-zinc-800/80 bg-black/50 p-5 shadow-inner">
                               <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
                                 <span className="w-14 text-[10px] font-bold uppercase tracking-wider text-zinc-500">
@@ -3258,12 +3135,31 @@ function App() {
                                   {codigosGerados2FA[item.locacao_id]}
                                 </div>
                               ) : (
-                                <button
-                                  onClick={() => gerarCodigo2FA(item.locacao_id)}
-                                  className="flex w-full items-center justify-center gap-3 rounded-2xl border border-emerald-400 bg-emerald-600 py-4 text-xs font-bold uppercase tracking-wider text-white shadow-[0_0_15px_rgba(16,185,129,0.4)] transition-all hover:bg-emerald-500 hover:shadow-[0_0_25px_rgba(16,185,129,0.6)]"
-                                >
-                                  🔐 Gerar Código de Acesso (2FA)
-                                </button>
+                                <div className="flex flex-col gap-2">
+                                  <button
+                                    onClick={() => {
+                                      // [INFO] Trava Zero Trust no lado do cliente
+                                      if (item.tipo_slot === 'SECUNDARIA') {
+                                        if (
+                                          !window.confirm(
+                                            '⚠️ ATENÇÃO: O código da vaga SECUNDÁRIA só pode ser gerado UMA ÚNICA VEZ. Certifique-se de que você já está com o PlayStation ligado na tela que pede os 6 dígitos. Tem certeza que deseja gerar agora?',
+                                          )
+                                        )
+                                          return;
+                                      }
+                                      gerarCodigo2FA(item.locacao_id);
+                                    }}
+                                    className="flex w-full items-center justify-center gap-3 rounded-2xl border border-emerald-400 bg-emerald-600 py-4 text-xs font-bold uppercase tracking-wider text-white shadow-[0_0_15px_rgba(16,185,129,0.4)] transition-all hover:bg-emerald-500 hover:shadow-[0_0_25px_rgba(16,185,129,0.6)]"
+                                  >
+                                    🔐 Gerar Código de Acesso (2FA)
+                                  </button>
+                                  {item.tipo_slot === 'SECUNDARIA' && (
+                                    <p className="text-center text-[10px] font-bold text-rose-400">
+                                      O código 2FA da vaga Secundária só pode ser gerado uma única
+                                      vez!
+                                    </p>
+                                  )}
+                                </div>
                               )}
                             </div>
 
@@ -3384,7 +3280,6 @@ function App() {
                       ▼
                     </span>
                   </summary>
-
                   <div className="animate-fade-in border-t border-amber-500/20 px-6 pb-6 pt-8 md:px-8 md:pb-8">
                     {minhasReservas.length === 0 ? (
                       <p className="text-sm font-medium text-zinc-500">
@@ -3394,10 +3289,15 @@ function App() {
                       <div className="grid grid-cols-1 gap-6">
                         {minhasReservas.map((item) => (
                           <div
-                            key={item.reserva_id}
+                            key={`res-${item.reserva_id}`}
                             className="flex flex-col gap-5 rounded-3xl border border-amber-500/30 bg-zinc-950/60 p-6 shadow-xl transition-colors hover:border-amber-400/50 md:p-8"
                           >
                             <div className="flex flex-col gap-2">
+                              <span
+                                className={`w-max rounded-lg border px-2 py-1 text-[9px] font-black uppercase tracking-wider ${item.tipo_slot === 'PRIMARIA' ? 'border-blue-500/30 bg-blue-500/20 text-blue-400' : 'border-fuchsia-500/30 bg-fuchsia-500/20 text-fuchsia-400'}`}
+                              >
+                                🕹️ Fila {item.tipo_slot}
+                              </span>
                               <h4 className="text-xl font-black leading-tight tracking-tight text-white">
                                 {item.jogo}
                               </h4>
@@ -3441,11 +3341,10 @@ function App() {
                         ▼
                       </span>
                     </summary>
-
                     <div className="animate-fade-in flex flex-wrap gap-3 border-t border-zinc-800/50 px-6 pb-6 pt-6 md:px-8 md:pb-8">
                       {historicoAlugueis.map((item) => (
                         <span
-                          key={item.locacao_id}
+                          key={`hist-${item.locacao_id}`}
                           className="rounded-xl border border-zinc-800 bg-zinc-950 px-5 py-2 text-[10px] font-bold uppercase tracking-wide text-zinc-400"
                         >
                           {item.jogo}{' '}
@@ -3464,6 +3363,7 @@ function App() {
             {abaAtual === 'termos' && <Termos />}
             {abaAtual === 'privacidade' && <Privacidade />}
 
+            {/* PAINEL DE ADMINISTRAÇÃO */}
             {abaAtual === 'admin' && usuarioLogado.is_admin && (
               <div className="animate-fade-in mx-auto mt-2 max-w-6xl">
                 <div className="mb-8 flex flex-col justify-between gap-4 md:flex-row md:items-center">
@@ -3471,6 +3371,7 @@ function App() {
                     Administração do Sistema
                   </h2>
                 </div>
+
                 {/* 📊 BLOCOS ESTATISTICAS DO SISTEMA */}
                 <div className="mb-4 flex justify-end">
                   <select
@@ -3485,11 +3386,7 @@ function App() {
                         .then((res) =>
                           res.ok
                             ? res.json()
-                            : {
-                                faturamento: 0,
-                                total_clientes: 0,
-                                locacoes_ativas: 0,
-                              },
+                            : { faturamento: 0, total_clientes: 0, locacoes_ativas: 0 },
                         )
                         .then((dados) => setEstatisticasAdmin(dados));
                     }}
@@ -3563,10 +3460,7 @@ function App() {
                         placeholder="Ex: PROMOÇÃO DE FIM DE SEMANA! Recarregue R$ 50..."
                         value={configSistema.mensagem_anuncio}
                         onChange={(e) =>
-                          setConfigSistema({
-                            ...configSistema,
-                            mensagem_anuncio: e.target.value,
-                          })
+                          setConfigSistema({ ...configSistema, mensagem_anuncio: e.target.value })
                         }
                         className={`${adminInputClass} h-16 resize-none border-zinc-700 bg-zinc-950 text-sm focus:ring-orange-500`}
                       />
@@ -3585,10 +3479,7 @@ function App() {
                           placeholder="https://imagem1.jpg, https://imagem2.jpg..."
                           value={configSistema.banners_url || ''}
                           onChange={(e) =>
-                            setConfigSistema({
-                              ...configSistema,
-                              banners_url: e.target.value,
-                            })
+                            setConfigSistema({ ...configSistema, banners_url: e.target.value })
                           }
                           className={`${adminInputClass} h-24 resize-none border-zinc-700 bg-zinc-950 text-sm focus:ring-orange-500`}
                         />
@@ -3606,10 +3497,7 @@ function App() {
                           placeholder="Título (ex: Próximas Adições: Você Decide!)"
                           value={configSistema.enquete_titulo || ''}
                           onChange={(e) =>
-                            setConfigSistema({
-                              ...configSistema,
-                              enquete_titulo: e.target.value,
-                            })
+                            setConfigSistema({ ...configSistema, enquete_titulo: e.target.value })
                           }
                           className={`${adminInputClass} mb-3 border-zinc-700 bg-zinc-950 focus:ring-orange-500`}
                         />
@@ -3656,8 +3544,6 @@ function App() {
                           <h4 className="mb-2 text-sm font-bold tracking-tight text-white">
                             Adicionar Opção (Máx. Recomendado: 5)
                           </h4>
-
-                          {/* Novo layout com botão Buscar lado a lado */}
                           <div className="flex gap-3">
                             <input
                               type="text"
@@ -3675,7 +3561,6 @@ function App() {
                               ✨ Buscar
                             </button>
                           </div>
-
                           <input
                             type="url"
                             placeholder="URL da Capa (Preenchimento Automático)"
@@ -3684,7 +3569,6 @@ function App() {
                             className={adminInputClass}
                             required
                           />
-
                           <button
                             type="submit"
                             className="mt-2 rounded-xl bg-fuchsia-600 py-3.5 text-xs font-bold uppercase tracking-wider text-white shadow-lg shadow-fuchsia-500/20 transition-colors hover:bg-fuchsia-500"
@@ -3899,11 +3783,19 @@ function App() {
                       <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
                         {contasManutencaoFiltradas.map((conta) => (
                           <div
-                            key={conta.conta_psn_id}
+                            key={`manu-${conta.conta_psn_id}`}
                             className="flex flex-col gap-6 rounded-3xl border border-rose-500/50 bg-zinc-900 p-6 shadow-lg md:p-8"
                           >
                             <div className="flex flex-col items-start justify-between gap-4 sm:flex-row">
                               <div className="flex flex-col gap-1.5">
+                                <span
+                                  className={`w-max rounded-lg border px-2 py-1 text-[9px] font-black uppercase tracking-wider ${conta.status_primaria === 'MANUTENCAO' ? 'border-blue-500/30 bg-blue-500/20 text-blue-400' : 'border-fuchsia-500/30 bg-fuchsia-500/20 text-fuchsia-400'}`}
+                                >
+                                  🕹️ Slot:{' '}
+                                  {conta.status_primaria === 'MANUTENCAO'
+                                    ? 'PRIMARIA'
+                                    : 'SECUNDARIA'}
+                                </span>
                                 <strong className="text-lg font-black tracking-tight text-white">
                                   {conta.jogo}
                                 </strong>
@@ -3917,18 +3809,15 @@ function App() {
                                   Senha Velha:{' '}
                                   <span className="font-mono">{conta.senha_antiga}</span>
                                 </span>
-
                                 <span className="mt-4 w-max rounded-xl border border-amber-500/20 bg-amber-500/10 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-amber-500">
                                   Último Cliente: {conta.ultimo_cliente_nome || 'Desconhecido'}
                                 </span>
-
                                 {conta.cashback_pendente > 0 && (
                                   <span className="mt-3 w-max rounded-xl border border-emerald-500/30 bg-emerald-400/10 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-emerald-400">
                                     💸 Cashback Pendente: R$ {conta.cashback_pendente.toFixed(2)}
                                   </span>
                                 )}
                               </div>
-
                               <div className="flex w-full flex-col gap-3 sm:w-auto">
                                 {conta.ultimo_cliente_telefone && (
                                   <button
@@ -3959,7 +3848,6 @@ function App() {
                                 )}
                               </div>
                             </div>
-
                             <div className="mt-2 flex flex-col gap-3 border-t border-rose-900/50 pt-6 sm:flex-row">
                               <input
                                 type="text"
@@ -4053,6 +3941,7 @@ function App() {
                           className={adminInputClass}
                         />
                       </div>
+
                       <input
                         type="url"
                         placeholder="URL da Capa"
@@ -4060,25 +3949,63 @@ function App() {
                         onChange={(e) => setNovoJogoImagem(e.target.value)}
                         className={adminInputClass}
                       />
+
                       <div className="flex gap-3">
-                        <input
-                          type="number"
-                          step="0.01"
-                          placeholder="Preço 7 Dias (Ex: 35.00)"
-                          value={novoJogoPreco}
-                          onChange={(e) => setNovoJogoPreco(e.target.value)}
-                          className={adminInputClass}
-                          required
-                        />
-                        <input
-                          type="number"
-                          step="0.01"
-                          placeholder="Preço 14 Dias (Ex: 60.00)"
-                          value={novoJogoPreco14}
-                          onChange={(e) => setNovoJogoPreco14(e.target.value)}
-                          className={adminInputClass}
-                        />
+                        <div className="relative w-full">
+                          <label className="mb-1 block text-xs font-bold uppercase tracking-wider text-zinc-500">
+                            Preço Primária 7 Dias (R$)
+                          </label>
+                          <input
+                            type="number"
+                            step="0.01"
+                            value={novoJogoPreco}
+                            onChange={(e) => setNovoJogoPreco(e.target.value)}
+                            className={adminInputClass}
+                            required
+                          />
+                        </div>
+                        <div className="relative w-full">
+                          <label className="mb-1 block text-xs font-bold uppercase tracking-wider text-zinc-500">
+                            Preço Primária 14 Dias (R$)
+                          </label>
+                          <input
+                            type="number"
+                            step="0.01"
+                            value={novoJogoPreco14}
+                            onChange={(e) => setNovoJogoPreco14(e.target.value)}
+                            className={adminInputClass}
+                          />
+                        </div>
                       </div>
+
+                      {/* [INFO] Novos campos financeiros da Vaga Secundária (New Form) */}
+                      <div className="flex gap-3">
+                        <div className="relative w-full">
+                          <label className="mb-1 block text-xs font-bold uppercase tracking-wider text-fuchsia-500">
+                            Preço Secundária 7 Dias (R$)
+                          </label>
+                          <input
+                            type="number"
+                            step="0.01"
+                            value={novoJogoPrecoSec}
+                            onChange={(e) => setNovoJogoPrecoSec(e.target.value)}
+                            className={`${adminInputClass} border-fuchsia-500/30 focus:ring-fuchsia-500`}
+                          />
+                        </div>
+                        <div className="relative w-full">
+                          <label className="mb-1 block text-xs font-bold uppercase tracking-wider text-fuchsia-500">
+                            Preço Secundária 14 Dias (R$)
+                          </label>
+                          <input
+                            type="number"
+                            step="0.01"
+                            value={novoJogoPrecoSec14}
+                            onChange={(e) => setNovoJogoPrecoSec14(e.target.value)}
+                            className={`${adminInputClass} border-fuchsia-500/30 focus:ring-fuchsia-500`}
+                          />
+                        </div>
+                      </div>
+
                       <textarea
                         placeholder="Descrição curta do jogo..."
                         value={novoJogoDescricao}
@@ -4179,7 +4106,6 @@ function App() {
                       </span>
                     </summary>
                     <div className="border-t border-zinc-800/50 px-6 pb-6 pt-8 md:px-8 md:pb-8">
-                      {/* 🚀 BARRA DE BUSCA E FILTROS DO CATÁLOGO */}
                       <div className="mb-6 flex flex-col items-center gap-4 rounded-2xl border border-zinc-800/80 bg-zinc-950 p-4 shadow-inner lg:flex-row">
                         <input
                           type="text"
@@ -4188,7 +4114,6 @@ function App() {
                           onChange={(e) => setTermoBusca(e.target.value)}
                           className={`${adminInputClass} w-full flex-1`}
                         />
-
                         <div className="flex w-full overflow-x-auto rounded-xl border border-zinc-700/50 bg-zinc-900 p-1 shadow-inner lg:w-auto">
                           <button
                             onClick={() => setFiltroStatusCatalogo('todos')}
@@ -4228,7 +4153,7 @@ function App() {
                               .slice(paginaCatalogo * 50, (paginaCatalogo + 1) * 50)
                               .map((jogo) => (
                                 <li
-                                  key={jogo.id}
+                                  key={`cat-${jogo.id}`}
                                   className="flex flex-col items-start justify-between gap-4 rounded-2xl border-l-2 border-blue-500 bg-zinc-950/50 p-4 shadow-sm transition-colors hover:bg-zinc-800/50 md:flex-row md:items-center md:p-5"
                                 >
                                   <div className="flex w-full flex-col gap-1 leading-relaxed md:w-auto">
@@ -4243,9 +4168,10 @@ function App() {
                                         14D: R$ {jogo.preco_aluguel_14.toFixed(2)}
                                       </span>
                                     </div>
-                                    {jogo.estoque > 0 ? (
+                                    {jogo.estoque_primaria > 0 || jogo.estoque_secundaria > 0 ? (
                                       <span className="mt-1 text-[10px] font-bold uppercase tracking-wider text-emerald-400">
-                                        ✅ {jogo.estoque} Disponível
+                                        ✅ {jogo.estoque_primaria + jogo.estoque_secundaria} Vagas
+                                        Disponíveis
                                       </span>
                                     ) : (
                                       <span className="mt-1 text-[10px] font-bold uppercase tracking-wider text-rose-400">
@@ -4253,7 +4179,6 @@ function App() {
                                       </span>
                                     )}
                                   </div>
-
                                   <div className="flex w-full justify-end gap-2 md:w-auto">
                                     <button
                                       onClick={() => setModalEdicaoJogo(jogo)}
@@ -4307,7 +4232,6 @@ function App() {
                       </span>
                     </summary>
                     <div className="border-t border-zinc-800/50 px-6 pb-6 pt-8 md:px-8 md:pb-8">
-                      {/* 🚀 BARRA DE BUSCA E FILTRO - LOCAÇÕES ATIVAS */}
                       <div className="mb-6 flex flex-col gap-4 rounded-2xl border border-zinc-800/80 bg-zinc-950 p-4 shadow-inner md:flex-row">
                         <input
                           type="text"
@@ -4343,6 +4267,9 @@ function App() {
                                   Jogo
                                 </th>
                                 <th className="pb-3 text-[10px] font-bold uppercase tracking-wider">
+                                  Vaga
+                                </th>
+                                <th className="pb-3 text-[10px] font-bold uppercase tracking-wider">
                                   Expira
                                 </th>
                                 <th className="pb-3 text-right text-[10px] font-bold uppercase tracking-wider">
@@ -4353,7 +4280,7 @@ function App() {
                             <tbody>
                               {locacoesAtivasFiltradas.map((loc) => (
                                 <tr
-                                  key={loc.id}
+                                  key={`locAtiva-${loc.id}`}
                                   className="border-b border-zinc-800/50 transition-colors hover:bg-zinc-800/30"
                                 >
                                   <td className="py-4 text-xs font-medium text-zinc-300">
@@ -4362,15 +4289,27 @@ function App() {
                                   <td className="py-4 text-sm font-black tracking-tight text-white">
                                     {loc.jogo}
                                   </td>
+                                  <td className="py-4 text-xs font-bold text-purple-400">
+                                    {loc.tipo_slot}
+                                  </td>
                                   <td className="py-4 text-xs font-bold text-amber-400">
                                     {new Date(loc.data_fim).toLocaleDateString()}
                                   </td>
                                   <td className="py-4">
                                     <div className="flex justify-end gap-2">
+                                      {/* [INFO] Botão de socorro Admin para falha de 2FA */}
+                                      {loc.tipo_slot === 'SECUNDARIA' && (
+                                        <button
+                                          onClick={() => resetar2FAAdmin(loc.id)}
+                                          className="rounded-lg border border-fuchsia-500/30 bg-fuchsia-900/30 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-fuchsia-400 shadow transition-colors hover:bg-fuchsia-600 hover:text-white"
+                                          title="Permitir que o cliente gere o 2FA de novo"
+                                        >
+                                          🔄 2FA
+                                        </button>
+                                      )}
                                       <button
                                         onClick={() => avisarLiberacao(loc.cliente, loc.jogo)}
                                         className="flex items-center gap-1.5 rounded-lg border border-emerald-500/30 bg-emerald-900/30 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-emerald-400 shadow transition-colors hover:bg-emerald-600 hover:text-white"
-                                        title="Avisar Liberação via WhatsApp"
                                       >
                                         <span className="text-sm">📲</span> Avisar
                                       </button>
@@ -4449,7 +4388,7 @@ function App() {
                             <tbody>
                               {reservasAdminFiltradas.map((reserva) => (
                                 <tr
-                                  key={reserva.id}
+                                  key={`reservaAdm-${reserva.id}`}
                                   className="border-b border-zinc-800/50 transition-colors hover:bg-zinc-800/30"
                                 >
                                   <td className="py-4 text-xs font-medium text-zinc-300">
@@ -4471,7 +4410,6 @@ function App() {
                                       ({reserva.dias_aluguel}d)
                                     </span>
                                   </td>
-
                                   <td className="py-4 text-right">
                                     <button
                                       onClick={() =>
@@ -4497,7 +4435,7 @@ function App() {
 
                   {/* 👥 BLOCO BASE DE CLIENTES */}
                   <details className="group overflow-hidden rounded-3xl border border-l-4 border-zinc-800 border-l-purple-500 bg-zinc-900/80 shadow-2xl shadow-purple-500/10 [&_summary::-webkit-details-marker]:hidden">
-                    <summary className="flex cursor-pointer select-none items-center justify-between p-6 transition-colors hover:bg-purple-900/10 md:p-8">
+                    <summary className="relative flex cursor-pointer select-none items-center justify-between p-6 transition-colors hover:bg-purple-900/10 md:p-8">
                       <span className="flex items-center gap-3 text-lg font-black tracking-tight text-purple-400">
                         👥 Base de Clientes ({todosUsuarios.length})
                       </span>
@@ -4506,7 +4444,6 @@ function App() {
                       </span>
                     </summary>
                     <div className="border-t border-zinc-800/50 px-6 pb-6 pt-8 md:px-8 md:pb-8">
-                      {/* 🚀 BARRA DE BUSCA E FILTROS UNIFICADA */}
                       <div className="mb-6 flex flex-col items-center gap-4 rounded-2xl border border-zinc-800/80 bg-zinc-950 p-4 shadow-inner lg:flex-row">
                         <input
                           type="text"
@@ -4518,7 +4455,6 @@ function App() {
                           }}
                           className={`${adminInputClass} w-full flex-1`}
                         />
-
                         <div className="flex w-full flex-col gap-3 sm:flex-row lg:w-auto">
                           <select
                             value={ordenacaoClientes}
@@ -4535,7 +4471,6 @@ function App() {
                             <option value="az">🔤 Ordem (A-Z)</option>
                             <option value="za">🔠 Ordem (Z-A)</option>
                           </select>
-
                           <div className="flex w-full rounded-xl border border-zinc-700/50 bg-zinc-900 p-1 shadow-inner sm:w-auto">
                             <button
                               onClick={() => {
@@ -4567,7 +4502,6 @@ function App() {
                           </div>
                         </div>
                       </div>
-
                       <div className="custom-scrollbar max-h-[600px] overflow-y-auto pr-3">
                         {clientesFiltrados.length === 0 ? (
                           <p className="text-sm font-medium text-zinc-500">Vazio.</p>
@@ -4577,7 +4511,7 @@ function App() {
                               .slice(paginaClientes * 50, (paginaClientes + 1) * 50)
                               .map((u) => (
                                 <li
-                                  key={u.id}
+                                  key={`cli-${u.id}`}
                                   className="flex flex-col items-start justify-between gap-4 rounded-2xl border border-l-2 border-zinc-800/50 border-l-purple-500 bg-zinc-950/50 p-4 shadow-sm transition-colors hover:bg-zinc-800/50 md:flex-row md:items-center md:p-5"
                                 >
                                   <div className="flex flex-col gap-1.5">
@@ -4602,7 +4536,6 @@ function App() {
                                       <span className="ml-1 truncate text-zinc-300">{u.email}</span>
                                     </span>
                                   </div>
-
                                   {!u.is_admin && (
                                     <div className="mt-2 flex w-full flex-wrap justify-end gap-2 md:mt-0 md:w-auto">
                                       {u.telefone && (
@@ -4634,7 +4567,6 @@ function App() {
                           </ul>
                         )}
                       </div>
-
                       <div className="mt-6 flex items-center justify-between rounded-2xl border border-zinc-800/80 bg-zinc-950 p-4">
                         <button
                           onClick={() => setPaginaClientes(Math.max(0, paginaClientes - 1))}

@@ -1,10 +1,17 @@
+// ==============================================================================
+// COMPONENTE DE RODAPÉ (FOOTER)
+// ==============================================================================
+// [INFO] Exibe os links rápidos da locadora, selos de segurança e redes sociais.
+// O espaçamento superior foi otimizado para não criar um "buraco" abaixo da paginação.
+
 export default function Footer({ setAbaAtual }) {
   const NUMERO_WHATSAPP_SUPORTE = '5541995948532';
 
   return (
-    <footer className="relative z-10 mt-12 border-t border-zinc-800 bg-zinc-900 pb-8 pt-16">
+    <footer className="relative z-10 mt-0 border-t border-zinc-800 bg-zinc-900 pb-8 pt-10">
       <div className="mx-auto max-w-7xl px-4 md:px-8">
         <div className="mb-12 grid grid-cols-1 gap-12 md:grid-cols-4">
+          {/* BLOCO 1: BRANDING E REDES SOCIAIS */}
           <div className="col-span-1 md:col-span-2">
             <span className="mb-4 block bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-2xl font-black tracking-tighter text-transparent">
               BORA JOGAR!
@@ -35,6 +42,7 @@ export default function Footer({ setAbaAtual }) {
             </div>
           </div>
 
+          {/* BLOCO 2: LINKS RÁPIDOS */}
           <div>
             <h4 className="mb-6 text-[10px] font-bold uppercase tracking-wider text-white">
               Acesso Rápido
@@ -75,6 +83,7 @@ export default function Footer({ setAbaAtual }) {
             </ul>
           </div>
 
+          {/* BLOCO 3: SELOS DE SEGURANÇA */}
           <div>
             <h4 className="mb-6 text-[10px] font-bold uppercase tracking-wider text-white">
               Segurança
@@ -102,9 +111,10 @@ export default function Footer({ setAbaAtual }) {
           </div>
         </div>
 
+        {/* DIREITOS AUTORAIS E LOCALIZAÇÃO */}
         <div className="flex flex-col items-center justify-between gap-4 border-t border-zinc-800/50 pt-8 text-[10px] font-bold uppercase tracking-wide text-zinc-500 md:flex-row">
           <p>© 2026 Locadora Bora Jogar. Todos os direitos reservados.</p>
-          <p>CNPJ: 51.666.811/0001-67 • Curitiba, PR</p>
+          <p>Curitiba, PR</p>
         </div>
       </div>
     </footer>

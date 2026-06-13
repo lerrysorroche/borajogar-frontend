@@ -1,3 +1,9 @@
+// ==============================================================================
+// COMPONENTE DE AUTENTICAÇÃO (LOGIN / CADASTRO)
+// ==============================================================================
+// Gerencia o acesso ao sistema, integração com o Firebase Authentication (Google)
+// e a recuperação de senha provisória.
+
 import { useState } from 'react';
 import ReactGA from 'react-ga4';
 import { auth, provider } from '../firebase';
@@ -13,31 +19,40 @@ export default function Auth({
   modoEsqueciSenha,
   setModoEsqueciSenha,
 }) {
+  // --- Estados do Formulário de Login ---
   const [formEmail, setFormEmail] = useState('');
   const [formSenha, setFormSenha] = useState('');
+  const [verSenhaLogin, setVerSenhaLogin] = useState(false);
+
+  // --- Estados do Formulário de Cadastro ---
   const [cadNome, setCadNome] = useState('');
   const [cadEmail, setCadEmail] = useState('');
   const [cadSenha, setCadSenha] = useState('');
+  const [cadSenhaConfirmacao, setCadSenhaConfirmacao] = useState('');
   const [cadTelefone, setCadTelefone] = useState('');
   const [cadCodigoConvite, setCadCodigoConvite] = useState('');
-  const [cadSenhaConfirmacao, setCadSenhaConfirmacao] = useState('');
-
-  const [verSenhaLogin, setVerSenhaLogin] = useState(false);
   const [verSenhaCad, setVerSenhaCad] = useState(false);
   const [verSenhaCadConf, setVerSenhaCadConf] = useState(false);
+
+  // --- Estado de Recuperação de Senha ---
   const [esqueciEmail, setEsqueciEmail] = useState('');
 
-  // Estados Google
+  // --- Estados de Login com Google (Fluxo Interrompido) ---
   const [pedindoTelefoneGoogle, setPedindoTelefoneGoogle] = useState(false);
   const [dadosGoogleTemp, setDadosGoogleTemp] = useState(null);
   const [telefoneGoogle, setTelefoneGoogle] = useState('');
 
+  // --- Classes CSS Padrão ---
   const inputClass =
     'w-full p-3 bg-zinc-900 border border-zinc-700 text-sm font-medium text-white rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all placeholder-zinc-500';
   const subtitleCyberClass =
     'text-[11px] font-mono-tech font-bold text-center mb-10 tracking-[0.2em] uppercase bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent animate-neon-flicker block select-none';
 
-  // Máscara Blindada
+  // ==========================================================================
+  // FUNÇÕES UTILITÁRIAS
+  // ==========================================================================
+
+  // [INFO] Formatação em tempo real do número de WhatsApp (Ex: (41) 99999-9999)
   const handleTelefoneChange = (e, setter) => {
     let valor = e.target.value.replace(/\D/g, '');
     if (valor.length > 11) valor = valor.slice(0, 11);
@@ -48,7 +63,10 @@ export default function Auth({
     setter(valor);
   };
 
-  // Envio para o Backend
+  // ==========================================================================
+  // FLUXO DO GOOGLE LOGIN
+  // ==========================================================================
+
   const enviarGoogleParaBackend = async (email, nome, telefone) => {
     try {
       const res = await fetch('https://borajogar-api.onrender.com/login/google', {
@@ -58,10 +76,13 @@ export default function Auth({
       });
       const data = await res.json();
 
+      // O Backend identificou que é uma conta nova e precisa do WhatsApp do cliente
       if (res.ok && data.novo_usuario && data.mensagem === 'precisa_telefone') {
         setPedindoTelefoneGoogle(true);
         mostrarToast('Quase lá! Só precisamos do seu WhatsApp.', 'aviso');
-      } else if (res.ok) {
+      }
+      // Login Bem Sucedido
+      else if (res.ok) {
         setUsuarioLogado(data.usuario);
         localStorage.setItem('usuario_locadora', JSON.stringify(data.usuario));
         localStorage.setItem('token_locadora', data.token);
@@ -83,42 +104,38 @@ export default function Auth({
       setDadosGoogleTemp({ email: user.email, nome: user.displayName });
       enviarGoogleParaBackend(user.email, user.displayName, '');
     } catch (error) {
-      // Ignora erro de aba fechada
+      // Ignora erro se o cliente fechar o pop-up intencionalmente
       if (
         error.code !== 'auth/popup-closed-by-user' &&
         error.code !== 'auth/cancelled-popup-request'
       ) {
-        console.error('ERRO FIREBASE:', error);
-        mostrarToast('Login com Google falhou.', 'erro');
+        mostrarToast('Falha na comunicação com os servidores do Google.', 'erro');
       }
     }
   };
 
   const finalizarCadastroGoogle = (e) => {
     if (e) e.preventDefault();
-    console.log('👉 Botão Concluir clicado!');
-
     const telLimpo = telefoneGoogle.replace(/\D/g, '');
-    console.log('👉 Telefone digitado:', telLimpo);
 
     if (telLimpo.length < 10) {
-      console.log('❌ Bloqueado: Telefone muito curto.');
       mostrarToast('Por favor, informe um WhatsApp válido com o DDD.', 'erro');
       return;
     }
 
     if (!dadosGoogleTemp) {
-      console.log('❌ Bloqueado: Perdeu os dados do Google da memória.');
       mostrarToast('Sessão expirada. Volte e clique em Entrar com Google novamente.', 'erro');
       setPedindoTelefoneGoogle(false);
       return;
     }
 
-    console.log('✅ Tudo certo! Disparando para o Backend...');
     enviarGoogleParaBackend(dadosGoogleTemp.email, dadosGoogleTemp.nome, telLimpo);
   };
 
-  // Funções Clássicas
+  // ==========================================================================
+  // FLUXO CLÁSSICO (E-MAIL E SENHA)
+  // ==========================================================================
+
   const registrarConta = (e) => {
     e.preventDefault();
     if (cadSenha !== cadSenhaConfirmacao) {
@@ -126,14 +143,19 @@ export default function Auth({
       return;
     }
     if (!/^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/.test(cadSenha)) {
-      mostrarToast('Senha fraca. Siga os requisitos.', 'erro');
+      mostrarToast(
+        'A senha deve ter no mínimo 8 caracteres, 1 letra maiúscula, 1 número e 1 caractere especial.',
+        'erro',
+      );
       return;
     }
+
     const telefoneLimpo = cadTelefone.replace(/\D/g, '');
     if (telefoneLimpo.length < 10) {
-      mostrarToast('WhatsApp inválido.', 'erro');
+      mostrarToast('WhatsApp inválido. Digite o número com DDD.', 'erro');
       return;
     }
+
     fetch('https://borajogar-api.onrender.com/usuarios', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -148,9 +170,11 @@ export default function Auth({
       const data = await res.json();
       if (res.ok) {
         mostrarToast('Conta criada! Faça o login para continuar.', 'sucesso');
-        if (window.fbq) window.fbq('track', 'CompleteRegistration');
+        if (window.fbq) window.fbq('track', 'CompleteRegistration'); // Disparo de Evento de Conversão Meta
         setModoLogin(true);
-      } else mostrarToast(data.detail, 'erro');
+      } else {
+        mostrarToast(data.detail, 'erro');
+      }
     });
   };
 
@@ -167,9 +191,11 @@ export default function Auth({
         localStorage.setItem('usuario_locadora', JSON.stringify(data.usuario));
         localStorage.setItem('token_locadora', data.token);
         setAbaAtual(data.usuario.is_admin ? 'admin' : 'vitrine');
-        mostrarToast(`Bem-vindo, ${data.usuario.nome}!`, 'sucesso');
+        mostrarToast(`Bem-vindo(a), ${data.usuario.nome}!`, 'sucesso');
         ReactGA.event({ category: 'User', action: 'Login_Success', label: data.usuario.email });
-      } else mostrarToast(data.detail, 'erro');
+      } else {
+        mostrarToast(data.detail, 'erro');
+      }
     });
   };
 
@@ -177,6 +203,7 @@ export default function Auth({
     e.preventDefault();
     if (!esqueciEmail) return;
     mostrarToast('Enviando solicitação...', 'aviso');
+
     fetch('https://borajogar-api.onrender.com/esqueci-senha', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -186,13 +213,15 @@ export default function Auth({
       if (res.ok) {
         mostrarToast(data.mensagem, 'sucesso');
         setModoEsqueciSenha(false);
-      } else mostrarToast(data.detail, 'erro');
+      } else {
+        mostrarToast(data.detail, 'erro');
+      }
     });
   };
 
-  // =====================================
-  // TELAS DA INTERFACE (SEM SUB-FUNÇÕES)
-  // =====================================
+  // ==========================================================================
+  // RENDERIZAÇÃO DA INTERFACE (UI)
+  // ==========================================================================
 
   return (
     <div
@@ -205,13 +234,16 @@ export default function Auth({
     >
       <div className="absolute inset-0 bg-zinc-950/80 backdrop-blur"></div>
       <div className="animate-fade-in relative z-10 w-full max-w-md rounded-3xl border border-zinc-800 bg-zinc-900 p-8 shadow-2xl md:p-10">
+        {/* LOGO */}
         <h2 className="mb-8 bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-center text-3xl font-black tracking-tighter text-transparent">
           BORA JOGAR!
         </h2>
         <span className={subtitleCyberClass}>A sua Próxima Aventura Começa Aqui!</span>
 
         {pedindoTelefoneGoogle ? (
-          // TELA: PEDIR WHATSAPP GOOGLE
+          // ================================================================
+          // TELA 1: INTERRUPÇÃO PARA WHATSAPP NO GOOGLE LOGIN
+          // ================================================================
           <form onSubmit={finalizarCadastroGoogle} className="animate-fade-in space-y-5">
             <div className="rounded-xl border border-emerald-500/30 bg-emerald-950/30 p-4 text-center">
               <span className="mb-2 block text-2xl">📱</span>
@@ -239,7 +271,9 @@ export default function Auth({
             </button>
           </form>
         ) : modoEsqueciSenha ? (
-          // TELA: ESQUECI A SENHA
+          // ================================================================
+          // TELA 2: RECUPERAÇÃO DE SENHA
+          // ================================================================
           <form onSubmit={solicitarRecuperacaoSenha} className="animate-fade-in space-y-5">
             <p className="mb-6 text-center text-sm leading-relaxed text-zinc-400">
               Digite seu e-mail de cadastro para receber uma senha temporária.
@@ -269,7 +303,9 @@ export default function Auth({
             </div>
           </form>
         ) : !modoLogin ? (
-          // TELA: CADASTRO TRADICIONAL
+          // ================================================================
+          // TELA 3: CADASTRO TRADICIONAL
+          // ================================================================
           <form onSubmit={registrarConta} className="animate-fade-in space-y-4">
             <input
               type="text"
@@ -338,6 +374,7 @@ export default function Auth({
               onChange={(e) => setCadCodigoConvite(e.target.value.toUpperCase())}
               className={`${inputClass} border-purple-500/50 bg-purple-950/20 uppercase text-purple-100 placeholder-purple-400/50`}
             />
+
             <button
               type="submit"
               className="mt-2 w-full rounded-xl bg-emerald-600 py-4 text-sm font-bold uppercase tracking-wide text-white shadow-lg transition-all hover:bg-emerald-500"
@@ -352,6 +389,7 @@ export default function Auth({
               </span>
               <div className="flex-grow border-t border-zinc-800"></div>
             </div>
+
             <button
               type="button"
               onClick={handleGoogleLogin}
@@ -392,7 +430,9 @@ export default function Auth({
             </div>
           </form>
         ) : (
-          // TELA: LOGIN TRADICIONAL
+          // ================================================================
+          // TELA 4: LOGIN TRADICIONAL
+          // ================================================================
           <form onSubmit={entrarNoSistema} className="animate-fade-in space-y-5">
             <input
               type="email"
@@ -419,6 +459,7 @@ export default function Auth({
                 {verSenhaLogin ? '🙈' : '👁️'}
               </button>
             </div>
+
             <div className="flex justify-end">
               <button
                 type="button"
@@ -428,6 +469,7 @@ export default function Auth({
                 Esqueceu a senha?
               </button>
             </div>
+
             <button
               type="submit"
               className="w-full rounded-xl bg-blue-600 py-4 text-sm font-bold uppercase tracking-wide text-white shadow-lg transition-all hover:bg-blue-500"
@@ -442,6 +484,7 @@ export default function Auth({
               </span>
               <div className="flex-grow border-t border-zinc-800"></div>
             </div>
+
             <button
               type="button"
               onClick={handleGoogleLogin}
