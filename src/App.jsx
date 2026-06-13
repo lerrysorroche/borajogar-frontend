@@ -35,6 +35,10 @@ function App() {
   const [toast, setToast] = useState({ visivel: false, mensagem: '', tipo: 'sucesso' });
   const [modalDescricao, setModalDescricao] = useState(null);
   const [modalDevolucao, setModalDevolucao] = useState(null);
+  const [modalConfirmacao2FA, setModalConfirmacao2FA] = useState({
+    visivel: false,
+    locacaoId: null,
+  });
   const [modalEdicaoJogo, setModalEdicaoJogo] = useState(null);
   const [modalEdicaoCliente, setModalEdicaoCliente] = useState(null);
   const [indiceBanner, setIndiceBanner] = useState(0);
@@ -489,7 +493,8 @@ function App() {
     });
   };
 
-  const abrirModalDevolucao = (locacaoId, dataFim) => setModalDevolucao({ locacaoId, dataFim });
+  const abrirModalDevolucao = (locacaoId, dataFim, tipoSlot) =>
+    setModalDevolucao({ locacaoId, dataFim, tipoSlot });
 
   const confirmarDevolucao = () => {
     if (!modalDevolucao) return;
@@ -1844,7 +1849,13 @@ function App() {
               const horasRestantes =
                 (new Date(modalDevolucao.dataFim) - new Date()) / (1000 * 60 * 60);
               const diasAntecipados = Math.max(0, Math.floor(horasRestantes / 24));
-              const valorRecompensa = 2.0 + diasAntecipados * 2.0;
+              const valorBase = configSistema?.valor_por_dia || 2.0;
+
+              // [INFO] Lógica visual corrigida: Secundária mostra apenas o valor fixo.
+              const valorRecompensa =
+                modalDevolucao.tipoSlot === 'SECUNDARIA'
+                  ? valorBase
+                  : valorBase + diasAntecipados * valorBase;
 
               return (
                 <>
@@ -1856,53 +1867,119 @@ function App() {
                     direto na sua carteira!
                   </p>
 
-                  <div className="mb-6 space-y-4 rounded-2xl border border-zinc-800 bg-black/50 p-5">
-                    <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-500">
-                      Como desativar a conta:
-                    </h4>
-                    <div className="space-y-3 text-sm text-zinc-300">
-                      <p>
-                        <strong className="text-white">🎮 No PS5:</strong> Vá em Configurações &gt;
-                        Usuários e Contas &gt; Outros &gt; Compartilhamento do console... &gt;{' '}
-                        <strong className="text-rose-400">Desabilitar</strong>.
-                      </p>
-                      <div className="h-px w-full bg-zinc-800"></div>
-                      <p>
-                        <strong className="text-white">🎮 No PS4:</strong> Vá em Configurações &gt;
-                        Gerenciamento da conta &gt;{' '}
-                        <strong className="text-rose-400">Desativar</strong> como seu PS4 principal.
+                  {/* RENDERIZAÇÃO CONDICIONAL: Mostra telas diferentes para Primária e Secundária */}
+                  {modalDevolucao.tipoSlot === 'PRIMARIA' ? (
+                    <>
+                      <div className="mb-6 space-y-4 rounded-2xl border border-zinc-800 bg-black/50 p-5">
+                        <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-500">
+                          Como desativar a conta PRIMÁRIA:
+                        </h4>
+                        <div className="space-y-3 text-sm text-zinc-300">
+                          <p>
+                            <strong className="text-white">🎮 No PS5:</strong> Vá em Configurações
+                            &gt; Usuários e Contas &gt; Outros &gt; Compartilhamento do console...
+                            &gt; <strong className="text-rose-400">Desabilitar</strong>.
+                          </p>
+                          <div className="h-px w-full bg-zinc-800"></div>
+                          <p>
+                            <strong className="text-white">🎮 No PS4:</strong> Vá em Configurações
+                            &gt; Gerenciamento da conta &gt;{' '}
+                            <strong className="text-rose-400">Desativar</strong> como seu PS4
+                            principal.
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="mb-8 rounded-2xl border border-rose-500/30 bg-rose-950/30 p-5 text-center">
+                        <span className="mb-2 block text-3xl">🛑</span>
+                        <h4 className="mb-1 text-sm font-black uppercase text-rose-400">
+                          Você já desativou a conta no console?
+                        </h4>
+                        <p className="text-xs text-zinc-400">
+                          Se você confirmar sem ter desativado, o sistema aplicará uma multa na sua
+                          carteira em vez da recompensa.
+                        </p>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="mb-8 rounded-2xl border border-fuchsia-500/30 bg-fuchsia-950/30 p-5 text-center">
+                      <span className="mb-2 block text-3xl">🎮</span>
+                      <h4 className="mb-1 text-sm font-black uppercase text-fuchsia-400">
+                        Devolução de Vaga Secundária
+                      </h4>
+                      <p className="text-xs text-zinc-300">
+                        Como você alugou uma vaga secundária,{' '}
+                        <strong className="text-white">NÃO É NECESSÁRIO</strong> desativar o
+                        compartilhamento do console. Basta excluir o usuário do videogame e
+                        confirmar a devolução abaixo!
                       </p>
                     </div>
-                  </div>
-
-                  <div className="mb-8 rounded-2xl border border-rose-500/30 bg-rose-950/30 p-5 text-center">
-                    <span className="mb-2 block text-3xl">🛑</span>
-                    <h4 className="mb-1 text-sm font-black uppercase text-rose-400">
-                      Você já desativou a conta no console?
-                    </h4>
-                    <p className="text-xs text-zinc-400">
-                      Se você confirmar sem ter desativado, o sistema aplicará uma multa na sua
-                      carteira em vez da recompensa.
-                    </p>
-                  </div>
+                  )}
 
                   <div className="flex flex-col gap-3 sm:flex-row">
                     <button
                       onClick={() => setModalDevolucao(null)}
                       className="flex-1 rounded-xl bg-zinc-800 py-3.5 text-xs font-bold uppercase tracking-wide text-zinc-300 transition-colors hover:bg-zinc-700 hover:text-white"
                     >
-                      Ainda não, vou desativar
+                      Cancelar
                     </button>
                     <button
                       onClick={confirmarDevolucao}
                       className="flex-1 rounded-xl bg-emerald-600 py-3.5 text-xs font-bold uppercase tracking-wide text-white shadow-lg shadow-emerald-600/20 transition-colors hover:bg-emerald-500"
                     >
-                      ✅ Sim, já desativei e quero devolver
+                      {modalDevolucao.tipoSlot === 'PRIMARIA'
+                        ? '✅ Sim, já desativei e quero devolver'
+                        : '✅ Quero devolver a conta agora'}
                     </button>
                   </div>
                 </>
               );
             })()}
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* MODAL DE CONFIRMAÇÃO DO 2FA (ZERO TRUST - VAGA SECUNDÁRIA)                */}
+      {/* ========================================================================= */}
+      {modalConfirmacao2FA.visivel && (
+        <div className="animate-fade-in fixed inset-0 z-[250] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-3xl border border-rose-500/30 bg-gradient-to-br from-rose-900/20 to-zinc-900 p-6 shadow-2xl shadow-rose-500/10 md:p-8">
+            <h3 className="mb-4 flex items-center gap-3 text-xl font-black tracking-tight text-rose-400">
+              🚨 Atenção Máxima
+            </h3>
+            <p className="mb-6 text-sm leading-relaxed text-zinc-300">
+              O código da vaga <strong className="text-fuchsia-400">SECUNDÁRIA</strong> só pode ser
+              gerado{' '}
+              <strong className="border-b border-rose-400 text-rose-400">UMA ÚNICA VEZ</strong>.
+            </p>
+
+            <div className="mb-8 rounded-2xl border border-rose-500/20 bg-rose-950/30 p-5">
+              <p className="text-xs font-medium text-zinc-400">
+                Certifique-se de que o seu PlayStation já está ligado, conectado à internet e
+                <strong className="text-white"> exatamente na tela pedindo os 6 dígitos</strong>. Se
+                você gerar agora e demorar para digitar, o código vai expirar e você perderá o
+                acesso.
+              </p>
+            </div>
+
+            <div className="flex flex-col gap-3 sm:flex-row">
+              <button
+                onClick={() => setModalConfirmacao2FA({ visivel: false, locacaoId: null })}
+                className="flex-1 rounded-xl bg-zinc-800 py-3.5 text-xs font-bold uppercase tracking-wide text-zinc-300 transition-colors hover:bg-zinc-700 hover:text-white"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={() => {
+                  gerarCodigo2FA(modalConfirmacao2FA.locacaoId);
+                  setModalConfirmacao2FA({ visivel: false, locacaoId: null });
+                }}
+                className="flex-1 rounded-xl bg-emerald-600 py-3.5 text-xs font-bold uppercase tracking-wide text-white shadow-lg shadow-emerald-600/20 transition-colors hover:bg-emerald-500"
+              >
+                ✅ Sim, Gerar Código
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -3138,16 +3215,15 @@ function App() {
                                 <div className="flex flex-col gap-2">
                                   <button
                                     onClick={() => {
-                                      // [INFO] Trava Zero Trust no lado do cliente
+                                      // [INFO] Se for Secundária, abre o Modal bonito. Se for Primária, gera direto.
                                       if (item.tipo_slot === 'SECUNDARIA') {
-                                        if (
-                                          !window.confirm(
-                                            '⚠️ ATENÇÃO: O código da vaga SECUNDÁRIA só pode ser gerado UMA ÚNICA VEZ. Certifique-se de que você já está com o PlayStation ligado na tela que pede os 6 dígitos. Tem certeza que deseja gerar agora?',
-                                          )
-                                        )
-                                          return;
+                                        setModalConfirmacao2FA({
+                                          visivel: true,
+                                          locacaoId: item.locacao_id,
+                                        });
+                                      } else {
+                                        gerarCodigo2FA(item.locacao_id);
                                       }
-                                      gerarCodigo2FA(item.locacao_id);
                                     }}
                                     className="flex w-full items-center justify-center gap-3 rounded-2xl border border-emerald-400 bg-emerald-600 py-4 text-xs font-bold uppercase tracking-wider text-white shadow-[0_0_15px_rgba(16,185,129,0.4)] transition-all hover:bg-emerald-500 hover:shadow-[0_0_25px_rgba(16,185,129,0.6)]"
                                   >
@@ -3171,7 +3247,13 @@ function App() {
                                 </span>
                               </div>
                               <button
-                                onClick={() => abrirModalDevolucao(item.locacao_id, item.data_fim)}
+                                onClick={() =>
+                                  abrirModalDevolucao(
+                                    item.locacao_id,
+                                    item.data_fim,
+                                    item.tipo_slot,
+                                  )
+                                }
                                 className="animate-fade-in flex w-full items-center justify-center gap-2 rounded-xl border border-fuchsia-400/50 bg-gradient-to-r from-fuchsia-600 to-purple-600 px-8 py-3.5 text-xs font-bold uppercase tracking-wider text-white shadow-[0_0_15px_rgba(192,38,211,0.4)] transition-all hover:scale-[1.02] hover:shadow-[0_0_25px_rgba(192,38,211,0.6)] sm:w-auto"
                               >
                                 ♻️ Devolver e Ganhar Saldo
