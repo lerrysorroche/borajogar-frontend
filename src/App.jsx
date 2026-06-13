@@ -1014,6 +1014,30 @@ function App() {
     }
   };
 
+  // [INFO] Cancela uma reserva na fila de espera à força e devolve o dinheiro ao cliente
+  const cancelarReservaAdmin = (reservaId, nomeCliente, tituloJogo) => {
+    if (
+      window.confirm(
+        `Tem certeza que deseja CANCELAR a reserva de ${tituloJogo} do cliente ${nomeCliente}? O valor será devolvido à carteira dele.`,
+      )
+    ) {
+      fetch(`https://borajogar-api.onrender.com/admin/reservas/${reservaId}/cancelar`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+      })
+        .then(async (res) => {
+          const data = await res.json();
+          if (res.ok) {
+            mostrarToast(data.mensagem, 'sucesso');
+            carregarDados();
+          } else {
+            mostrarToast(data.detail, 'erro');
+          }
+        })
+        .catch(() => mostrarToast('Erro de conexão.', 'erro'));
+    }
+  };
+
   // Enquete Admin
   const votarEnquete = (opcaoId) => {
     if (!usuarioLogado) {
