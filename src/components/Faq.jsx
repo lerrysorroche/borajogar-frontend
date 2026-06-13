@@ -14,6 +14,42 @@ export default function Faq({ configSistema }) {
         <details className="group rounded-3xl border border-zinc-800 bg-zinc-900 shadow-xl transition-transform duration-300 hover:-translate-y-1 [&_summary::-webkit-details-marker]:hidden">
           <summary className="flex cursor-pointer items-center justify-between p-6 text-white transition-colors hover:text-purple-400 md:p-8">
             <span className="text-base font-bold tracking-tight md:text-lg">
+              🤔 Qual a diferença entre Vaga Primária e Vaga Secundária?
+            </span>
+            <span className="text-lg text-purple-500 transition duration-300 group-open:-rotate-180">
+              ▼
+            </span>
+          </summary>
+          <div className="font-xs border-t border-zinc-800/50 px-6 pb-6 pt-6 leading-relaxed text-zinc-400 md:px-8 md:pb-8 md:text-sm">
+            Para garantir que você consiga jogar seus lançamentos favoritos mais rápido, nós
+            oferecemos dois tipos de acesso:
+            <br />
+            <br />
+            <ul className="space-y-4">
+              <li className="rounded-xl border border-blue-500/20 bg-blue-950/10 p-4">
+                <strong className="mb-1 block text-blue-400">
+                  🎮 VAGA PRIMÁRIA (Recomendada):
+                </strong>
+                Você instala a conta no seu console, baixa o jogo e volta para o seu próprio perfil
+                pessoal (a sua conta de sempre). Isso permite que você jogue offline, guarde seus
+                *saves* e ganhe todos os troféus no seu próprio nome.
+              </li>
+              <li className="rounded-xl border border-fuchsia-500/20 bg-fuchsia-950/10 p-4">
+                <strong className="mb-1 block text-fuchsia-400">
+                  🕹️ VAGA SECUNDÁRIA (Econômica):
+                </strong>
+                É a opção mais barata, mas possui regras: você é <strong>obrigado</strong> a jogar
+                dentro do perfil da locadora (os troféus ficam lá) e você precisará estar conectado
+                à internet 100% do tempo. Caso sua internet caia, o jogo é pausado até a conexão
+                voltar.
+              </li>
+            </ul>
+          </div>
+        </details>
+
+        <details className="group rounded-3xl border border-zinc-800 bg-zinc-900 shadow-xl transition-transform duration-300 hover:-translate-y-1 [&_summary::-webkit-details-marker]:hidden">
+          <summary className="flex cursor-pointer items-center justify-between p-6 text-white transition-colors hover:text-purple-400 md:p-8">
+            <span className="text-base font-bold tracking-tight md:text-lg">
               🎮 Como alugo um jogo no BORA JOGAR!?
             </span>
             <span className="text-lg text-purple-500 transition duration-300 group-open:-rotate-180">
@@ -32,8 +68,8 @@ export default function Faq({ configSistema }) {
               <li>Adicione saldo à sua carteira digital via PIX ou cartão de crédito.</li>
               <li>
                 Agora que você tem saldo na sua carteira, escolha um jogo disponível na página
-                principal e clique em <strong className="text-white">"ALUGAR"</strong> (7 ou 14
-                dias).
+                principal e clique em <strong className="text-white">"ALUGAR"</strong>. Você poderá
+                escolher o tempo (7 ou 14 dias) e se prefere a Vaga Primária ou Secundária.
               </li>
               <li>
                 O valor do aluguel será descontado do seu saldo. Acesse novamente a página{' '}
@@ -42,22 +78,15 @@ export default function Faq({ configSistema }) {
               </li>
               <li>
                 Entre no seu PS4 ou PS5 com a conta da locadora. Se tiver alguma dúvida sobre como
-                entrar com a conta, veja o <strong className="text-white">📖 TUTORIAL</strong> que
-                está disponível logo abaixo das informações da conta na página Meus Acessos.
+                entrar, veja o <strong className="text-white">📖 TUTORIAL</strong> que está
+                disponível logo abaixo das informações da conta na página Meus Acessos.
               </li>
               <li>
-                Pronto! Agora que você entrou na conta, é só ir na biblioteca e baixar o jogo.
-                Depois que baixou o jogo, você pode trocar para a sua conta e jogar na sua conta
-                para ganhar troféus!
-              </li>
-              <li>
-                <strong className="text-rose-400">ATENÇÃO!</strong> Lembre-se de sempre desativar a
-                conta antes de terminar o prazo da sua locação. Você ganha dinheiro de volta! Na
-                página <strong className="text-emerald-400">🔑 MEUS ACESSOS</strong>, logo abaixo
-                das informações da conta, você encontra o botão{' '}
-                <strong className="text-purple-400">DEVOLVER E GANHAR SALDO</strong>. Clique nesse
-                botão para devolver o jogo e ganhar crédito que você pode usar para alugar novos
-                jogos!
+                <strong className="text-rose-400">ATENÇÃO!</strong> Lembre-se de sempre devolver a
+                conta antes de terminar o prazo da sua locação. Você pode ganhar dinheiro de volta!
+                Na página <strong className="text-emerald-400">🔑 MEUS ACESSOS</strong>, você
+                encontra o botão{' '}
+                <strong className="text-purple-400">DEVOLVER E GANHAR SALDO</strong>.
               </li>
             </ol>
           </div>
@@ -73,25 +102,23 @@ export default function Faq({ configSistema }) {
             </span>
           </summary>
           <div className="border-t border-zinc-800/50 px-6 pb-6 pt-6 text-xs leading-relaxed text-zinc-400 md:px-8 md:pb-8 md:text-sm">
-            Não se preocupe, você pode entrar na fila de espera! Na página principal, você consegue
-            ver quais jogos estão alugados ou não. Se os botões estiverem{' '}
-            <strong className="text-amber-400">DOURADO/LARANJA</strong>, signfica que o jogo está
-            alugado. Você consegue ver quantas pessoas estão na fila de espera, e a data que o jogo
-            estará disponível <strong className="text-white">(⏳ Próxima Vaga em)</strong>.
+            Não se preocupe, você pode entrar na fila de espera! Na página principal, se os botões
+            estiverem <strong className="text-amber-400">DOURADO/LARANJA</strong>, significa que o
+            jogo está alugado. Você consegue ver a data exata que o jogo estará disponível para
+            você.
             <br />
             <br />
-            Clique no botão <strong className="text-amber-400">"RESERVAR"</strong> (7 ou 14 dias). O
-            valor do jogo será descontado do seu saldo e você entrará na fila de reserva.
+            Ao clicar, selecione <strong className="text-amber-400">"ENTRAR NA FILA"</strong>. O
+            valor do jogo será descontado do seu saldo como uma reserva para garantir o seu lugar.
             <br />
             <br />
-            Você verá uma área verde te informando que o jogo foi reservado, e também uma mensagem
-            informando quando o jogo estará diponível (
-            <strong className="text-white">SUA VEZ EM: ...</strong>). Lembre-se que nós temos um
-            sistema de devolução de jogo, então pode ser que o jogo seja devolvido antes do prazo,
-            assim o jogo é liberado pra você mais cedo do que o previsto! (SEMPRE mais cedo, NUNCA
-            mais tarde).
-            <br />
-            <br />
+            Lembre-se que nós temos o sistema de "Devolução Antecipada", então as pessoas costumam
+            devolver o jogo antes da data limite para ganharem Cashback. Se isso acontecer, você é
+            avisado e{' '}
+            <strong className="text-emerald-400">
+              fura a fila, pegando o jogo antes do previsto!
+            </strong>{' '}
+            (Sempre mais cedo, nunca mais tarde).
           </div>
         </details>
 
@@ -157,12 +184,13 @@ export default function Faq({ configSistema }) {
               <li>
                 <strong className="text-blue-400">ACESSO ANTECIPADO:</strong> As reservas de jogos
                 em <strong>PRÉ-VENDA</strong> são exclusivas para clientes a partir do Rank{' '}
-                <strong>MEMBRO</strong>.
+                <strong>MEMBRO</strong> (Basta ter concluído 1 aluguel com sucesso).
               </li>
               <li>
                 <strong className="text-amber-400">PRIORIDADE NA FILA (FURA-FILA):</strong> Se você
-                tiver um Rank maior que outro cliente que já estava na fila, o sistema
-                automaticamente te coloca <strong>na frente dele</strong>.
+                tiver um Rank maior que outro cliente que já estava na fila de um lançamento, o
+                sistema automaticamente te coloca <strong>na frente dele</strong> na entrega da
+                conta.
               </li>
             </ul>
           </div>
@@ -179,37 +207,44 @@ export default function Faq({ configSistema }) {
           </summary>
           <div className="border-t border-emerald-800/50 px-6 pb-6 pt-6 text-xs leading-relaxed text-zinc-400 md:px-8 md:pb-8 md:text-sm">
             Com certeza! Nós possuímos um sistema de{' '}
-            <strong className="text-white">DEVOLUÇÃO ANTECIPADA</strong>! Você pode devolver o jogo
-            antes de terminar o seu prazo, e você GANHA DINHEIRO DE VOLTA!
-            <br />
-            <br />
-            Na página <strong className="text-emerald-400">🔑 MEUS ACESSOS</strong>, logo abaixo das
-            informações da conta, você encontra o botão{' '}
-            <strong className="text-purple-400">DEVOLVER E GANHAR SALDO</strong>.
+            <strong className="text-white">DEVOLUÇÃO PREMIUM</strong> para premiar os jogadores
+            velozes. Ao terminar o jogo mais cedo, você ganha dinheiro de volta direto na carteira
+            para usar na próxima locação!
             <br />
             <br />
             {(() => {
-              // Puxa o valor do banco de dados (ou usa 2.00 como fallback de segurança)
+              // Puxa o valor do banco de dados (ou usa 2.00 como fallback)
               const valorBase = configSistema?.valor_por_dia || 2.0;
               const valorVezesTres = 3 * valorBase;
               const totalExemplo = valorBase + valorVezesTres;
 
               return (
                 <>
-                  Clique nesse botão para devolver o jogo (siga o tutorial que aparece quando você
-                  clica no botão). Ao fazer a devolução antecipada, você recebe as seguintes
-                  recompensas:{' '}
-                  <strong className="text-emerald-400">R$ {valorBase.toFixed(2)}</strong> fixos por
-                  devolver antes mais (+){' '}
+                  <strong className="text-blue-400">Se você alugou a VAGA PRIMÁRIA:</strong>
+                  <br />
+                  Você ganha{' '}
+                  <strong className="text-emerald-400">R$ {valorBase.toFixed(2)} fixos</strong> por
+                  apertar o botão de devolução + (Mais){' '}
                   <strong className="text-emerald-400">
-                    R$ {valorBase.toFixed(2)} de cashback por cada 24 horas
+                    R$ {valorBase.toFixed(2)} de Cashback Diário
                   </strong>{' '}
-                  que ainda restavam no seu prazo!
+                  por cada 24 horas que ainda restavam no seu prazo original.
                   <br />
                   <br />
-                  EXEMPLO: Você alugou por 7 dias. Jogou 4 dias e decidiu devolver. Você recebe R${' '}
-                  {valorBase.toFixed(2)} fixos + R$ {valorVezesTres.toFixed(2)} (3 x R${' '}
-                  {valorBase.toFixed(2)}). TOTAL = R$ {totalExemplo.toFixed(2)}!
+                  <em className="block rounded-xl border border-zinc-800 bg-zinc-950 p-4">
+                    EXEMPLO PRIMÁRIA: Você alugou por 7 dias. Jogou 4 dias e decidiu devolver
+                    (sobraram 3 dias). Você recebe R$ {valorBase.toFixed(2)} fixos + R${' '}
+                    {valorVezesTres.toFixed(2)} (que é 3 x R$ {valorBase.toFixed(2)}).{' '}
+                    <strong className="text-white">TOTAL = R$ {totalExemplo.toFixed(2)}!</strong>
+                  </em>
+                  <br />
+                  <br />
+                  <strong className="text-fuchsia-400">Se você alugou a VAGA SECUNDÁRIA:</strong>
+                  <br />
+                  Como o valor do aluguel já é bastante reduzido, a Vaga Secundária não acumula
+                  Cashback Diário. No entanto, se você devolver o jogo antes do tempo acabar, você
+                  ainda é recompensado com a taxa fixa de{' '}
+                  <strong className="text-emerald-400">R$ {valorBase.toFixed(2)}</strong>.
                 </>
               );
             })()}
@@ -219,30 +254,29 @@ export default function Faq({ configSistema }) {
         <details className="group rounded-3xl border border-zinc-800 bg-zinc-900 shadow-xl transition-transform duration-300 hover:-translate-y-1 [&_summary::-webkit-details-marker]:hidden">
           <summary className="flex cursor-pointer items-center justify-between p-6 text-rose-400 transition-colors hover:text-rose-300 md:p-8">
             <span className="text-base font-bold tracking-tight md:text-lg">
-              🚨 O que acontece se eu esquecer de desativar a conta do meu videogame?
+              🚨 O que acontece se eu esquecer de desativar a conta do console?
             </span>
             <span className="text-lg text-rose-500 transition duration-300 group-open:-rotate-180">
               ▼
             </span>
           </summary>
           <div className="border-t border-rose-800/50 px-6 pb-6 pt-6 text-xs leading-relaxed text-zinc-400 md:px-8 md:pb-8 md:text-sm">
-            Essa é a nossa regra mais rigorosa! Se o seu tempo acabar e você deixar a conta ativada
-            como "Principal" no seu console, isso bloqueia a conta e impede que o próximo cliente da
-            fila jogue.
+            Essa é a nossa regra mais rigorosa! Se você alugou uma Vaga Primária e o seu tempo
+            acabar, e você deixar a conta ativada como "Principal" no seu console, isso bloqueia o
+            jogo e impede que o próximo cliente da fila consiga jogar. O mesmo vale para a Vaga
+            Secundária, caso você tente ativá-la proibitivamente.
             <br />
             <br />
-            Neste caso, nosso sistema aplica uma{' '}
-            <strong className="text-rose-400">
-              MULTA ADMINISTRATIVA AUTOMÁTICA DE R$ 50,00
-            </strong>{' '}
-            direto na sua carteira digital.
+            Neste caso, nosso sistema aplica automaticamente uma{' '}
+            <strong className="text-rose-400">MULTA ADMINISTRATIVA DE R$ 50,00</strong> direto na
+            sua carteira digital, além de cancelar qualquer Cashback Premium que você pudesse ter
+            ganho.
             <br />
             <br />
-            Nós vamos entrar em contato com você por Whatsapp (por isso é importante fazer o seu
-            cadastro com um número de Whatsapp real) e vamos te dar um prazo para você fazer a
-            desativação. Caso não seja feita a desativação, nós iremos solicitar a Sony para fazer a
-            desativação e você será <strong className="text-white">BANIDO</strong> da locadora (Ban
-            de IP).
+            Nós vamos entrar em contato com você por WhatsApp para exigir a remoção. Caso não seja
+            feita a desativação, nós acionaremos a Sony para forçar a queda e o seu IP será{' '}
+            <strong className="text-white">BANIDO PERMANENTEMENTE</strong> da locadora, impedindo
+            novos aluguéis.
           </div>
         </details>
       </div>
