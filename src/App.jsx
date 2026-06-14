@@ -2824,21 +2824,9 @@ function App() {
                               </div>
                             )}
 
-                            <div className="mt-auto flex flex-col gap-2 pt-4">
-                              {/* [INFO] Mostra o preço "A partir de" acima do botão */}
-                              {temEstoque && !isEmBreve && (
-                                <div className="text-center">
-                                  <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">
-                                    A partir de{' '}
-                                  </span>
-                                  <strong className="text-sm font-black text-emerald-400">
-                                    R$ {jogo.preco_aluguel.toFixed(2)}
-                                  </strong>
-                                </div>
-                              )}
-
+                            <div className="mt-auto pt-4">
                               {minhaReservaAtiva ? (
-                                <div className="group relative flex h-[56px] flex-col items-center justify-center overflow-hidden rounded-xl border border-emerald-500/30 bg-emerald-950/40 px-4 shadow-[0_0_15px_rgba(16,185,129,0.15)] transition-all">
+                                <div className="group relative flex h-[68px] flex-col items-center justify-center overflow-hidden rounded-xl border border-emerald-500/30 bg-emerald-950/40 px-4 shadow-[0_0_15px_rgba(16,185,129,0.15)] transition-all">
                                   <div className="absolute left-0 top-0 h-1 w-full bg-gradient-to-r from-emerald-500 to-cyan-500"></div>
                                   <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-emerald-500">
                                     ✅ Já Reservado
@@ -2852,7 +2840,7 @@ function App() {
                                       'aviso',
                                     )
                                   }
-                                  className="group/lock flex h-[56px] w-full flex-col items-center justify-center rounded-xl border border-rose-500/20 bg-zinc-950/80 shadow-inner transition-all hover:bg-rose-950/30"
+                                  className="group/lock flex h-[68px] w-full flex-col items-center justify-center rounded-xl border border-rose-500/20 bg-zinc-950/80 shadow-inner transition-all hover:bg-rose-950/30"
                                 >
                                   <strong className="flex items-center gap-2 text-xs font-black uppercase tracking-tight text-rose-500">
                                     🔒 Requer Rank VIP
@@ -2861,15 +2849,29 @@ function App() {
                               ) : (
                                 <button
                                   onClick={() => abrirConfirmacao(jogo)}
-                                  className={`w-full rounded-2xl py-4 text-sm font-black uppercase tracking-wider text-white shadow-lg transition-all ${
+                                  className={`flex w-full flex-col items-center justify-center rounded-2xl px-4 py-3.5 text-white shadow-lg transition-all ${
                                     temEstoque && !isEmBreve
                                       ? 'bg-blue-600 shadow-blue-500/20 hover:-translate-y-1 hover:bg-blue-500'
                                       : 'bg-amber-600 shadow-amber-500/20 hover:-translate-y-1 hover:bg-amber-500'
                                   }`}
                                 >
-                                  {temEstoque && !isEmBreve
-                                    ? '🎮 Alugar Agora'
-                                    : '⏳ Entrar na Fila'}
+                                  {temEstoque && !isEmBreve ? (
+                                    <>
+                                      {/* Texto de Ação */}
+                                      <span className="text-[10px] font-black uppercase leading-none tracking-wider opacity-80">
+                                        🎮 Alugar Agora
+                                      </span>
+                                      {/* Valor de Entrada de Alta Visibilidade */}
+                                      <span className="mt-1 text-base font-black leading-none text-emerald-300 drop-shadow-[0_1px_2px_rgba(0,0,0,0.4)]">
+                                        A partir de R$ {jogo.preco_aluguel.toFixed(2)}
+                                      </span>
+                                    </>
+                                  ) : (
+                                    /* Layout simplificado para quando o botão virar Fila de Espera */
+                                    <span className="py-1.5 text-xs font-black uppercase tracking-wider">
+                                      ⏳ Entrar na Fila
+                                    </span>
+                                  )}
                                 </button>
                               )}
                             </div>
