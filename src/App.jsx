@@ -2776,7 +2776,7 @@ function App() {
 
                           {isLancamento && !isEmBreve && (
                             <div className="absolute bottom-4 left-4 z-20">
-                              <span className="flex items-center gap-1.5 rounded-xl border border-fuchsia-400 bg-fuchsia-600/90 px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-white shadow-[0_0_15px_rgba(192,38,211,0.8)] backdrop-blur-md">
+                              <span className="flex items-center gap-1.5 rounded-xl border border-fuchsia-400 bg-fuchsia-600/90 px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-white shadow-[0_0_15px_rgba(192,38,211,0.8)] backdrop-blur-md [text-shadow:1px_1px_0px_black,-1px_-1px_0px_black,1px_-1px_0px_black,-1px_1px_0px_black]">
                                 <span className="animate-pulse">🔥</span> Lançamento
                               </span>
                             </div>
@@ -2828,7 +2828,7 @@ function App() {
                               {minhaReservaAtiva ? (
                                 <div className="group relative flex h-[68px] flex-col items-center justify-center overflow-hidden rounded-xl border border-emerald-500/30 bg-emerald-950/40 px-4 shadow-[0_0_15px_rgba(16,185,129,0.15)] transition-all">
                                   <div className="absolute left-0 top-0 h-1 w-full bg-gradient-to-r from-emerald-500 to-cyan-500"></div>
-                                  <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-emerald-500">
+                                  <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-emerald-500 [text-shadow:1px_1px_0px_black,-1px_-1px_0px_black,1px_-1px_0px_black,-1px_1px_0px_black]">
                                     ✅ Já Reservado
                                   </span>
                                 </div>
@@ -2842,7 +2842,7 @@ function App() {
                                   }
                                   className="group/lock flex h-[68px] w-full flex-col items-center justify-center rounded-xl border border-rose-500/20 bg-zinc-950/80 shadow-inner transition-all hover:bg-rose-950/30"
                                 >
-                                  <strong className="flex items-center gap-2 text-xs font-black uppercase tracking-tight text-rose-500">
+                                  <strong className="flex items-center gap-2 text-xs font-black uppercase tracking-tight text-rose-500 [text-shadow:1px_1px_0px_black,-1px_-1px_0px_black,1px_-1px_0px_black,-1px_1px_0px_black]">
                                     🔒 Requer Rank VIP
                                   </strong>
                                 </button>
@@ -2858,17 +2858,17 @@ function App() {
                                   {temEstoque && !isEmBreve ? (
                                     <>
                                       {/* Texto de Ação */}
-                                      <span className="text-[10px] font-black uppercase leading-none tracking-wider opacity-80">
+                                      <span className="text-[10px] font-black uppercase leading-none tracking-wider text-white/90 [text-shadow:1px_1px_0px_black,-1px_-1px_0px_black,1px_-1px_0px_black,-1px_1px_0px_black]">
                                         🎮 Alugar Agora
                                       </span>
                                       {/* Valor de Entrada de Alta Visibilidade */}
-                                      <span className="mt-1 text-base font-black leading-none text-emerald-300 drop-shadow-[0_1px_2px_rgba(0,0,0,0.4)]">
+                                      <span className="mt-1 text-base font-black leading-none text-emerald-300 [text-shadow:1px_1px_0px_black,-1px_-1px_0px_black,1px_-1px_0px_black,-1px_1px_0px_black]">
                                         A partir de R$ {jogo.preco_aluguel.toFixed(2)}
                                       </span>
                                     </>
                                   ) : (
-                                    /* Layout simplificado para quando o botão virar Fila de Espera */
-                                    <span className="py-1.5 text-xs font-black uppercase tracking-wider">
+                                    /* Layout para quando o botão virar Fila de Espera */
+                                    <span className="py-1.5 text-xs font-black uppercase tracking-wider [text-shadow:1px_1px_0px_black,-1px_-1px_0px_black,1px_-1px_0px_black,-1px_1px_0px_black]">
                                       ⏳ Entrar na Fila
                                     </span>
                                   )}
