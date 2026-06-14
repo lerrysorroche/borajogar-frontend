@@ -74,7 +74,7 @@ function App() {
   const [novaOpcaoEnqueteImagem, setNovaOpcaoEnqueteImagem] = useState('');
 
   // --- Estados Financeiros e Pagamento ---
-  const [valorRecarga, setValorRecarga] = useState('30');
+  const [valorRecarga, setValorRecarga] = useState('15');
   const [cupomRecarga, setCupomRecarga] = useState('');
   const [cpfRecarga, setCpfRecarga] = useState('');
   const [pixPendente, setPixPendente] = useState(null);
@@ -553,8 +553,8 @@ function App() {
   const solicitarRecargaCartao = async (e) => {
     e.preventDefault();
     const valorReal = parseFloat(valorRecarga);
-    if (isNaN(valorReal) || valorReal < 30) {
-      mostrarToast('O valor mínimo para recarga é de R$ 30,00', 'erro');
+    if (isNaN(valorReal) || valorReal < 15) {
+      mostrarToast('O valor mínimo para recarga é de R$ 15,00', 'erro');
       return;
     }
     setCarregandoGateway(true);
@@ -587,8 +587,8 @@ function App() {
   const solicitarRecargaPix = async (e) => {
     e.preventDefault();
     const valorReal = parseFloat(valorRecarga);
-    if (isNaN(valorReal) || valorReal < 30) {
-      mostrarToast('O valor mínimo para recarga é de R$ 30,00', 'erro');
+    if (isNaN(valorReal) || valorReal < 15) {
+      mostrarToast('O valor mínimo para recarga é de R$ 15,00', 'erro');
       return;
     }
     const cpfLimpo = cpfRecarga.replace(/\D/g, '');
@@ -622,6 +622,53 @@ function App() {
       else mostrarToast(data.detail || 'Erro ao gerar Pix', 'erro');
     } catch (err) {
       mostrarToast('Erro de conexão.', 'erro');
+    } finally {
+      setCarregandoGateway(false);
+    }
+  };
+
+  // [INFO] FAST PIX: Gera um Pix com o valor exato do aluguel diretamente por dentro do modal
+  const gerarPixRapidoModal = async (valorNecessario) => {
+    const cpfLimpo = cpfRecarga.replace(/\D/g, '');
+
+    // Validação de segurança idêntica ao fluxo tradicional
+    if (cpfLimpo.length !== 11) {
+      mostrarToast(
+        'Por favor, preencha seu CPF no campo abaixo para gerar o Pix regulamentado.',
+        'erro',
+      );
+      return;
+    }
+
+    setCarregandoGateway(true);
+    mostrarToast('Solicitando QR Code dinâmico ao banco...', 'aviso');
+
+    try {
+      const res = await fetch('https://borajogar-api.onrender.com/recarga/pix', {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({
+          utilizador_id: usuarioLogado.id,
+          valor: valorNecessario,
+          cupom: cupomRecarga, // Aproveita se o cliente tiver digitado algum cupom antes
+          cpf: cpfLimpo,
+        }),
+      });
+      const data = await res.json();
+
+      if (res.ok && data.payment_id) {
+        // [INFO] Alimenta o mesmo estado que o useEffect global já está monitorando a cada 5s
+        setPixPendente({
+          payment_id: data.payment_id,
+          qr_code: data.qr_code,
+          copia_cola: data.copia_cola,
+        });
+        mostrarToast('QR Code gerado! Aguardando pagamento...', 'sucesso');
+      } else {
+        mostrarToast(data.detail || 'Falha ao gerar o Pix automático.', 'erro');
+      }
+    } catch (err) {
+      mostrarToast('Erro de conexão com o gateway de pagamento.', 'erro');
     } finally {
       setCarregandoGateway(false);
     }
@@ -1673,96 +1720,84 @@ function App() {
 
             {/* SELEÇÃO DO TIPO DE ACESSO */}
             <div className="mb-6 space-y-3">
-              {/* OPÇÃO 1: VAGA PRIMÁRIA (Sempre a preferida) */}
-              {modalConfirmacao.jogo.estoque_primaria > 0 && (
-                <label
-                  className={`flex cursor-pointer flex-col rounded-2xl border-2 p-4 transition-all ${modalConfirmacao.tipoSlotSelecionado === 'PRIMARIA' ? 'border-blue-500 bg-blue-500/10' : 'border-zinc-800 bg-zinc-950 hover:border-zinc-700'}`}
-                >
-                  <div className="flex items-center gap-3">
-                    <input
-                      type="radio"
-                      name="tipoSlot"
-                      value="PRIMARIA"
-                      checked={modalConfirmacao.tipoSlotSelecionado === 'PRIMARIA'}
-                      onChange={() =>
-                        setModalConfirmacao({
-                          ...modalConfirmacao,
-                          tipoSlotSelecionado: 'PRIMARIA',
-                        })
-                      }
-                      className="h-4 w-4 text-blue-500 focus:ring-blue-500"
-                    />
+              {/* [INFO] UX: Se a Primária está livre, não mostra como opção, mostra como Benefício Fixo. */}
+              {modalConfirmacao.jogo.estoque_primaria > 0 ? (
+                <div className="rounded-2xl border border-zinc-800 bg-zinc-950 p-4 shadow-inner">
+                  <div className="mb-2 flex items-center gap-3">
+                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-500/20 text-xs text-blue-400">
+                      ✨
+                    </span>
                     <span className="font-black uppercase tracking-wider text-white">
+                      Acesso Padrão
+                    </span>
+                    <span className="ml-auto rounded-lg bg-blue-500/20 px-2 py-1 text-[9px] font-black uppercase text-blue-400">
                       Vaga Primária
                     </span>
-                    <span className="ml-auto rounded-lg bg-emerald-500/20 px-2 py-1 text-[9px] font-black uppercase text-emerald-400">
-                      Recomendado
-                    </span>
                   </div>
-                  <p className="mt-2 pl-7 text-xs text-zinc-400">
+                  <p className="text-xs leading-relaxed text-zinc-400">
                     Jogue na sua conta pessoal. Ganhe os troféus no seu próprio perfil e jogue
-                    offline.
+                    offline se preferir.
                   </p>
-                </label>
-              )}
+                </div>
+              ) : (
+                <>
+                  {/* UX: Se a Primária acabou, mostramos a Secundária e a Fila para escolha. */}
+                  {modalConfirmacao.jogo.estoque_secundaria > 0 && (
+                    <label
+                      className={`flex cursor-pointer flex-col rounded-2xl border-2 p-4 transition-all ${modalConfirmacao.tipoSlotSelecionado === 'SECUNDARIA' ? 'border-fuchsia-500 bg-fuchsia-500/10' : 'border-zinc-800 bg-zinc-950 hover:border-zinc-700'}`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <input
+                          type="radio"
+                          name="tipoSlot"
+                          value="SECUNDARIA"
+                          checked={modalConfirmacao.tipoSlotSelecionado === 'SECUNDARIA'}
+                          onChange={() =>
+                            setModalConfirmacao({
+                              ...modalConfirmacao,
+                              tipoSlotSelecionado: 'SECUNDARIA',
+                            })
+                          }
+                          className="h-4 w-4 text-fuchsia-500 focus:ring-fuchsia-500"
+                        />
+                        <span className="font-black uppercase tracking-wider text-white">
+                          Vaga Secundária (Econômica)
+                        </span>
+                      </div>
+                      <p className="mt-2 pl-7 text-xs leading-relaxed text-zinc-400">
+                        <strong className="text-fuchsia-400">Atenção:</strong> Na conta secundária,
+                        você joga na conta da locadora e precisa estar sempre conectado na internet.
+                        É uma opção mais econômica pra você que tá no hype e quer muito jogar o game
+                        sem entrar na fila de espera!
+                      </p>
+                    </label>
+                  )}
 
-              {/* OPÇÃO 2: VAGA SECUNDÁRIA (Aparece se Primária acabou OU se a Secundária tem estoque) */}
-              {modalConfirmacao.jogo.estoque_primaria === 0 &&
-                modalConfirmacao.jogo.estoque_secundaria > 0 && (
+                  {/* OPÇÃO 3: FILA DE ESPERA */}
                   <label
-                    className={`flex cursor-pointer flex-col rounded-2xl border-2 p-4 transition-all ${modalConfirmacao.tipoSlotSelecionado === 'SECUNDARIA' ? 'border-fuchsia-500 bg-fuchsia-500/10' : 'border-zinc-800 bg-zinc-950 hover:border-zinc-700'}`}
+                    className={`flex cursor-pointer flex-col rounded-2xl border-2 p-4 transition-all ${modalConfirmacao.tipoSlotSelecionado === 'FILA' ? 'border-amber-500 bg-amber-500/10' : 'border-zinc-800 bg-zinc-950 hover:border-zinc-700'}`}
                   >
                     <div className="flex items-center gap-3">
                       <input
                         type="radio"
                         name="tipoSlot"
-                        value="SECUNDARIA"
-                        checked={modalConfirmacao.tipoSlotSelecionado === 'SECUNDARIA'}
+                        value="FILA"
+                        checked={modalConfirmacao.tipoSlotSelecionado === 'FILA'}
                         onChange={() =>
-                          setModalConfirmacao({
-                            ...modalConfirmacao,
-                            tipoSlotSelecionado: 'SECUNDARIA',
-                          })
+                          setModalConfirmacao({ ...modalConfirmacao, tipoSlotSelecionado: 'FILA' })
                         }
-                        className="h-4 w-4 text-fuchsia-500 focus:ring-fuchsia-500"
+                        className="h-4 w-4 text-amber-500 focus:ring-amber-500"
                       />
                       <span className="font-black uppercase tracking-wider text-white">
-                        Vaga Secundária (Econômica)
+                        Entrar na Fila (Primária)
                       </span>
                     </div>
-                    <p className="mt-2 pl-7 text-xs text-zinc-400">
-                      <strong className="text-fuchsia-400">⚠️ Atenção:</strong> Você precisará jogar
-                      obrigatoriamente logado na conta da locadora e estar sempre conectado à
-                      internet.
+                    <p className="mt-2 pl-7 text-xs leading-relaxed text-zinc-400">
+                      Garanta o próximo acesso disponível para a vaga principal. O valor será
+                      descontado da sua carteira agora para reservar a vaga.
                     </p>
                   </label>
-                )}
-
-              {/* OPÇÃO 3: FILA DE ESPERA (Aparece se faltar estoque da Primária) */}
-              {modalConfirmacao.jogo.estoque_primaria === 0 && (
-                <label
-                  className={`flex cursor-pointer flex-col rounded-2xl border-2 p-4 transition-all ${modalConfirmacao.tipoSlotSelecionado === 'FILA' ? 'border-amber-500 bg-amber-500/10' : 'border-zinc-800 bg-zinc-950 hover:border-zinc-700'}`}
-                >
-                  <div className="flex items-center gap-3">
-                    <input
-                      type="radio"
-                      name="tipoSlot"
-                      value="FILA"
-                      checked={modalConfirmacao.tipoSlotSelecionado === 'FILA'}
-                      onChange={() =>
-                        setModalConfirmacao({ ...modalConfirmacao, tipoSlotSelecionado: 'FILA' })
-                      }
-                      className="h-4 w-4 text-amber-500 focus:ring-amber-500"
-                    />
-                    <span className="font-black uppercase tracking-wider text-white">
-                      Entrar na Fila (Primária)
-                    </span>
-                  </div>
-                  <p className="mt-2 pl-7 text-xs text-zinc-400">
-                    Garanta o próximo acesso disponível. O valor será descontado da sua carteira
-                    agora para reservar a vaga.
-                  </p>
-                </label>
+                </>
               )}
             </div>
 
@@ -1774,20 +1809,26 @@ function App() {
               <div className="flex rounded-xl border border-zinc-700/50 bg-zinc-950 p-1">
                 <button
                   onClick={() => setModalConfirmacao({ ...modalConfirmacao, diasEscolhidos: 7 })}
-                  className={`flex-1 rounded-lg py-2.5 text-xs font-bold uppercase tracking-wider transition-all ${modalConfirmacao.diasEscolhidos === 7 ? 'bg-zinc-700 text-white shadow' : 'text-zinc-500 hover:text-white'}`}
+                  className={`flex-1 rounded-lg py-3 text-xs font-bold uppercase tracking-wider transition-all ${modalConfirmacao.diasEscolhidos === 7 ? 'bg-zinc-700 text-white shadow' : 'text-zinc-500 hover:text-white'}`}
                 >
                   7 Dias
                 </button>
                 <button
                   onClick={() => setModalConfirmacao({ ...modalConfirmacao, diasEscolhidos: 14 })}
-                  className={`flex-1 rounded-lg py-2.5 text-xs font-bold uppercase tracking-wider transition-all ${modalConfirmacao.diasEscolhidos === 14 ? 'bg-zinc-700 text-white shadow' : 'text-zinc-500 hover:text-white'}`}
+                  className={`relative flex-1 rounded-lg py-3 text-xs font-bold uppercase tracking-wider transition-all ${modalConfirmacao.diasEscolhidos === 14 ? 'bg-zinc-700 text-white shadow' : 'text-zinc-500 hover:text-white'}`}
                 >
+                  {/* [INFO] A Tag Promo voltou! */}
+                  {modalConfirmacao.jogo.preco_aluguel_14 > 0 && (
+                    <span className="absolute -right-1 -top-2 rounded-full border border-cyan-500/50 bg-cyan-950 px-2 py-0.5 text-[8px] font-black tracking-widest text-cyan-400 shadow-lg">
+                      PROMO
+                    </span>
+                  )}
                   14 Dias
                 </button>
               </div>
             </div>
 
-            {/* RESUMO FINANCEIRO DINÂMICO */}
+            {/* RESUMO FINANCEIRO DINÂMICO COM INTEGRAÇÃO FAST PIX */}
             {(() => {
               const { jogo, diasEscolhidos, tipoSlotSelecionado } = modalConfirmacao;
               let precoAtual = 0;
@@ -1801,58 +1842,130 @@ function App() {
 
               return (
                 <>
-                  <div className="mb-6 rounded-2xl border border-zinc-800 bg-zinc-950 p-5 shadow-inner">
-                    <div className="mb-3 flex items-center justify-between">
-                      <span className="text-xs font-bold uppercase tracking-wider text-zinc-400">
-                        Total a descontar:
-                      </span>
-                      <span className="text-sm font-black text-rose-400">
-                        - R$ {precoAtual.toFixed(2)}
-                      </span>
+                  {/* CASO 1: O Pix foi gerado por dentro do modal. Mostra o QR Code aqui dentro! */}
+                  {pixPendente ? (
+                    <div className="animate-fade-in mb-6 flex flex-col items-center justify-center rounded-2xl border border-emerald-500/30 bg-zinc-950 p-4 shadow-inner">
+                      <img
+                        src={
+                          pixPendente.qr_code.startsWith('data:')
+                            ? pixPendente.qr_code
+                            : `data:image/png;base64,${pixPendente.qr_code}`
+                        }
+                        alt="QR Code PIX Imediato"
+                        className="mb-3 h-36 w-40 rounded-xl border border-zinc-800 bg-white p-2 shadow-lg"
+                      />
+                      <p className="mb-4 text-center text-[11px] font-medium leading-relaxed text-zinc-400">
+                        Pague com o app do seu banco.
+                        <br />
+                        <strong className="mt-1 block animate-pulse text-xs font-bold text-emerald-400">
+                          ⚡ Monitorando pagamento em tempo real...
+                        </strong>
+                      </p>
+                      <div className="flex w-full gap-2">
+                        <button
+                          onClick={() => {
+                            navigator.clipboard.writeText(pixPendente.copia_cola);
+                            mostrarToast('Código Pix Copiado!', 'sucesso');
+                          }}
+                          className="flex-1 rounded-xl bg-zinc-800 py-2.5 text-[10px] font-black uppercase tracking-wide text-white transition-colors hover:bg-zinc-700"
+                        >
+                          📋 Copiar Código Pix
+                        </button>
+                        <button
+                          onClick={() => setPixPendente(null)}
+                          className="rounded-xl border border-rose-500/30 bg-rose-900/30 px-3 text-[10px] font-bold uppercase tracking-wide text-rose-400 transition-colors hover:bg-rose-900/80"
+                        >
+                          Voltar
+                        </button>
+                      </div>
                     </div>
-                    <div className="mb-3 h-px w-full bg-zinc-800/50"></div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold uppercase tracking-wider text-zinc-400">
-                        Saldo após compra:
-                      </span>
-                      <span
-                        className={`text-base font-black ${temSaldo ? 'text-emerald-400' : 'animate-pulse text-rose-500'}`}
-                      >
-                        R$ {(usuarioLogado.saldo - precoAtual).toFixed(2)}
-                      </span>
+                  ) : (
+                    /* CASO 2: Fluxo normal de exibição de saldo */
+                    <div className="mb-6 rounded-2xl border border-zinc-800 bg-zinc-950 p-5 shadow-inner">
+                      <div className="mb-4 flex items-end justify-between">
+                        <span className="text-xs font-bold uppercase tracking-wider text-zinc-400">
+                          Valor do Aluguel:
+                        </span>
+                        <span className="text-2xl font-black leading-none text-white">
+                          R$ {precoAtual.toFixed(2)}
+                        </span>
+                      </div>
+                      <div className="mb-3 h-px w-full bg-zinc-800/50"></div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold uppercase tracking-wider text-zinc-400">
+                          Saldo atual:
+                        </span>
+                        <span className="text-sm font-bold text-zinc-300">
+                          R$ {usuarioLogado.saldo.toFixed(2)}
+                        </span>
+                      </div>
                     </div>
-                  </div>
-
-                  {/* ALERTA ZERO TRUST PARA A SECUNDÁRIA */}
-                  {tipoSlotSelecionado === 'SECUNDARIA' && (
-                    <p className="mb-6 rounded-xl border border-rose-500/30 bg-rose-950/30 p-3 text-[10px] font-bold leading-relaxed text-rose-400">
-                      🚨 Você está alugando uma vaga SECUNDÁRIA. Tentar ativá-la como "Principal" no
-                      seu console resultará em bloqueio do jogo e multa de R$ 50,00 na sua carteira.
-                    </p>
                   )}
 
-                  <div className="flex gap-3">
-                    <button
-                      onClick={() =>
-                        setModalConfirmacao({
-                          visivel: false,
-                          jogo: null,
-                          diasEscolhidos: 7,
-                          tipoSlotSelecionado: 'PRIMARIA',
-                        })
-                      }
-                      className="flex-1 rounded-xl bg-zinc-800 py-3.5 text-xs font-bold uppercase tracking-wide text-zinc-300 transition-colors hover:bg-zinc-700 hover:text-white"
-                    >
-                      Cancelar
-                    </button>
-                    <button
-                      onClick={confirmarTransacao}
-                      disabled={!temSaldo}
-                      className={`flex-1 rounded-xl py-3.5 text-xs font-bold uppercase tracking-wide text-white shadow-lg transition-all ${!temSaldo ? 'cursor-not-allowed bg-zinc-600 opacity-50' : 'bg-blue-600 shadow-blue-600/20 hover:bg-blue-500'}`}
-                    >
-                      {temSaldo ? 'Confirmar' : 'Sem Saldo'}
-                    </button>
-                  </div>
+                  {/* CASO 3: Sem saldo e Pix ainda não gerado. Pede o CPF se estiver vazio antes de liberar o botão */}
+                  {!temSaldo && !pixPendente && !cpfRecarga && (
+                    <div className="animate-fade-in mb-4">
+                      <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-wider text-zinc-500">
+                        Informe seu CPF para liberar o Pix de recarga:
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="Apenas números..."
+                        value={cpfRecarga}
+                        onChange={(e) => setCpfRecarga(e.target.value.replace(/\D/g, ''))}
+                        maxLength="11"
+                        className="w-full rounded-xl border border-zinc-800 bg-zinc-950 px-4 py-2.5 text-xs font-bold text-white placeholder-zinc-600 outline-none transition-all focus:border-cyan-500"
+                      />
+                    </div>
+                  )}
+
+                  {/* ZONA DE BOTÕES DO MODAL */}
+                  {!pixPendente && (
+                    <div className="flex gap-3">
+                      <button
+                        onClick={() =>
+                          setModalConfirmacao({
+                            visivel: false,
+                            jogo: null,
+                            diasEscolhidos: 7,
+                            tipoSlotSelecionado: 'PRIMARIA',
+                          })
+                        }
+                        className="flex-1 rounded-xl bg-zinc-800 py-4 text-xs font-bold uppercase tracking-wide text-zinc-300 transition-colors hover:bg-zinc-700 hover:text-white"
+                      >
+                        Cancelar
+                      </button>
+
+                      {temSaldo ? (
+                        <button
+                          onClick={confirmarTransacao}
+                          className="flex-1 rounded-xl bg-blue-600 py-4 text-xs font-bold uppercase tracking-wide text-white shadow-lg shadow-blue-600/20 transition-all hover:bg-blue-500"
+                        >
+                          🚀 Confirmar Aluguel
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => {
+                            // [INFO] Inteligência de Vendas (Estratégia PSN)
+                            // Se faltar R$ 5, obriga a depositar R$ 15. Se faltar R$ 40, cobra R$ 40.
+                            const valorFaltante = precoAtual - usuarioLogado.saldo;
+                            const valorRecargaPix = Math.max(15, valorFaltante);
+                            gerarPixRapidoModal(valorRecargaPix);
+                          }}
+                          disabled={carregandoGateway}
+                          className="flex-1 rounded-xl bg-emerald-600 py-4 text-xs font-black uppercase tracking-wide text-white shadow-lg shadow-emerald-600/20 transition-all hover:bg-emerald-500 disabled:opacity-50"
+                        >
+                          {(() => {
+                            const valorFaltante = precoAtual - usuarioLogado.saldo;
+                            const valorRecargaPix = Math.max(15, valorFaltante);
+                            return carregandoGateway
+                              ? '⚡ Conectando...'
+                              : `⚡ Recarregar R$ ${valorRecargaPix.toFixed(2)}`;
+                          })()}
+                        </button>
+                      )}
+                    </div>
+                  )}
                 </>
               );
             })()}
@@ -2711,10 +2824,21 @@ function App() {
                               </div>
                             )}
 
-                            {/* [INFO] BOTÃO ÚNICO DA VITRINE: Delega a decisão de negócio para o Modal Top-Down */}
-                            <div className="mt-auto pt-4">
+                            <div className="mt-auto flex flex-col gap-2 pt-4">
+                              {/* [INFO] Mostra o preço "A partir de" acima do botão */}
+                              {temEstoque && !isEmBreve && (
+                                <div className="text-center">
+                                  <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">
+                                    A partir de{' '}
+                                  </span>
+                                  <strong className="text-sm font-black text-emerald-400">
+                                    R$ {jogo.preco_aluguel.toFixed(2)}
+                                  </strong>
+                                </div>
+                              )}
+
                               {minhaReservaAtiva ? (
-                                <div className="group relative flex h-[50px] flex-col items-center justify-center overflow-hidden rounded-xl border border-emerald-500/30 bg-emerald-950/40 px-4 shadow-[0_0_15px_rgba(16,185,129,0.15)] transition-all">
+                                <div className="group relative flex h-[56px] flex-col items-center justify-center overflow-hidden rounded-xl border border-emerald-500/30 bg-emerald-950/40 px-4 shadow-[0_0_15px_rgba(16,185,129,0.15)] transition-all">
                                   <div className="absolute left-0 top-0 h-1 w-full bg-gradient-to-r from-emerald-500 to-cyan-500"></div>
                                   <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-emerald-500">
                                     ✅ Já Reservado
@@ -2728,7 +2852,7 @@ function App() {
                                       'aviso',
                                     )
                                   }
-                                  className="group/lock flex h-[50px] w-full flex-col items-center justify-center rounded-xl border border-rose-500/20 bg-zinc-950/80 shadow-inner transition-all hover:bg-rose-950/30"
+                                  className="group/lock flex h-[56px] w-full flex-col items-center justify-center rounded-xl border border-rose-500/20 bg-zinc-950/80 shadow-inner transition-all hover:bg-rose-950/30"
                                 >
                                   <strong className="flex items-center gap-2 text-xs font-black uppercase tracking-tight text-rose-500">
                                     🔒 Requer Rank VIP
@@ -2737,10 +2861,10 @@ function App() {
                               ) : (
                                 <button
                                   onClick={() => abrirConfirmacao(jogo)}
-                                  className={`w-full rounded-xl py-3.5 text-xs font-black uppercase tracking-wider text-white shadow-lg transition-all ${
+                                  className={`w-full rounded-2xl py-4 text-sm font-black uppercase tracking-wider text-white shadow-lg transition-all ${
                                     temEstoque && !isEmBreve
-                                      ? 'bg-blue-600 shadow-blue-500/20 hover:-translate-y-0.5 hover:bg-blue-500'
-                                      : 'bg-amber-600 shadow-amber-500/20 hover:-translate-y-0.5 hover:bg-amber-500'
+                                      ? 'bg-blue-600 shadow-blue-500/20 hover:-translate-y-1 hover:bg-blue-500'
+                                      : 'bg-amber-600 shadow-amber-500/20 hover:-translate-y-1 hover:bg-amber-500'
                                   }`}
                                 >
                                   {temEstoque && !isEmBreve
@@ -2922,7 +3046,7 @@ function App() {
                             </span>
                             <input
                               type="number"
-                              min="30"
+                              min="15"
                               step="1"
                               value={valorRecarga}
                               onChange={(e) => setValorRecarga(e.target.value)}
