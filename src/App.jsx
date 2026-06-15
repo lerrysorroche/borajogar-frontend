@@ -74,7 +74,7 @@ function App() {
   const [novaOpcaoEnqueteImagem, setNovaOpcaoEnqueteImagem] = useState('');
 
   // --- Estados Financeiros e Pagamento ---
-  const [valorRecarga, setValorRecarga] = useState('15');
+  const [valorRecarga, setValorRecarga] = useState('30');
   const [cupomRecarga, setCupomRecarga] = useState('');
   const [cpfRecarga, setCpfRecarga] = useState('');
   const [pixPendente, setPixPendente] = useState(null);
@@ -553,8 +553,8 @@ function App() {
   const solicitarRecargaCartao = async (e) => {
     e.preventDefault();
     const valorReal = parseFloat(valorRecarga);
-    if (isNaN(valorReal) || valorReal < 15) {
-      mostrarToast('O valor mínimo para recarga é de R$ 15,00', 'erro');
+    if (isNaN(valorReal) || valorReal < 30) {
+      mostrarToast('O valor mínimo para recarga é de R$ 30,00', 'erro');
       return;
     }
     setCarregandoGateway(true);
@@ -587,8 +587,8 @@ function App() {
   const solicitarRecargaPix = async (e) => {
     e.preventDefault();
     const valorReal = parseFloat(valorRecarga);
-    if (isNaN(valorReal) || valorReal < 15) {
-      mostrarToast('O valor mínimo para recarga é de R$ 15,00', 'erro');
+    if (isNaN(valorReal) || valorReal < 30) {
+      mostrarToast('O valor mínimo para recarga é de R$ 30,00', 'erro');
       return;
     }
     const cpfLimpo = cpfRecarga.replace(/\D/g, '');
@@ -1947,9 +1947,9 @@ function App() {
                         <button
                           onClick={() => {
                             // [INFO] Inteligência de Vendas (Estratégia PSN)
-                            // Se faltar R$ 5, obriga a depositar R$ 15. Se faltar R$ 40, cobra R$ 40.
+                            // Se faltar R$ 5, obriga a depositar R$ 30. Se faltar R$ 40, cobra R$ 40.
                             const valorFaltante = precoAtual - usuarioLogado.saldo;
-                            const valorRecargaPix = Math.max(15, valorFaltante);
+                            const valorRecargaPix = Math.max(30, valorFaltante);
                             gerarPixRapidoModal(valorRecargaPix);
                           }}
                           disabled={carregandoGateway}
@@ -1957,7 +1957,7 @@ function App() {
                         >
                           {(() => {
                             const valorFaltante = precoAtual - usuarioLogado.saldo;
-                            const valorRecargaPix = Math.max(15, valorFaltante);
+                            const valorRecargaPix = Math.max(30, valorFaltante);
                             return carregandoGateway
                               ? '⚡ Conectando...'
                               : `⚡ Recarregar R$ ${valorRecargaPix.toFixed(2)}`;
@@ -3048,7 +3048,7 @@ function App() {
                             </span>
                             <input
                               type="number"
-                              min="15"
+                              min="30"
                               step="1"
                               value={valorRecarga}
                               onChange={(e) => setValorRecarga(e.target.value)}
