@@ -1786,11 +1786,41 @@ function App() {
                         onChange={() =>
                           setModalConfirmacao({ ...modalConfirmacao, tipoSlotSelecionado: 'FILA' })
                         }
-                        className="h-4 w-4 text-amber-500 focus:ring-amber-500"
+                        className="h-4 w-4 min-w-[16px] text-amber-500 focus:ring-amber-500"
                       />
                       <span className="font-black uppercase tracking-wider text-white">
                         Entrar na Fila (Primária)
                       </span>
+
+                      {/* [INFO] Cálculo dinâmico da data da fila (idêntico ao da Vitrine) */}
+                      {(() => {
+                        const j = modalConfirmacao.jogo;
+                        const isEmBreveModal = j.prioridade_vitrine === 1;
+                        let dGlobal =
+                          isEmBreveModal && j.data_lancamento
+                            ? new Date(j.data_lancamento + 'T00:00:00')
+                            : new Date();
+
+                        if (j.proxima_devolucao) {
+                          const pd = new Date(j.proxima_devolucao);
+                          if (pd > dGlobal) dGlobal = pd;
+                        }
+
+                        const filaMs = (j.fila_dias_espera || 0) * 24 * 60 * 60 * 1000;
+                        const dataFinal = new Date(dGlobal.getTime() + filaMs);
+
+                        // Formata para ficar curtinho: ex "15/07"
+                        const dataFormatada = dataFinal.toLocaleDateString('pt-BR', {
+                          day: '2-digit',
+                          month: '2-digit',
+                        });
+
+                        return (
+                          <span className="ml-auto shrink-0 rounded-lg bg-amber-500/20 px-2 py-1 text-[9px] font-black uppercase tracking-widest text-amber-400 [text-shadow:1px_1px_0px_black,-1px_-1px_0px_black,1px_-1px_0px_black,-1px_1px_0px_black]">
+                            ⏳ Volta {dataFormatada}
+                          </span>
+                        );
+                      })()}
                     </div>
                     <p className="mt-2 pl-7 text-xs leading-relaxed text-zinc-400">
                       Garanta o próximo acesso disponível para a vaga principal. O valor será
