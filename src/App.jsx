@@ -1902,11 +1902,11 @@ function App() {
                     </div>
                   )}
 
-                  {/* CASO 3: Sem saldo e Pix ainda não gerado. Pede o CPF se estiver vazio antes de liberar o botão */}
-                  {!temSaldo && !pixPendente && !cpfRecarga && (
+                  {/* CASO 3: Sem saldo e Pix ainda não gerado. Pede o CPF para liberar o botão */}
+                  {!temSaldo && !pixPendente && (
                     <div className="animate-fade-in mb-4">
                       <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-wider text-zinc-500">
-                        Informe seu CPF para liberar o Pix de recarga:
+                        Informe seu CPF para gerar o Pix:
                       </label>
                       <input
                         type="text"
