@@ -2760,82 +2760,87 @@ function App() {
                         key={jogo.id}
                         className={`rounded-3xl border bg-zinc-900 ${bloqueadoParaUsuario ? 'border-zinc-800/50 opacity-90 grayscale-[20%]' : 'border-zinc-800'} group flex flex-col overflow-hidden shadow-xl transition-all duration-300 hover:-translate-y-2 hover:border-blue-500/50`}
                       >
-                        {/* 1. ÁREA DA CAPA DO JOGO (DISTRIBUIÇÃO DIAGONAL BALANCEADA) */}
-                        <div className="relative h-56 w-full overflow-hidden bg-zinc-800">
-                          {jogo.url_imagem ? (
-                            <img
-                              src={jogo.url_imagem}
-                              alt={jogo.titulo}
-                              className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
-                            />
-                          ) : (
-                            <div className="flex h-full w-full items-center justify-center bg-zinc-800/80">
-                              <span className="text-5xl opacity-50">🎮</span>
-                            </div>
-                          )}
+                        {/* 1. CONJUNTO DE MÍDIA (Capa + Faixa Técnica) */}
+                        <div className="flex w-full flex-col">
+                          {/* 1.1 ÁREA DA CAPA DO JOGO */}
+                          <div className="relative h-56 w-full overflow-hidden bg-zinc-800">
+                            {jogo.url_imagem ? (
+                              <img
+                                src={jogo.url_imagem}
+                                alt={jogo.titulo}
+                                className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
+                              />
+                            ) : (
+                              <div className="flex h-full w-full items-center justify-center bg-zinc-800/80">
+                                <span className="text-5xl opacity-50">🎮</span>
+                              </div>
+                            )}
 
-                          {/* CANTO SUPERIOR ESQUERDO: Grupo de Status da Conta (Disponibilidade / Alugado) */}
-                          <div className="pointer-events-none absolute left-4 top-4 z-20 flex flex-col items-start gap-1.5">
-                            {temEstoque && !isEmBreve ? (
-                              <>
-                                {jogo.estoque_primaria > 0 && (
-                                  <span className="flex items-center gap-1.5 rounded-lg border border-emerald-400/50 bg-emerald-500/90 px-3 py-1.5 text-[9px] font-black uppercase tracking-wider text-white shadow-lg backdrop-blur-md [text-shadow:1px_1px_0px_black,-1px_-1px_0px_black,1px_-1px_0px_black,-1px_1px_0px_black]">
-                                    <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-white"></span>
-                                    DISP. PRIMÁRIA
-                                  </span>
-                                )}
-                                {jogo.estoque_secundaria > 0 && (
-                                  <span className="flex items-center gap-1.5 rounded-lg border border-fuchsia-400/50 bg-fuchsia-600/90 px-3 py-1.5 text-[9px] font-black uppercase tracking-wider text-white shadow-lg backdrop-blur-md [text-shadow:1px_1px_0px_black,-1px_-1px_0px_black,1px_-1px_0px_black,-1px_1px_0px_black]">
-                                    <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-white"></span>
-                                    DISP. SECUNDÁRIA
-                                  </span>
-                                )}
-                              </>
-                            ) : !isEmBreve ? (
-                              /* [INFO] A tag ALUGADO agora compartilha o mesmo canto de status na esquerda */
-                              <span className="rounded-lg border border-rose-500/50 bg-rose-600/90 px-3 py-1.5 text-[10px] font-black uppercase tracking-wider text-white shadow-lg backdrop-blur-md [text-shadow:1px_1px_0px_black,-1px_-1px_0px_black,1px_-1px_0px_black,-1px_1px_0px_black]">
-                                ALUGADO
-                              </span>
-                            ) : null}
+                            {/* CANTO SUPERIOR ESQUERDO: Grupo de Status da Conta */}
+                            <div className="pointer-events-none absolute left-4 top-4 z-20 flex flex-col items-start gap-1.5">
+                              {temEstoque && !isEmBreve ? (
+                                <>
+                                  {jogo.estoque_primaria > 0 && (
+                                    <span className="flex items-center gap-1.5 rounded-lg border border-emerald-400/50 bg-emerald-500/90 px-3 py-1.5 text-[9px] font-black uppercase tracking-wider text-white shadow-lg backdrop-blur-md [text-shadow:1px_1px_0px_black,-1px_-1px_0px_black,1px_-1px_0px_black,-1px_1px_0px_black]">
+                                      <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-white"></span>
+                                      DISP. PRIMÁRIA
+                                    </span>
+                                  )}
+                                  {jogo.estoque_secundaria > 0 && (
+                                    <span className="flex items-center gap-1.5 rounded-lg border border-fuchsia-400/50 bg-fuchsia-600/90 px-3 py-1.5 text-[9px] font-black uppercase tracking-wider text-white shadow-lg backdrop-blur-md [text-shadow:1px_1px_0px_black,-1px_-1px_0px_black,1px_-1px_0px_black,-1px_1px_0px_black]">
+                                      <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-white"></span>
+                                      DISP. SECUNDÁRIA
+                                    </span>
+                                  )}
+                                </>
+                              ) : !isEmBreve ? (
+                                <span className="rounded-lg border border-rose-500/50 bg-rose-600/90 px-3 py-1.5 text-[10px] font-black uppercase tracking-wider text-white shadow-lg backdrop-blur-md [text-shadow:1px_1px_0px_black,-1px_-1px_0px_black,1px_-1px_0px_black,-1px_1px_0px_black]">
+                                  ALUGADO
+                                </span>
+                              ) : null}
+                            </div>
+
+                            {/* CANTO INFERIOR DIREITO: Grupo de Lançamento (Agora padronizado em ROXO) */}
+                            <div className="pointer-events-none absolute bottom-4 right-4 z-20 flex flex-col items-end gap-1.5">
+                              {/* Em Breve */}
+                              {isEmBreve && (
+                                <span className="rounded-lg border border-purple-400/50 bg-purple-600/90 px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-white shadow-lg backdrop-blur-md [text-shadow:1px_1px_0px_black,-1px_-1px_0px_black,1px_-1px_0px_black,-1px_1px_0px_black]">
+                                  LANÇAMENTO {dataFormatada && `(${dataFormatada})`}
+                                </span>
+                              )}
+
+                              {/* Lançamento Ativo */}
+                              {isLancamento && !isEmBreve && (
+                                <span className="flex items-center gap-1.5 rounded-lg border border-purple-400/50 bg-purple-600/90 px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-white shadow-lg backdrop-blur-md [text-shadow:1px_1px_0px_black,-1px_-1px_0px_black,1px_-1px_0px_black,-1px_1px_0px_black]">
+                                  <span className="animate-pulse">🔥</span> LANÇAMENTO
+                                </span>
+                              )}
+                            </div>
                           </div>
 
-                          {/* CANTO INFERIOR DIREITO: Grupo de Cronologia (Lançamento Futuro / Selo de Recente) */}
-                          <div className="pointer-events-none absolute bottom-4 right-4 z-20 flex flex-col items-end gap-1.5">
-                            {/* Tags de Lançamento Futuro (Em Breve) */}
-                            {isEmBreve && (
-                              <span className="rounded-lg border border-purple-500/50 bg-purple-600/90 px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-white shadow-lg backdrop-blur-md [text-shadow:1px_1px_0px_black,-1px_-1px_0px_black,1px_-1px_0px_black,-1px_1px_0px_black]">
-                                LANÇAMENTO {dataFormatada && `(${dataFormatada})`}
-                              </span>
-                            )}
+                          {/* 1.2 FAIXA TÉCNICA (Conectada abaixo da imagem, com 3 colunas iguais) */}
+                          <div className="grid w-full grid-cols-3 border-b border-zinc-800/50 bg-zinc-950/80">
+                            {/* Bloco 1: Plataforma */}
+                            <div className="flex items-center justify-center py-2.5 text-xs font-black uppercase tracking-wider text-zinc-300">
+                              {jogo.plataforma}
+                            </div>
 
-                            {/* Tag de Lançamento Ativo (Menos de 3 meses / 90 dias) */}
-                            {isLancamento && !isEmBreve && (
-                              <span className="flex items-center gap-1.5 rounded-xl border border-fuchsia-400 bg-fuchsia-600/90 px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-white shadow-[0_0_15px_rgba(192,38,211,0.8)] backdrop-blur-md [text-shadow:1px_1px_0px_black,-1px_-1px_0px_black,1px_-1px_0px_black,-1px_1px_0px_black]">
-                                <span className="animate-pulse">🔥</span> Lançamento
-                              </span>
-                            )}
+                            {/* Bloco 2: Nota */}
+                            <div className="flex items-center justify-center py-2.5 text-xs font-black uppercase text-amber-400">
+                              {jogo.nota > 0 ? `⭐ ${jogo.nota}` : ''}
+                            </div>
+
+                            {/* Bloco 3: Tempo */}
+                            <div className="flex items-center justify-center py-2.5 text-xs font-black uppercase text-zinc-300">
+                              {jogo.tempo_jogo && jogo.tempo_jogo !== '0h'
+                                ? `⏱️ ~${jogo.tempo_jogo}`
+                                : ''}
+                            </div>
                           </div>
                         </div>
 
-                        {/* 2. ÁREA DE INFORMAÇÕES (Abaixo da imagem) */}
-                        <div className="flex flex-1 flex-col p-6">
-                          {/* NOVOS CHIPS DE DADOS: Plataforma, Nota e Tempo de Jogo */}
-                          <div className="mb-3 flex flex-wrap items-center gap-2">
-                            <span className="rounded-md border border-zinc-700/50 bg-zinc-950 px-2 py-1 text-[9px] font-bold uppercase tracking-wider text-zinc-300">
-                              {jogo.plataforma}
-                            </span>
-                            {jogo.nota > 0 && (
-                              <span className="flex items-center gap-1 rounded-md border border-zinc-700/50 bg-zinc-950 px-2 py-1 text-[9px] font-bold uppercase text-amber-400">
-                                ⭐ {jogo.nota}
-                              </span>
-                            )}
-                            {jogo.tempo_jogo && jogo.tempo_jogo !== '0h' && (
-                              <span className="flex items-center gap-1 rounded-md border border-zinc-700/50 bg-zinc-950 px-2 py-1 text-[9px] font-bold uppercase text-zinc-300">
-                                ⏱️ ~{jogo.tempo_jogo}
-                              </span>
-                            )}
-                          </div>
-
+                        {/* 2. ÁREA DE INFORMAÇÕES DE TEXTO */}
+                        <div className="flex flex-1 flex-col px-6 pb-6 pt-5">
                           <h3 className="mb-2 text-lg font-black leading-tight tracking-tight text-white transition-colors group-hover:text-blue-400">
                             {jogo.titulo}
                           </h3>
