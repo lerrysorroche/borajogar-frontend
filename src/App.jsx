@@ -2722,7 +2722,6 @@ function App() {
                 <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
                   {jogosDaPagina.map((jogo) => {
                     const isEmBreve = jogo.prioridade_vitrine === 1;
-                    const isLancamento = jogo.prioridade_vitrine === 2;
                     const dataLanc = jogo.data_lancamento
                       ? new Date(jogo.data_lancamento + 'T00:00:00')
                       : null;
@@ -2730,7 +2729,13 @@ function App() {
                       ? dataLanc.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })
                       : '';
 
-                    // [INFO] Tem estoque se houver QUALQUER vaga livre (Primária ou Secundária)
+                    // [INFO] Lógica inteligente: Mostra "Lançamento" apenas se a data for menor ou igual a 90 dias (3 meses)
+                    const isLancamento =
+                      dataLanc && !isEmBreve
+                        ? (new Date() - dataLanc) / (1000 * 60 * 60 * 24) <= 90
+                        : jogo.prioridade_vitrine === 2; // Mantém como fallback
+
+                    // [INFO] Tem estoque se houver QUALQUER vaga livre
                     const temEstoque = jogo.estoque_primaria > 0 || jogo.estoque_secundaria > 0;
 
                     const isVeterano = usuarioLogado
@@ -2755,6 +2760,7 @@ function App() {
                         key={jogo.id}
                         className={`rounded-3xl border bg-zinc-900 ${bloqueadoParaUsuario ? 'border-zinc-800/50 opacity-90 grayscale-[20%]' : 'border-zinc-800'} group flex flex-col overflow-hidden shadow-xl transition-all duration-300 hover:-translate-y-2 hover:border-blue-500/50`}
                       >
+                        {/* 1. ÁREA DA CAPA DO JOGO (Agora mais limpa) */}
                         <div className="relative h-56 w-full overflow-hidden bg-zinc-800">
                           {jogo.url_imagem ? (
                             <img
@@ -2769,26 +2775,9 @@ function App() {
                           )}
 
                           <div className="pointer-events-none absolute left-4 right-4 top-4 flex items-start justify-between">
-                            <div className="flex flex-col items-start gap-2">
-                              <span className="rounded-lg border border-zinc-700/50 bg-zinc-950/80 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-white shadow-lg backdrop-blur-md">
-                                {jogo.plataforma}
-                              </span>
-                              {jogo.nota > 0 && (
-                                <span className="flex items-center gap-1 rounded-lg border border-zinc-700/50 bg-zinc-950/80 px-3 py-1.5 text-[10px] font-bold uppercase text-amber-400 shadow-lg backdrop-blur-md">
-                                  ⭐ {jogo.nota}
-                                </span>
-                              )}
-                              {jogo.tempo_jogo && jogo.tempo_jogo !== '0h' && (
-                                <span className="flex items-center gap-1 rounded-lg border border-zinc-700/50 bg-zinc-950/80 px-3 py-1.5 text-[10px] font-bold uppercase text-zinc-300 shadow-lg backdrop-blur-md">
-                                  ⏱️ ~{jogo.tempo_jogo}
-                                </span>
-                              )}
-                            </div>
-
-                            {/* Adicionamos gap-1.5 aqui para separar as tags quando as duas aparecerem juntas */}
-                            <div className="flex flex-col items-end gap-1.5">
-                              {/* [INFO] A tag visual agora avalia Primária e Secundária de forma independente */}
-                              {temEstoque && !isEmBreve ? (
+                            {/* CANTO SUPERIOR ESQUERDO: Contas Disponíveis */}
+                            <div className="flex flex-col items-start gap-1.5">
+                              {temEstoque && !isEmBreve && (
                                 <>
                                   {jogo.estoque_primaria > 0 && (
                                     <span className="flex items-center gap-1.5 rounded-lg border border-emerald-400/50 bg-emerald-500/90 px-3 py-1.5 text-[9px] font-black uppercase tracking-wider text-white shadow-lg backdrop-blur-md [text-shadow:1px_1px_0px_black,-1px_-1px_0px_black,1px_-1px_0px_black,-1px_1px_0px_black]">
@@ -2803,18 +2792,24 @@ function App() {
                                     </span>
                                   )}
                                 </>
-                              ) : isEmBreve ? (
+                              )}
+                            </div>
+
+                            {/* CANTO SUPERIOR DIREITO: Alugado / Em Breve */}
+                            <div className="flex flex-col items-end gap-1.5">
+                              {isEmBreve ? (
                                 <span className="rounded-lg border border-purple-500/50 bg-purple-600/90 px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-white shadow-lg backdrop-blur-md [text-shadow:1px_1px_0px_black,-1px_-1px_0px_black,1px_-1px_0px_black,-1px_1px_0px_black]">
                                   LANÇAMENTO {dataFormatada && `(${dataFormatada})`}
                                 </span>
-                              ) : (
+                              ) : !temEstoque ? (
                                 <span className="rounded-lg border border-rose-500/50 bg-rose-600/90 px-3 py-1.5 text-[10px] font-black uppercase tracking-wider text-white shadow-lg backdrop-blur-md [text-shadow:1px_1px_0px_black,-1px_-1px_0px_black,1px_-1px_0px_black,-1px_1px_0px_black]">
                                   ALUGADO
                                 </span>
-                              )}
+                              ) : null}
                             </div>
                           </div>
 
+                          {/* CANTO INFERIOR ESQUERDO: Tag 🔥 Lançamento (Agora controlada por data) */}
                           {isLancamento && !isEmBreve && (
                             <div className="absolute bottom-4 left-4 z-20">
                               <span className="flex items-center gap-1.5 rounded-xl border border-fuchsia-400 bg-fuchsia-600/90 px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-white shadow-[0_0_15px_rgba(192,38,211,0.8)] backdrop-blur-md [text-shadow:1px_1px_0px_black,-1px_-1px_0px_black,1px_-1px_0px_black,-1px_1px_0px_black]">
@@ -2824,7 +2819,25 @@ function App() {
                           )}
                         </div>
 
+                        {/* 2. ÁREA DE INFORMAÇÕES (Abaixo da imagem) */}
                         <div className="flex flex-1 flex-col p-6">
+                          {/* NOVOS CHIPS DE DADOS: Plataforma, Nota e Tempo de Jogo */}
+                          <div className="mb-3 flex flex-wrap items-center gap-2">
+                            <span className="rounded-md border border-zinc-700/50 bg-zinc-950 px-2 py-1 text-[9px] font-bold uppercase tracking-wider text-zinc-300">
+                              {jogo.plataforma}
+                            </span>
+                            {jogo.nota > 0 && (
+                              <span className="flex items-center gap-1 rounded-md border border-zinc-700/50 bg-zinc-950 px-2 py-1 text-[9px] font-bold uppercase text-amber-400">
+                                ⭐ {jogo.nota}
+                              </span>
+                            )}
+                            {jogo.tempo_jogo && jogo.tempo_jogo !== '0h' && (
+                              <span className="flex items-center gap-1 rounded-md border border-zinc-700/50 bg-zinc-950 px-2 py-1 text-[9px] font-bold uppercase text-zinc-300">
+                                ⏱️ ~{jogo.tempo_jogo}
+                              </span>
+                            )}
+                          </div>
+
                           <h3 className="mb-2 text-lg font-black leading-tight tracking-tight text-white transition-colors group-hover:text-blue-400">
                             {jogo.titulo}
                           </h3>
