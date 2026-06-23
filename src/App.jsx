@@ -2785,13 +2785,24 @@ function App() {
                               )}
                             </div>
 
-                            <div className="flex flex-col items-end">
-                              {/* [INFO] A tag visual avalia se existe qualquer vaga disponível */}
+                            {/* Adicionamos gap-1.5 aqui para separar as tags quando as duas aparecerem juntas */}
+                            <div className="flex flex-col items-end gap-1.5">
+                              {/* [INFO] A tag visual agora avalia Primária e Secundária de forma independente */}
                               {temEstoque && !isEmBreve ? (
-                                <span className="flex items-center gap-1.5 rounded-lg border border-emerald-400/50 bg-emerald-500/90 px-3 py-1.5 text-[10px] font-black uppercase tracking-wider text-white shadow-lg backdrop-blur-md [text-shadow:1px_1px_0px_black,-1px_-1px_0px_black,1px_-1px_0px_black,-1px_1px_0px_black]">
-                                  <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-white"></span>
-                                  DISPONÍVEL
-                                </span>
+                                <>
+                                  {jogo.estoque_primaria > 0 && (
+                                    <span className="flex items-center gap-1.5 rounded-lg border border-emerald-400/50 bg-emerald-500/90 px-3 py-1.5 text-[9px] font-black uppercase tracking-wider text-white shadow-lg backdrop-blur-md [text-shadow:1px_1px_0px_black,-1px_-1px_0px_black,1px_-1px_0px_black,-1px_1px_0px_black]">
+                                      <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-white"></span>
+                                      DISP. PRIMÁRIA
+                                    </span>
+                                  )}
+                                  {jogo.estoque_secundaria > 0 && (
+                                    <span className="flex items-center gap-1.5 rounded-lg border border-fuchsia-400/50 bg-fuchsia-600/90 px-3 py-1.5 text-[9px] font-black uppercase tracking-wider text-white shadow-lg backdrop-blur-md [text-shadow:1px_1px_0px_black,-1px_-1px_0px_black,1px_-1px_0px_black,-1px_1px_0px_black]">
+                                      <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-white"></span>
+                                      DISP. SECUNDÁRIA
+                                    </span>
+                                  )}
+                                </>
                               ) : isEmBreve ? (
                                 <span className="rounded-lg border border-purple-500/50 bg-purple-600/90 px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-white shadow-lg backdrop-blur-md [text-shadow:1px_1px_0px_black,-1px_-1px_0px_black,1px_-1px_0px_black,-1px_1px_0px_black]">
                                   LANÇAMENTO {dataFormatada && `(${dataFormatada})`}
