@@ -2760,7 +2760,7 @@ function App() {
                         key={jogo.id}
                         className={`rounded-3xl border bg-zinc-900 ${bloqueadoParaUsuario ? 'border-zinc-800/50 opacity-90 grayscale-[20%]' : 'border-zinc-800'} group flex flex-col overflow-hidden shadow-xl transition-all duration-300 hover:-translate-y-2 hover:border-blue-500/50`}
                       >
-                        {/* 1. ÁREA DA CAPA DO JOGO (Agora mais limpa) */}
+                        {/* 1. ÁREA DA CAPA DO JOGO (DISTRIBUIÇÃO DIAGONAL BALANCEADA) */}
                         <div className="relative h-56 w-full overflow-hidden bg-zinc-800">
                           {jogo.url_imagem ? (
                             <img
@@ -2774,49 +2774,47 @@ function App() {
                             </div>
                           )}
 
-                          <div className="pointer-events-none absolute left-4 right-4 top-4 flex items-start justify-between">
-                            {/* CANTO SUPERIOR ESQUERDO: Contas Disponíveis */}
-                            <div className="flex flex-col items-start gap-1.5">
-                              {temEstoque && !isEmBreve && (
-                                <>
-                                  {jogo.estoque_primaria > 0 && (
-                                    <span className="flex items-center gap-1.5 rounded-lg border border-emerald-400/50 bg-emerald-500/90 px-3 py-1.5 text-[9px] font-black uppercase tracking-wider text-white shadow-lg backdrop-blur-md [text-shadow:1px_1px_0px_black,-1px_-1px_0px_black,1px_-1px_0px_black,-1px_1px_0px_black]">
-                                      <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-white"></span>
-                                      DISP. PRIMÁRIA
-                                    </span>
-                                  )}
-                                  {jogo.estoque_secundaria > 0 && (
-                                    <span className="flex items-center gap-1.5 rounded-lg border border-fuchsia-400/50 bg-fuchsia-600/90 px-3 py-1.5 text-[9px] font-black uppercase tracking-wider text-white shadow-lg backdrop-blur-md [text-shadow:1px_1px_0px_black,-1px_-1px_0px_black,1px_-1px_0px_black,-1px_1px_0px_black]">
-                                      <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-white"></span>
-                                      DISP. SECUNDÁRIA
-                                    </span>
-                                  )}
-                                </>
-                              )}
-                            </div>
-
-                            {/* CANTO SUPERIOR DIREITO: Alugado / Em Breve */}
-                            <div className="flex flex-col items-end gap-1.5">
-                              {isEmBreve ? (
-                                <span className="rounded-lg border border-purple-500/50 bg-purple-600/90 px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-white shadow-lg backdrop-blur-md [text-shadow:1px_1px_0px_black,-1px_-1px_0px_black,1px_-1px_0px_black,-1px_1px_0px_black]">
-                                  LANÇAMENTO {dataFormatada && `(${dataFormatada})`}
-                                </span>
-                              ) : !temEstoque ? (
-                                <span className="rounded-lg border border-rose-500/50 bg-rose-600/90 px-3 py-1.5 text-[10px] font-black uppercase tracking-wider text-white shadow-lg backdrop-blur-md [text-shadow:1px_1px_0px_black,-1px_-1px_0px_black,1px_-1px_0px_black,-1px_1px_0px_black]">
-                                  ALUGADO
-                                </span>
-                              ) : null}
-                            </div>
+                          {/* CANTO SUPERIOR ESQUERDO: Grupo de Status da Conta (Disponibilidade / Alugado) */}
+                          <div className="pointer-events-none absolute left-4 top-4 z-20 flex flex-col items-start gap-1.5">
+                            {temEstoque && !isEmBreve ? (
+                              <>
+                                {jogo.estoque_primaria > 0 && (
+                                  <span className="flex items-center gap-1.5 rounded-lg border border-emerald-400/50 bg-emerald-500/90 px-3 py-1.5 text-[9px] font-black uppercase tracking-wider text-white shadow-lg backdrop-blur-md [text-shadow:1px_1px_0px_black,-1px_-1px_0px_black,1px_-1px_0px_black,-1px_1px_0px_black]">
+                                    <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-white"></span>
+                                    DISP. PRIMÁRIA
+                                  </span>
+                                )}
+                                {jogo.estoque_secundaria > 0 && (
+                                  <span className="flex items-center gap-1.5 rounded-lg border border-fuchsia-400/50 bg-fuchsia-600/90 px-3 py-1.5 text-[9px] font-black uppercase tracking-wider text-white shadow-lg backdrop-blur-md [text-shadow:1px_1px_0px_black,-1px_-1px_0px_black,1px_-1px_0px_black,-1px_1px_0px_black]">
+                                    <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-white"></span>
+                                    DISP. SECUNDÁRIA
+                                  </span>
+                                )}
+                              </>
+                            ) : !isEmBreve ? (
+                              /* [INFO] A tag ALUGADO agora compartilha o mesmo canto de status na esquerda */
+                              <span className="rounded-lg border border-rose-500/50 bg-rose-600/90 px-3 py-1.5 text-[10px] font-black uppercase tracking-wider text-white shadow-lg backdrop-blur-md [text-shadow:1px_1px_0px_black,-1px_-1px_0px_black,1px_-1px_0px_black,-1px_1px_0px_black]">
+                                ALUGADO
+                              </span>
+                            ) : null}
                           </div>
 
-                          {/* CANTO INFERIOR ESQUERDO: Tag 🔥 Lançamento (Agora controlada por data) */}
-                          {isLancamento && !isEmBreve && (
-                            <div className="absolute bottom-4 left-4 z-20">
+                          {/* CANTO INFERIOR DIREITO: Grupo de Cronologia (Lançamento Futuro / Selo de Recente) */}
+                          <div className="pointer-events-none absolute bottom-4 right-4 z-20 flex flex-col items-end gap-1.5">
+                            {/* Tags de Lançamento Futuro (Em Breve) */}
+                            {isEmBreve && (
+                              <span className="rounded-lg border border-purple-500/50 bg-purple-600/90 px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-white shadow-lg backdrop-blur-md [text-shadow:1px_1px_0px_black,-1px_-1px_0px_black,1px_-1px_0px_black,-1px_1px_0px_black]">
+                                LANÇAMENTO {dataFormatada && `(${dataFormatada})`}
+                              </span>
+                            )}
+
+                            {/* Tag de Lançamento Ativo (Menos de 3 meses / 90 dias) */}
+                            {isLancamento && !isEmBreve && (
                               <span className="flex items-center gap-1.5 rounded-xl border border-fuchsia-400 bg-fuchsia-600/90 px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-white shadow-[0_0_15px_rgba(192,38,211,0.8)] backdrop-blur-md [text-shadow:1px_1px_0px_black,-1px_-1px_0px_black,1px_-1px_0px_black,-1px_1px_0px_black]">
                                 <span className="animate-pulse">🔥</span> Lançamento
                               </span>
-                            </div>
-                          )}
+                            )}
+                          </div>
                         </div>
 
                         {/* 2. ÁREA DE INFORMAÇÕES (Abaixo da imagem) */}
