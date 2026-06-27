@@ -3764,6 +3764,49 @@ function App() {
                             Separe cada URL com uma vírgula.
                           </strong>
                         </p>
+
+                        {/* [INFO] PREVIEW EM TEMPO REAL DOS BANNERS */}
+                        {(() => {
+                          const urls = configSistema.banners_url
+                            ? configSistema.banners_url
+                                .split(',')
+                                .map((u) => u.trim())
+                                .filter((u) => u)
+                            : [];
+
+                          if (urls.length > 0) {
+                            return (
+                              <div className="custom-scrollbar mb-4 flex w-full gap-4 overflow-x-auto rounded-2xl border border-zinc-800/50 bg-black/20 p-4 shadow-inner">
+                                {urls.map((url, index) => (
+                                  <div
+                                    key={index}
+                                    className="relative flex shrink-0 flex-col transition-transform hover:scale-105"
+                                  >
+                                    <div className="relative h-24 w-48 overflow-hidden rounded-xl border border-zinc-700 bg-zinc-900 shadow-md">
+                                      <img
+                                        src={url}
+                                        alt={`Preview do Banner ${index + 1}`}
+                                        className="h-full w-full object-cover"
+                                        onError={(e) => {
+                                          e.target.src =
+                                            'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="%2352525b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>';
+                                          e.target.className =
+                                            'h-full w-full object-none opacity-50 p-4';
+                                        }}
+                                      />
+                                      {/* Badge mostrando a ordem do banner */}
+                                      <div className="absolute left-2 top-2 flex h-5 w-5 items-center justify-center rounded-md border border-orange-500/30 bg-black/80 text-[10px] font-black text-orange-400 backdrop-blur-md">
+                                        {index + 1}
+                                      </div>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            );
+                          }
+                          return null;
+                        })()}
+
                         <textarea
                           placeholder="https://imagem1.jpg, https://imagem2.jpg..."
                           value={configSistema.banners_url || ''}
@@ -3771,35 +3814,6 @@ function App() {
                             setConfigSistema({ ...configSistema, banners_url: e.target.value })
                           }
                           className={`${adminInputClass} h-24 resize-none border-zinc-700 bg-zinc-950 text-sm focus:ring-orange-500`}
-                        />
-                      </div>
-
-                      <div className="mt-8 border-t border-zinc-800/50 pt-6">
-                        <h4 className="text-base font-bold tracking-tight text-white">
-                          📊 Textos da Enquete
-                        </h4>
-                        <p className="mb-4 mt-1 text-xs font-medium text-zinc-400">
-                          Personalize as frases que aparecem na votação dos jogos.
-                        </p>
-                        <input
-                          type="text"
-                          placeholder="Título (ex: Próximas Adições: Você Decide!)"
-                          value={configSistema.enquete_titulo || ''}
-                          onChange={(e) =>
-                            setConfigSistema({ ...configSistema, enquete_titulo: e.target.value })
-                          }
-                          className={`${adminInputClass} mb-3 border-zinc-700 bg-zinc-950 focus:ring-orange-500`}
-                        />
-                        <textarea
-                          placeholder="Subtítulo..."
-                          value={configSistema.enquete_subtitulo || ''}
-                          onChange={(e) =>
-                            setConfigSistema({
-                              ...configSistema,
-                              enquete_subtitulo: e.target.value,
-                            })
-                          }
-                          className={`${adminInputClass} h-16 resize-none border-zinc-700 bg-zinc-950 text-sm focus:ring-orange-500`}
                         />
                       </div>
 
@@ -3825,6 +3839,65 @@ function App() {
                       </span>
                     </summary>
                     <div className="border-t border-fuchsia-500/20 px-6 pb-6 pt-8 md:px-8 md:pb-8">
+                      {/* 1. TEXTOS DA ENQUETE */}
+                      <div className="mb-8 rounded-2xl border border-zinc-800/50 bg-zinc-950 p-5">
+                        <h4 className="mb-1 text-sm font-bold tracking-tight text-white">
+                          📝 Textos de Exibição
+                        </h4>
+                        <p className="mb-4 text-xs font-medium text-zinc-400">
+                          Personalize as frases que aparecem na área de votação para os clientes.
+                        </p>
+                        <div className="grid gap-4 md:grid-cols-2">
+                          <div>
+                            <label className="mb-2 block text-[10px] font-bold uppercase tracking-wider text-zinc-500">
+                              Título da Enquete
+                            </label>
+                            <input
+                              type="text"
+                              placeholder="Ex: Próximas Adições: Você Decide!"
+                              value={configSistema.enquete_titulo || ''}
+                              onChange={(e) =>
+                                setConfigSistema({
+                                  ...configSistema,
+                                  enquete_titulo: e.target.value,
+                                })
+                              }
+                              className={`${adminInputClass} focus:ring-fuchsia-500`}
+                            />
+                          </div>
+                          <div>
+                            <label className="mb-2 block text-[10px] font-bold uppercase tracking-wider text-zinc-500">
+                              Subtítulo / Descrição
+                            </label>
+                            <textarea
+                              placeholder="Subtítulo..."
+                              value={configSistema.enquete_subtitulo || ''}
+                              onChange={(e) =>
+                                setConfigSistema({
+                                  ...configSistema,
+                                  enquete_subtitulo: e.target.value,
+                                })
+                              }
+                              className={`${adminInputClass} h-[42px] resize-none focus:ring-fuchsia-500`}
+                            />
+                          </div>
+                        </div>
+                        <div className="mt-4 flex justify-end">
+                          <button
+                            onClick={() =>
+                              salvarConfiguracoesDireto(
+                                configSistema,
+                                '💾 Textos da enquete atualizados!',
+                              )
+                            }
+                            className="rounded-xl bg-fuchsia-600 px-6 py-2.5 text-xs font-bold uppercase tracking-wider text-white shadow-lg shadow-fuchsia-600/20 transition-colors hover:bg-fuchsia-500"
+                          >
+                            Salvar Textos
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* 2. GESTÃO DAS OPÇÕES DA ENQUETE */}
                       <div className="flex flex-col gap-8 lg:flex-row">
                         <form
                           onSubmit={adicionarOpcaoEnquete}
