@@ -2816,6 +2816,32 @@ function App() {
                                 </span>
                               )}
                             </div>
+
+                            {/* [ADMIN ONLY] Badge de Faturamento Total (Com Inteligência Visual) */}
+                            {usuarioLogado?.is_admin && (
+                              <div className="absolute bottom-4 left-4 z-20">
+                                <div
+                                  className={`flex items-center gap-1.5 rounded-lg border px-2 py-1 shadow-lg backdrop-blur-md ${
+                                    jogo.faturamento_total >= 350
+                                      ? 'border-yellow-500/50 bg-yellow-950/80'
+                                      : 'border-emerald-500/50 bg-emerald-950/80'
+                                  }`}
+                                >
+                                  <span
+                                    className={`text-[9px] font-black uppercase tracking-wider ${
+                                      jogo.faturamento_total >= 350
+                                        ? 'text-yellow-400'
+                                        : 'text-emerald-400'
+                                    } [text-shadow:1px_1px_0px_black,-1px_-1px_0px_black,1px_-1px_0px_black,-1px_1px_0px_black]`}
+                                  >
+                                    {jogo.faturamento_total >= 350 && (
+                                      <span className="mr-1 animate-pulse">👑</span>
+                                    )}
+                                    💰 R$ {jogo.faturamento_total?.toFixed(2) || '0.00'}
+                                  </span>
+                                </div>
+                              </div>
+                            )}
                           </div>
 
                           {/* 1.2 FAIXA TÉCNICA (Conectada abaixo da imagem, com 3 colunas iguais) */}
