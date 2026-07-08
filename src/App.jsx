@@ -406,16 +406,25 @@ function App() {
       return;
     }
 
-    // [INFO] Lógica Top-Down: Define o que será selecionado por padrão ao abrir o modal
+    // [INFO] Inteligência de Lançamento: Verifica se o jogo ainda vai lançar
+    const dataLanc = jogo.data_lancamento ? new Date(jogo.data_lancamento + 'T00:00:00') : null;
+    const isEmBreve = jogo.prioridade_vitrine === 1 || (dataLanc && dataLanc > new Date());
+
+    // [INFO] Lógica Top-Down: Define o que será selecionado por padrão
     let slotPadrao = 'FILA';
-    if (jogo.estoque_primaria > 0) slotPadrao = 'PRIMARIA';
-    else if (jogo.estoque_secundaria > 0) slotPadrao = 'SECUNDARIA';
+
+    // Se NÃO for lançamento futuro, e tiver estoque, libera o aluguel normal
+    if (!isEmBreve) {
+      if (jogo.estoque_primaria > 0) slotPadrao = 'PRIMARIA';
+      else if (jogo.estoque_secundaria > 0) slotPadrao = 'SECUNDARIA';
+    }
 
     setModalConfirmacao({
       visivel: true,
       jogo: jogo,
       diasEscolhidos: 7,
       tipoSlotSelecionado: slotPadrao,
+      isEmBreve: isEmBreve, // Passamos essa blindagem para dentro do modal
     });
   };
 
@@ -1720,8 +1729,8 @@ function App() {
 
             {/* SELEÇÃO DO TIPO DE ACESSO */}
             <div className="mb-6 space-y-3">
-              {/* [INFO] UX: Se a Primária está livre, não mostra como opção, mostra como Benefício Fixo. */}
-              {modalConfirmacao.jogo.estoque_primaria > 0 ? (
+              {/* [INFO] UX: Se a Primária está livre E NÃO for um lançamento futuro, mostra o Acesso Padrão */}
+              {!modalConfirmacao.isEmBreve && modalConfirmacao.jogo.estoque_primaria > 0 ? (
                 <div className="rounded-2xl border border-zinc-800 bg-zinc-950 p-4 shadow-inner">
                   <div className="mb-2 flex items-center gap-3">
                     <span className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-500/20 text-xs text-blue-400">
@@ -1741,8 +1750,8 @@ function App() {
                 </div>
               ) : (
                 <>
-                  {/* UX: Se a Primária acabou, mostramos a Secundária e a Fila para escolha. */}
-                  {modalConfirmacao.jogo.estoque_secundaria > 0 && (
+                  {/* UX: Mostra a Secundária se tiver estoque E NÃO for lançamento futuro */}
+                  {!modalConfirmacao.isEmBreve && modalConfirmacao.jogo.estoque_secundaria > 0 && (
                     <label
                       className={`flex cursor-pointer flex-col rounded-2xl border-2 p-4 transition-all ${modalConfirmacao.tipoSlotSelecionado === 'SECUNDARIA' ? 'border-fuchsia-500 bg-fuchsia-500/10' : 'border-zinc-800 bg-zinc-950 hover:border-zinc-700'}`}
                     >
@@ -1767,13 +1776,11 @@ function App() {
                       <p className="mt-2 pl-7 text-xs leading-relaxed text-zinc-400">
                         <strong className="text-fuchsia-400">Atenção:</strong> Na conta secundária,
                         você joga na conta da locadora e precisa estar sempre conectado na internet.
-                        É uma opção mais econômica pra você que tá no hype e quer muito jogar o game
-                        sem entrar na fila de espera!
                       </p>
                     </label>
                   )}
 
-                  {/* OPÇÃO 3: FILA DE ESPERA */}
+                  {/* OPÇÃO 3: FILA DE ESPERA (Ou Pré-Reserva de Lançamento) */}
                   <label
                     className={`flex cursor-pointer flex-col rounded-2xl border-2 p-4 transition-all ${modalConfirmacao.tipoSlotSelecionado === 'FILA' ? 'border-amber-500 bg-amber-500/10' : 'border-zinc-800 bg-zinc-950 hover:border-zinc-700'}`}
                   >
@@ -1789,13 +1796,19 @@ function App() {
                         className="h-4 w-4 min-w-[16px] text-amber-500 focus:ring-amber-500"
                       />
                       <span className="font-black uppercase tracking-wider text-white">
-                        Entrar na Fila (Primária)
+                        {modalConfirmacao.isEmBreve
+                          ? 'Pré-Reserva (Lançamento)'
+                          : 'Entrar na Fila (Primária)'}
                       </span>
 
-                      {/* [INFO] Cálculo dinâmico da data da fila (idêntico ao da Vitrine) */}
+                      {/* Cálculo dinâmico da data da fila */}
                       {(() => {
                         const j = modalConfirmacao.jogo;
-                        const isEmBreveModal = j.prioridade_vitrine === 1;
+                        const isEmBreveModal =
+                          j.prioridade_vitrine === 1 ||
+                          (j.data_lancamento &&
+                            new Date(j.data_lancamento + 'T00:00:00') > new Date());
+
                         let dGlobal =
                           isEmBreveModal && j.data_lancamento
                             ? new Date(j.data_lancamento + 'T00:00:00')
@@ -1809,7 +1822,6 @@ function App() {
                         const filaMs = (j.fila_dias_espera || 0) * 24 * 60 * 60 * 1000;
                         const dataFinal = new Date(dGlobal.getTime() + filaMs);
 
-                        // Formata para ficar curtinho: ex "15/07"
                         const dataFormatada = dataFinal.toLocaleDateString('pt-BR', {
                           day: '2-digit',
                           month: '2-digit',
@@ -1817,14 +1829,17 @@ function App() {
 
                         return (
                           <span className="ml-auto shrink-0 rounded-lg bg-amber-500/20 px-2 py-1 text-[9px] font-black uppercase tracking-widest text-amber-400 [text-shadow:1px_1px_0px_black,-1px_-1px_0px_black,1px_-1px_0px_black,-1px_1px_0px_black]">
-                            ⏳ Volta {dataFormatada}
+                            {modalConfirmacao.isEmBreve && !j.fila_dias_espera
+                              ? `🚀 Dia ${dataFormatada}`
+                              : `⏳ Volta ${dataFormatada}`}
                           </span>
                         );
                       })()}
                     </div>
                     <p className="mt-2 pl-7 text-xs leading-relaxed text-zinc-400">
-                      Garanta o próximo acesso disponível para a vaga principal. O valor será
-                      descontado da sua carteira agora para reservar a vaga.
+                      {modalConfirmacao.isEmBreve
+                        ? 'Garanta sua vaga de acesso no dia do lançamento! O valor é descontado agora para confirmar sua reserva.'
+                        : 'Garanta o próximo acesso disponível para a vaga principal. O valor será descontado da sua carteira agora para reservar a vaga.'}
                     </p>
                   </label>
                 </>
