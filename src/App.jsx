@@ -423,9 +423,9 @@ function App() {
         slotPadrao = 'PRIMARIA';
       } else if (temSecundariaAtiva && jogo.estoque_secundaria > 0) {
         slotPadrao = 'SECUNDARIA';
-      } else if (!temPrimariaAtiva && temSecundariaAtiva) {
-        // Se a primária está morta e acabou a secundária, não tem fila de primária pra entrar.
-        slotPadrao = 'SECUNDARIA';
+      } else {
+        // [INFO] Se tudo o que está ativo acabou, obriga a cair na Fila!
+        slotPadrao = 'FILA';
       }
     }
 
@@ -441,16 +441,23 @@ function App() {
   };
 
   const confirmarTransacao = () => {
-    const { jogo, diasEscolhidos, tipoSlotSelecionado } = modalConfirmacao;
+    const { jogo, diasEscolhidos, tipoSlotSelecionado, temPrimariaAtiva } = modalConfirmacao;
+
+    // [INFO] Descobre de qual vaga é a fila: Se tem primária, a fila é dela. Senão, a fila é da secundária.
+    const tipoParaFila = temPrimariaAtiva ? 'PRIMARIA' : 'SECUNDARIA';
     let precoFinal = 0;
 
-    // [INFO] Descobre o preço baseado no que o cliente escolheu na tela do modal
     if (tipoSlotSelecionado === 'PRIMARIA') {
       precoFinal = diasEscolhidos === 14 ? jogo.preco_aluguel_14 : jogo.preco_aluguel;
     } else if (tipoSlotSelecionado === 'SECUNDARIA') {
       precoFinal = diasEscolhidos === 14 ? jogo.preco_secundaria_14 : jogo.preco_secundaria;
     } else if (tipoSlotSelecionado === 'FILA') {
-      precoFinal = diasEscolhidos === 14 ? jogo.preco_aluguel_14 : jogo.preco_aluguel;
+      // Puxa o preço correspondente à fila que está sendo comprada
+      if (tipoParaFila === 'PRIMARIA') {
+        precoFinal = diasEscolhidos === 14 ? jogo.preco_aluguel_14 : jogo.preco_aluguel;
+      } else {
+        precoFinal = diasEscolhidos === 14 ? jogo.preco_secundaria_14 : jogo.preco_secundaria;
+      }
     }
 
     if (usuarioLogado.saldo < precoFinal) {
@@ -459,7 +466,8 @@ function App() {
     }
 
     if (tipoSlotSelecionado === 'FILA') {
-      executarReserva(jogo.id, precoFinal, diasEscolhidos, 'PRIMARIA');
+      // [INFO] Agora enviamos tipoParaFila dinâmico para o Backend!
+      executarReserva(jogo.id, precoFinal, diasEscolhidos, tipoParaFila);
     } else {
       executarAluguel(jogo.id, precoFinal, diasEscolhidos, tipoSlotSelecionado);
     }
@@ -1799,8 +1807,8 @@ function App() {
                       </label>
                     )}
 
-                  {/* OPÇÃO 3: FILA DE ESPERA (Somente se a Primária estiver ativa no sistema) */}
-                  {modalConfirmacao.temPrimariaAtiva && (
+                  {/* OPÇÃO 3: FILA DE ESPERA (Dinâmica: Primária ou Secundária) */}
+                  {(modalConfirmacao.temPrimariaAtiva || modalConfirmacao.temSecundariaAtiva) && (
                     <label
                       className={`flex cursor-pointer flex-col rounded-2xl border-2 p-4 transition-all ${modalConfirmacao.tipoSlotSelecionado === 'FILA' ? 'border-amber-500 bg-amber-500/10' : 'border-zinc-800 bg-zinc-950 hover:border-zinc-700'}`}
                     >
@@ -1821,7 +1829,7 @@ function App() {
                         <span className="font-black uppercase tracking-wider text-white">
                           {modalConfirmacao.isEmBreve
                             ? 'Pré-Reserva (Lançamento)'
-                            : 'Entrar na Fila (Primária)'}
+                            : `Entrar na Fila (${modalConfirmacao.temPrimariaAtiva ? 'Primária' : 'Secundária'})`}
                         </span>
 
                         {/* Cálculo dinâmico da data da fila */}
@@ -1862,7 +1870,7 @@ function App() {
                       <p className="mt-2 pl-7 text-xs leading-relaxed text-zinc-400">
                         {modalConfirmacao.isEmBreve
                           ? 'Garanta sua vaga de acesso no dia do lançamento! O valor é descontado agora para confirmar sua reserva.'
-                          : 'Garanta o próximo acesso disponível para a vaga principal. O valor será descontado da sua carteira agora para reservar a vaga.'}
+                          : 'Garanta o próximo acesso disponível. O valor será descontado da sua carteira agora para reservar a vaga.'}
                       </p>
                     </label>
                   )}
@@ -1908,13 +1916,23 @@ function App() {
 
             {/* RESUMO FINANCEIRO DINÂMICO COM INTEGRAÇÃO FAST PIX */}
             {(() => {
-              const { jogo, diasEscolhidos, tipoSlotSelecionado } = modalConfirmacao;
+              const { jogo, diasEscolhidos, tipoSlotSelecionado, temPrimariaAtiva } =
+                modalConfirmacao;
+              const tipoParaFila = temPrimariaAtiva ? 'PRIMARIA' : 'SECUNDARIA';
               let precoAtual = 0;
-              if (tipoSlotSelecionado === 'PRIMARIA' || tipoSlotSelecionado === 'FILA') {
+
+              if (tipoSlotSelecionado === 'PRIMARIA') {
                 precoAtual = diasEscolhidos === 14 ? jogo.preco_aluguel_14 : jogo.preco_aluguel;
-              } else {
+              } else if (tipoSlotSelecionado === 'SECUNDARIA') {
                 precoAtual =
                   diasEscolhidos === 14 ? jogo.preco_secundaria_14 : jogo.preco_secundaria;
+              } else if (tipoSlotSelecionado === 'FILA') {
+                if (tipoParaFila === 'PRIMARIA') {
+                  precoAtual = diasEscolhidos === 14 ? jogo.preco_aluguel_14 : jogo.preco_aluguel;
+                } else {
+                  precoAtual =
+                    diasEscolhidos === 14 ? jogo.preco_secundaria_14 : jogo.preco_secundaria;
+                }
               }
               const temSaldo = usuarioLogado.saldo >= precoAtual;
 
