@@ -410,13 +410,23 @@ function App() {
     const dataLanc = jogo.data_lancamento ? new Date(jogo.data_lancamento + 'T00:00:00') : null;
     const isEmBreve = jogo.prioridade_vitrine === 1 || (dataLanc && dataLanc > new Date());
 
+    // [INFO] Lógica de Desativação de Vagas (Preço = 0)
+    const temPrimariaAtiva = jogo.preco_aluguel > 0;
+    const temSecundariaAtiva = jogo.preco_secundaria > 0;
+
     // [INFO] Lógica Top-Down: Define o que será selecionado por padrão
     let slotPadrao = 'FILA';
 
     // Se NÃO for lançamento futuro, e tiver estoque, libera o aluguel normal
     if (!isEmBreve) {
-      if (jogo.estoque_primaria > 0) slotPadrao = 'PRIMARIA';
-      else if (jogo.estoque_secundaria > 0) slotPadrao = 'SECUNDARIA';
+      if (temPrimariaAtiva && jogo.estoque_primaria > 0) {
+        slotPadrao = 'PRIMARIA';
+      } else if (temSecundariaAtiva && jogo.estoque_secundaria > 0) {
+        slotPadrao = 'SECUNDARIA';
+      } else if (!temPrimariaAtiva && temSecundariaAtiva) {
+        // Se a primária está morta e acabou a secundária, não tem fila de primária pra entrar.
+        slotPadrao = 'SECUNDARIA';
+      }
     }
 
     setModalConfirmacao({
@@ -424,7 +434,9 @@ function App() {
       jogo: jogo,
       diasEscolhidos: 7,
       tipoSlotSelecionado: slotPadrao,
-      isEmBreve: isEmBreve, // Passamos essa blindagem para dentro do modal
+      isEmBreve: isEmBreve,
+      temPrimariaAtiva: temPrimariaAtiva,
+      temSecundariaAtiva: temSecundariaAtiva,
     });
   };
 
@@ -1729,120 +1741,133 @@ function App() {
 
             {/* SELEÇÃO DO TIPO DE ACESSO */}
             <div className="mb-6 space-y-3">
-              {/* [INFO] UX: Se a Primária está livre E NÃO for um lançamento futuro, mostra o Acesso Padrão */}
-              {!modalConfirmacao.isEmBreve && modalConfirmacao.jogo.estoque_primaria > 0 ? (
-                <div className="rounded-2xl border border-zinc-800 bg-zinc-950 p-4 shadow-inner">
-                  <div className="mb-2 flex items-center gap-3">
-                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-500/20 text-xs text-blue-400">
-                      ✨
-                    </span>
-                    <span className="font-black uppercase tracking-wider text-white">
-                      Acesso Padrão
-                    </span>
-                    <span className="ml-auto rounded-lg bg-blue-500/20 px-2 py-1 text-[9px] font-black uppercase text-blue-400">
-                      Vaga Primária
-                    </span>
+              {/* [INFO] UX: Se a Primária está ativa, tem estoque E NÃO for lançamento, mostra o Acesso Padrão */}
+              {modalConfirmacao.temPrimariaAtiva &&
+                !modalConfirmacao.isEmBreve &&
+                modalConfirmacao.jogo.estoque_primaria > 0 && (
+                  <div className="rounded-2xl border border-zinc-800 bg-zinc-950 p-4 shadow-inner">
+                    <div className="mb-2 flex items-center gap-3">
+                      <span className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-500/20 text-xs text-blue-400">
+                        ✨
+                      </span>
+                      <span className="font-black uppercase tracking-wider text-white">
+                        Acesso Padrão
+                      </span>
+                      <span className="ml-auto rounded-lg bg-blue-500/20 px-2 py-1 text-[9px] font-black uppercase text-blue-400">
+                        Vaga Primária
+                      </span>
+                    </div>
+                    <p className="text-xs leading-relaxed text-zinc-400">
+                      Jogue na sua conta pessoal. Ganhe os troféus no seu próprio perfil e jogue
+                      offline se preferir.
+                    </p>
                   </div>
-                  <p className="text-xs leading-relaxed text-zinc-400">
-                    Jogue na sua conta pessoal. Ganhe os troféus no seu próprio perfil e jogue
-                    offline se preferir.
-                  </p>
-                </div>
-              ) : (
-                <>
-                  {/* UX: Mostra a Secundária se tiver estoque E NÃO for lançamento futuro */}
-                  {!modalConfirmacao.isEmBreve && modalConfirmacao.jogo.estoque_secundaria > 0 && (
-                    <label
-                      className={`flex cursor-pointer flex-col rounded-2xl border-2 p-4 transition-all ${modalConfirmacao.tipoSlotSelecionado === 'SECUNDARIA' ? 'border-fuchsia-500 bg-fuchsia-500/10' : 'border-zinc-800 bg-zinc-950 hover:border-zinc-700'}`}
-                    >
-                      <div className="flex items-center gap-3">
-                        <input
-                          type="radio"
-                          name="tipoSlot"
-                          value="SECUNDARIA"
-                          checked={modalConfirmacao.tipoSlotSelecionado === 'SECUNDARIA'}
-                          onChange={() =>
-                            setModalConfirmacao({
-                              ...modalConfirmacao,
-                              tipoSlotSelecionado: 'SECUNDARIA',
-                            })
-                          }
-                          className="h-4 w-4 text-fuchsia-500 focus:ring-fuchsia-500"
-                        />
-                        <span className="font-black uppercase tracking-wider text-white">
-                          Vaga Secundária (Econômica)
-                        </span>
-                      </div>
-                      <p className="mt-2 pl-7 text-xs leading-relaxed text-zinc-400">
-                        <strong className="text-fuchsia-400">Atenção:</strong> Na conta secundária,
-                        você joga na conta da locadora e precisa estar sempre conectado na internet.
-                      </p>
-                    </label>
-                  )}
+                )}
 
-                  {/* OPÇÃO 3: FILA DE ESPERA (Ou Pré-Reserva de Lançamento) */}
+              {/* UX: Mostra a Secundária se estiver ativa, tiver estoque E NÃO for lançamento */}
+              {modalConfirmacao.temSecundariaAtiva &&
+                !modalConfirmacao.isEmBreve &&
+                modalConfirmacao.jogo.estoque_secundaria > 0 && (
                   <label
-                    className={`flex cursor-pointer flex-col rounded-2xl border-2 p-4 transition-all ${modalConfirmacao.tipoSlotSelecionado === 'FILA' ? 'border-amber-500 bg-amber-500/10' : 'border-zinc-800 bg-zinc-950 hover:border-zinc-700'}`}
+                    className={`flex cursor-pointer flex-col rounded-2xl border-2 p-4 transition-all ${modalConfirmacao.tipoSlotSelecionado === 'SECUNDARIA' ? 'border-fuchsia-500 bg-fuchsia-500/10' : 'border-zinc-800 bg-zinc-950 hover:border-zinc-700'}`}
                   >
                     <div className="flex items-center gap-3">
                       <input
                         type="radio"
                         name="tipoSlot"
-                        value="FILA"
-                        checked={modalConfirmacao.tipoSlotSelecionado === 'FILA'}
+                        value="SECUNDARIA"
+                        checked={modalConfirmacao.tipoSlotSelecionado === 'SECUNDARIA'}
                         onChange={() =>
-                          setModalConfirmacao({ ...modalConfirmacao, tipoSlotSelecionado: 'FILA' })
+                          setModalConfirmacao({
+                            ...modalConfirmacao,
+                            tipoSlotSelecionado: 'SECUNDARIA',
+                          })
                         }
-                        className="h-4 w-4 min-w-[16px] text-amber-500 focus:ring-amber-500"
+                        className="h-4 w-4 text-fuchsia-500 focus:ring-fuchsia-500"
                       />
                       <span className="font-black uppercase tracking-wider text-white">
-                        {modalConfirmacao.isEmBreve
-                          ? 'Pré-Reserva (Lançamento)'
-                          : 'Entrar na Fila (Primária)'}
+                        Vaga Secundária (Econômica)
                       </span>
-
-                      {/* Cálculo dinâmico da data da fila */}
-                      {(() => {
-                        const j = modalConfirmacao.jogo;
-                        const isEmBreveModal =
-                          j.prioridade_vitrine === 1 ||
-                          (j.data_lancamento &&
-                            new Date(j.data_lancamento + 'T00:00:00') > new Date());
-
-                        let dGlobal =
-                          isEmBreveModal && j.data_lancamento
-                            ? new Date(j.data_lancamento + 'T00:00:00')
-                            : new Date();
-
-                        if (j.proxima_devolucao) {
-                          const pd = new Date(j.proxima_devolucao);
-                          if (pd > dGlobal) dGlobal = pd;
-                        }
-
-                        const filaMs = (j.fila_dias_espera || 0) * 24 * 60 * 60 * 1000;
-                        const dataFinal = new Date(dGlobal.getTime() + filaMs);
-
-                        const dataFormatada = dataFinal.toLocaleDateString('pt-BR', {
-                          day: '2-digit',
-                          month: '2-digit',
-                        });
-
-                        return (
-                          <span className="ml-auto shrink-0 rounded-lg bg-amber-500/20 px-2 py-1 text-[9px] font-black uppercase tracking-widest text-amber-400 [text-shadow:1px_1px_0px_black,-1px_-1px_0px_black,1px_-1px_0px_black,-1px_1px_0px_black]">
-                            {modalConfirmacao.isEmBreve && !j.fila_dias_espera
-                              ? `🚀 Dia ${dataFormatada}`
-                              : `⏳ Volta ${dataFormatada}`}
-                          </span>
-                        );
-                      })()}
                     </div>
                     <p className="mt-2 pl-7 text-xs leading-relaxed text-zinc-400">
-                      {modalConfirmacao.isEmBreve
-                        ? 'Garanta sua vaga de acesso no dia do lançamento! O valor é descontado agora para confirmar sua reserva.'
-                        : 'Garanta o próximo acesso disponível para a vaga principal. O valor será descontado da sua carteira agora para reservar a vaga.'}
+                      <strong className="text-fuchsia-400">Atenção:</strong> Na conta secundária,
+                      você joga na conta da locadora e precisa estar sempre conectado na internet.
                     </p>
                   </label>
-                </>
+                )}
+
+              {/* OPÇÃO 3: FILA DE ESPERA (Somente se a Primária estiver ativa no sistema) */}
+              {modalConfirmacao.temPrimariaAtiva && (
+                <label
+                  className={`flex cursor-pointer flex-col rounded-2xl border-2 p-4 transition-all ${modalConfirmacao.tipoSlotSelecionado === 'FILA' ? 'border-amber-500 bg-amber-500/10' : 'border-zinc-800 bg-zinc-950 hover:border-zinc-700'}`}
+                >
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="radio"
+                      name="tipoSlot"
+                      value="FILA"
+                      checked={modalConfirmacao.tipoSlotSelecionado === 'FILA'}
+                      onChange={() =>
+                        setModalConfirmacao({ ...modalConfirmacao, tipoSlotSelecionado: 'FILA' })
+                      }
+                      className="h-4 w-4 min-w-[16px] text-amber-500 focus:ring-amber-500"
+                    />
+                    <span className="font-black uppercase tracking-wider text-white">
+                      {modalConfirmacao.isEmBreve
+                        ? 'Pré-Reserva (Lançamento)'
+                        : 'Entrar na Fila (Primária)'}
+                    </span>
+
+                    {/* Cálculo dinâmico da data da fila */}
+                    {(() => {
+                      const j = modalConfirmacao.jogo;
+                      const isEmBreveModal =
+                        j.prioridade_vitrine === 1 ||
+                        (j.data_lancamento &&
+                          new Date(j.data_lancamento + 'T00:00:00') > new Date());
+
+                      let dGlobal =
+                        isEmBreveModal && j.data_lancamento
+                          ? new Date(j.data_lancamento + 'T00:00:00')
+                          : new Date();
+
+                      if (j.proxima_devolucao) {
+                        const pd = new Date(j.proxima_devolucao);
+                        if (pd > dGlobal) dGlobal = pd;
+                      }
+
+                      const filaMs = (j.fila_dias_espera || 0) * 24 * 60 * 60 * 1000;
+                      const dataFinal = new Date(dGlobal.getTime() + filaMs);
+
+                      const dataFormatada = dataFinal.toLocaleDateString('pt-BR', {
+                        day: '2-digit',
+                        month: '2-digit',
+                      });
+
+                      return (
+                        <span className="ml-auto shrink-0 rounded-lg bg-amber-500/20 px-2 py-1 text-[9px] font-black uppercase tracking-widest text-amber-400 [text-shadow:1px_1px_0px_black,-1px_-1px_0px_black,1px_-1px_0px_black,-1px_1px_0px_black]">
+                          {modalConfirmacao.isEmBreve && !j.fila_dias_espera
+                            ? `🚀 Dia ${dataFormatada}`
+                            : `⏳ Volta ${dataFormatada}`}
+                        </span>
+                      );
+                    })()}
+                  </div>
+                  <p className="mt-2 pl-7 text-xs leading-relaxed text-zinc-400">
+                    {modalConfirmacao.isEmBreve
+                      ? 'Garanta sua vaga de acesso no dia do lançamento! O valor é descontado agora para confirmar sua reserva.'
+                      : 'Garanta o próximo acesso disponível para a vaga principal. O valor será descontado da sua carteira agora para reservar a vaga.'}
+                  </p>
+                </label>
+              )}
+
+              {/* Feedback visual se tudo estiver inativo (Segurança extra) */}
+              {!modalConfirmacao.temPrimariaAtiva && !modalConfirmacao.temSecundariaAtiva && (
+                <div className="rounded-2xl border border-rose-500/50 bg-rose-950/40 p-4 text-center">
+                  <p className="text-xs font-bold text-rose-400">
+                    Nenhuma vaga disponível para este jogo no momento.
+                  </p>
+                </div>
               )}
             </div>
 
@@ -2750,8 +2775,19 @@ function App() {
                         ? (new Date() - dataLanc) / (1000 * 60 * 60 * 24) <= 90
                         : jogo.prioridade_vitrine === 2; // Mantém como fallback
 
-                    // [INFO] Tem estoque se houver QUALQUER vaga livre
-                    const temEstoque = jogo.estoque_primaria > 0 || jogo.estoque_secundaria > 0;
+                    // [INFO] Lógica de Vagas Desativadas
+                    const temPrimariaAtiva = jogo.preco_aluguel > 0;
+                    const temSecundariaAtiva = jogo.preco_secundaria > 0;
+
+                    // Tem estoque somente se a vaga estiver ativa (preço > 0) E tiver quantidade
+                    const temEstoque =
+                      (temPrimariaAtiva && jogo.estoque_primaria > 0) ||
+                      (temSecundariaAtiva && jogo.estoque_secundaria > 0);
+
+                    // Descobre qual preço mostrar no botão principal
+                    const precoExibicao = temPrimariaAtiva
+                      ? jogo.preco_aluguel
+                      : jogo.preco_secundaria;
 
                     const isVeterano = usuarioLogado
                       ? usuarioLogado.is_admin || totalAlugueis >= 1
@@ -2961,7 +2997,7 @@ function App() {
                                       </span>
                                       {/* Valor de Entrada de Alta Visibilidade */}
                                       <span className="mt-1 text-base font-black leading-none text-emerald-300 [text-shadow:1px_1px_0px_black,-1px_-1px_0px_black,1px_-1px_0px_black,-1px_1px_0px_black]">
-                                        A partir de R$ {jogo.preco_aluguel.toFixed(2)}
+                                        A partir de R$ {precoExibicao.toFixed(2)}
                                       </span>
                                     </>
                                   ) : (
