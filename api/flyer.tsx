@@ -1,8 +1,5 @@
 import { ImageResponse } from '@vercel/og';
 
-export const config = {
-  runtime: 'edge', // Garante que rode super rápido na rede da Vercel
-};
 
 export default async function handler(req: Request) {
   try {
