@@ -182,6 +182,11 @@ export default function Faq({ configSistema }) {
             <strong className="mb-2 block text-sm text-white">Quais são os benefícios?</strong>
             <ul className="list-disc space-y-4 pl-5 font-medium text-zinc-400">
               <li>
+                <strong className="text-emerald-400">DESCONTO AUTOMÁTICO:</strong> Quanto maior for
+                o seu Rank, maior é o desconto automático que você tem na locadora. O desconto é
+                aplicado automaticamente quando você aluga um jogo.
+              </li>
+              <li>
                 <strong className="text-blue-400">ACESSO ANTECIPADO:</strong> As reservas de jogos
                 em <strong>PRÉ-VENDA</strong> são exclusivas para clientes a partir do Rank{' '}
                 <strong>MEMBRO</strong> (Basta ter concluído 1 aluguel com sucesso).
