@@ -2117,7 +2117,7 @@ function App() {
                           <p>
                             <strong className="text-white">🎮 No PS5:</strong> Vá em Configurações
                             &gt; Usuários e Contas &gt; Outros &gt; Compartilhamento do console...
-                            &gt; <strong className="text-rose-400">Desabilitar</strong>.
+                            &gt; <strong className="text-rose-400">Desativar</strong>.
                           </p>
                           <div className="h-px w-full bg-zinc-800"></div>
                           <p>
@@ -2147,10 +2147,9 @@ function App() {
                         Devolução de Vaga Secundária
                       </h4>
                       <p className="text-xs text-zinc-300">
-                        Como você alugou uma vaga secundária,{' '}
-                        <strong className="text-white">NÃO É NECESSÁRIO</strong> desativar o
-                        compartilhamento do console. Basta excluir o usuário do videogame e
-                        confirmar a devolução abaixo!
+                        Por padrão, a conta não deveria estar ativada; mas se estiver, faça a
+                        desativação antes de devolver a conta para ganhar o seu Cashback e subir o
+                        seu Rank VIP. Se tiver alguma dúvida, veja o Tutorial antes de devolver.
                       </p>
                     </div>
                   )}
