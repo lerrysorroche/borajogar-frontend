@@ -2090,11 +2090,11 @@ function App() {
               const diasAntecipados = Math.max(0, Math.floor(horasRestantes / 24));
               const valorBase = configSistema?.valor_por_dia || 2.0;
 
-              // [INFO] Lógica visual corrigida: Secundária mostra apenas o valor fixo.
+              // [INFO] Lógica visual atualizada: R$ 1,00 por dia antecipado.
               const valorRecompensa =
                 modalDevolucao.tipoSlot === 'SECUNDARIA'
                   ? valorBase
-                  : valorBase + diasAntecipados * valorBase;
+                  : valorBase + diasAntecipados * 1.0;
 
               return (
                 <>
@@ -2191,16 +2191,16 @@ function App() {
             <div className="mb-6 space-y-4 text-sm text-zinc-300">
               <p>
                 Você está prestes a ver a senha de uma{' '}
-                <strong className="text-white">Vaga Primária</strong>.
+                <strong className="text-white">Conta da Locadora</strong>.
               </p>
               <p className="rounded-xl border border-amber-900/50 bg-zinc-950 p-4 text-amber-200">
                 Para ganhar <strong>Cashback</strong> e subir seu <strong>Rank VIP</strong>, você{' '}
-                <strong>DEVE</strong> desativar o "Compartilhamento do Console" no seu PlayStation{' '}
-                <strong>antes</strong> de devolver o jogo.
+                <strong>DEVE</strong> desativar a conta no seu PlayStation <strong>ANTES</strong> de
+                devolver o jogo e o seu tempo de aluguel acabar.
               </p>
               <p className="text-xs text-zinc-400">
-                Esquecer de desativar resultará em multa de R$ 50,00 e o corte do seu Rank atual
-                pela metade.
+                Esquecer de desativar resultará em multa de R$ 50,00, perda do Cashback e o corte do
+                seu Rank atual pela metade.
               </p>
             </div>
             <button
@@ -2407,9 +2407,34 @@ function App() {
                         )}
                       </button>
 
-                      <span className="hidden text-xs text-zinc-400 md:block">
-                        Olá, <strong className="text-white">{usuarioLogado.nome}</strong>
-                      </span>
+                      {/* PERFIL NO MENU DESKTOP COM RANK E TOOLTIP */}
+                      <div className="hidden flex-col items-start justify-center md:flex">
+                        <span className="mb-1 text-xs leading-none text-zinc-400">
+                          Olá, <strong className="text-white">{usuarioLogado.nome}</strong>
+                        </span>
+
+                        {(usuarioLogado.rank || 0) > 0 && (
+                          <div className="group relative w-max cursor-help">
+                            <span className="flex items-center gap-1 rounded border border-emerald-500/30 bg-emerald-500/20 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider text-emerald-400 transition-colors group-hover:bg-emerald-500/30">
+                              <span className="animate-pulse">⭐</span> VIP{' '}
+                              {Math.min(usuarioLogado.rank, 20)}% OFF
+                            </span>
+
+                            {/* Tooltip Explicativo (Aparece no Hover) */}
+                            <div className="absolute left-1/2 top-full z-50 mt-2 hidden w-56 -translate-x-1/2 flex-col rounded-xl border border-zinc-700 bg-zinc-900 p-3 shadow-2xl group-hover:flex">
+                              {/* Setinha apontando pra cima */}
+                              <div className="absolute -top-2 left-1/2 h-4 w-4 -translate-x-1/2 rotate-45 border-l border-t border-zinc-700 bg-zinc-900"></div>
+                              <p className="relative z-10 text-center text-[10px] font-medium leading-relaxed text-zinc-300">
+                                <strong className="mb-1 block uppercase tracking-wider text-white">
+                                  O que é o Rank VIP?
+                                </strong>
+                                Quanto mais jogos você alugar e devolver no prazo correto, maior
+                                será o seu Rank e o seu desconto automático (Limitado a 20%).
+                              </p>
+                            </div>
+                          </div>
+                        )}
+                      </div>
                       <button
                         onClick={sair}
                         className="hidden rounded-xl bg-zinc-800 px-4 py-2 text-xs font-bold uppercase tracking-wider text-zinc-300 transition-colors hover:bg-rose-600 hover:text-white md:block"
@@ -2454,12 +2479,20 @@ function App() {
             {menuMobileAberto && usuarioLogado && (
               <div className="animate-fade-in absolute left-0 top-16 flex w-full flex-col border-b border-zinc-800 bg-zinc-900 shadow-2xl md:hidden">
                 <div className="flex items-center justify-between border-b border-zinc-800/50 bg-zinc-950/50 p-5">
-                  <span className="text-sm text-zinc-400">
-                    Olá,{' '}
-                    <strong className="inline-block max-w-[120px] truncate align-bottom text-white">
-                      {usuarioLogado.nome}
-                    </strong>
-                  </span>
+                  <div className="flex flex-col items-start gap-1">
+                    <span className="text-sm text-zinc-400">
+                      Olá,{' '}
+                      <strong className="inline-block max-w-[120px] truncate align-bottom text-white">
+                        {usuarioLogado.nome}
+                      </strong>
+                    </span>
+                    {(usuarioLogado.rank || 0) > 0 && (
+                      <span className="flex items-center gap-1 rounded border border-emerald-500/30 bg-emerald-500/20 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider text-emerald-400">
+                        <span className="animate-pulse">⭐</span> VIP{' '}
+                        {Math.min(usuarioLogado.rank, 20)}% OFF
+                      </span>
+                    )}
+                  </div>
                   <div className="flex items-center gap-2 rounded-lg border border-zinc-800 bg-zinc-950 px-3 py-2 shadow-inner">
                     <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">
                       Saldo
@@ -3573,15 +3606,29 @@ function App() {
                             key={`aluguel-${item.locacao_id}`}
                             className="flex flex-col gap-6 rounded-3xl border border-emerald-500/30 bg-zinc-950/60 p-6 shadow-xl transition-colors hover:border-emerald-400/50 md:p-8"
                           >
-                            <div>
-                              <span
-                                className={`mb-2 inline-block rounded-lg px-2 py-1 text-[9px] font-black uppercase tracking-wider ${item.tipo_slot === 'PRIMARIA' ? 'border border-blue-500/30 bg-blue-500/20 text-blue-400' : 'border border-fuchsia-500/30 bg-fuchsia-500/20 text-fuchsia-400'}`}
-                              >
-                                🕹️ Vaga {item.tipo_slot}
-                              </span>
-                              <h4 className="text-xl font-black leading-tight tracking-tight text-white">
-                                {item.jogo}
-                              </h4>
+                            {/* CABEÇALHO DO CARD: Título na esquerda, Expiração na direita */}
+                            <div className="flex flex-col items-start justify-between gap-4 sm:flex-row">
+                              <div>
+                                <span
+                                  className={`mb-2 inline-block rounded-lg px-2 py-1 text-[9px] font-black uppercase tracking-wider ${item.tipo_slot === 'PRIMARIA' ? 'border border-blue-500/30 bg-blue-500/20 text-blue-400' : 'border border-fuchsia-500/30 bg-fuchsia-500/20 text-fuchsia-400'}`}
+                                >
+                                  🕹️ Vaga {item.tipo_slot}
+                                </span>
+                                <h4 className="text-xl font-black leading-tight tracking-tight text-white">
+                                  {item.jogo}
+                                </h4>
+                              </div>
+
+                              {/* BLOCO DOURADO: Expiração */}
+                              <div className="flex w-max items-center justify-center gap-2 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-2.5 text-[10px] font-bold uppercase tracking-wider text-amber-400 shadow-inner">
+                                <span>⏳ Expira em:</span>
+                                <span className="text-xs font-black">
+                                  {new Date(item.data_fim).toLocaleString('pt-BR', {
+                                    dateStyle: 'short',
+                                    timeStyle: 'short',
+                                  })}
+                                </span>
+                              </div>
                             </div>
 
                             <div className="flex flex-col gap-3 rounded-2xl border border-zinc-800/80 bg-black/50 p-5 shadow-inner">
@@ -3600,7 +3647,6 @@ function App() {
                                 </span>
                                 <div className="flex items-center gap-2">
                                   <span className="inline-block w-max select-all rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-1 font-mono text-sm font-bold tracking-widest text-zinc-200 md:text-base">
-                                    {/* MÁSCARA INTELIGENTE: Mostra asteriscos até clicar e confirmar a leitura do aviso */}
                                     {item.senha_revelada ? item.senha_login : '••••••••'}
                                   </span>
                                   {!item.senha_revelada && (
@@ -3624,7 +3670,6 @@ function App() {
                                 <div className="flex flex-col gap-2">
                                   <button
                                     onClick={() => {
-                                      // [INFO] Se for Secundária, abre o Modal bonito. Se for Primária, gera direto.
                                       if (item.tipo_slot === 'SECUNDARIA') {
                                         setModalConfirmacao2FA({
                                           visivel: true,
@@ -3648,13 +3693,8 @@ function App() {
                               )}
                             </div>
 
-                            <div className="mt-2 flex flex-col items-center justify-between gap-4 sm:flex-row">
-                              <div className="flex w-full items-center justify-center gap-2 rounded-xl border border-amber-500/20 bg-amber-500/10 px-4 py-3 text-[10px] font-bold uppercase tracking-wider text-amber-400 sm:w-auto">
-                                <span>⏳ Expira:</span>
-                                <span className="text-xs font-black">
-                                  {new Date(item.data_fim).toLocaleString()}
-                                </span>
-                              </div>
+                            {/* BOTÃO GIGANTE DE DEVOLUÇÃO */}
+                            <div className="mt-2 w-full">
                               <button
                                 onClick={() =>
                                   abrirModalDevolucao(
@@ -3663,9 +3703,9 @@ function App() {
                                     item.tipo_slot,
                                   )
                                 }
-                                className="animate-fade-in flex w-full items-center justify-center gap-2 rounded-xl border border-fuchsia-400/50 bg-gradient-to-r from-fuchsia-600 to-purple-600 px-8 py-3.5 text-xs font-bold uppercase tracking-wider text-white shadow-[0_0_15px_rgba(192,38,211,0.4)] transition-all hover:scale-[1.02] hover:shadow-[0_0_25px_rgba(192,38,211,0.6)] sm:w-auto"
+                                className="animate-fade-in flex w-full items-center justify-center gap-2 rounded-2xl border border-fuchsia-400/50 bg-gradient-to-r from-fuchsia-600 to-purple-600 py-4 text-xs font-bold uppercase tracking-wider text-white shadow-[0_0_15px_rgba(192,38,211,0.4)] transition-all hover:scale-[1.02] hover:shadow-[0_0_25px_rgba(192,38,211,0.6)]"
                               >
-                                ♻️ Devolver e Ganhar Saldo
+                                ♻️ Devolver e ganhar Cashback
                               </button>
                             </div>
 
