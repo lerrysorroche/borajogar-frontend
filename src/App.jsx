@@ -35,6 +35,7 @@ function App() {
   const [toast, setToast] = useState({ visivel: false, mensagem: '', tipo: 'sucesso' });
   const [modalDescricao, setModalDescricao] = useState(null);
   const [modalDevolucao, setModalDevolucao] = useState(null);
+  const [modalCredenciaisAviso, setModalCredenciaisAviso] = useState(null);
   const [modalConfirmacao2FA, setModalConfirmacao2FA] = useState({
     visivel: false,
     locacaoId: null,
@@ -2173,6 +2174,51 @@ function App() {
       )}
 
       {/* ========================================================================= */}
+      {/* MODAL DE INTERCEPTAÇÃO (UX de Segurança contra esquecimento no console)   */}
+      {/* ========================================================================= */}
+      {modalCredenciaisAviso && (
+        <div className="animate-fade-in fixed inset-0 z-[300] flex items-center justify-center bg-black/90 p-4 backdrop-blur-md">
+          <div className="w-full max-w-md rounded-3xl border border-amber-500/50 bg-zinc-900 p-8 shadow-[0_0_40px_rgba(245,158,11,0.2)]">
+            <div className="mb-4 flex justify-center text-5xl">⚠️</div>
+            <h3 className="mb-4 text-center text-xl font-black uppercase tracking-tight text-amber-400">
+              Aviso Importante
+            </h3>
+            <div className="mb-6 space-y-4 text-sm text-zinc-300">
+              <p>
+                Você está prestes a ver a senha de uma{' '}
+                <strong className="text-white">Vaga Primária</strong>.
+              </p>
+              <p className="rounded-xl border border-amber-900/50 bg-zinc-950 p-4 text-amber-200">
+                Para ganhar <strong>Cashback</strong> e subir seu <strong>Rank VIP</strong>, você{' '}
+                <strong>DEVE</strong> desativar o "Compartilhamento do Console" no seu PlayStation{' '}
+                <strong>antes</strong> de devolver o jogo.
+              </p>
+              <p className="text-xs text-zinc-400">
+                Esquecer de desativar resultará em multa de R$ 50,00 e o corte do seu Rank atual
+                pela metade.
+              </p>
+            </div>
+            <button
+              onClick={() => {
+                // Marca este aluguel específico como revelado no estado local
+                setMeusAlugueis((prev) =>
+                  prev.map((a) =>
+                    a.locacao_id === modalCredenciaisAviso.locacao_id
+                      ? { ...a, senha_revelada: true }
+                      : a,
+                  ),
+                );
+                setModalCredenciaisAviso(null);
+              }}
+              className="w-full rounded-xl bg-amber-600 py-4 text-sm font-bold uppercase tracking-wider text-white shadow-lg transition-colors hover:bg-amber-500"
+            >
+              Entendi, mostrar a senha
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
       {/* MODAL DE CONFIRMAÇÃO DO 2FA (ZERO TRUST - VAGA SECUNDÁRIA)                */}
       {/* ========================================================================= */}
       {modalConfirmacao2FA.visivel && (
@@ -2853,6 +2899,17 @@ function App() {
                               </div>
                             )}
 
+                            {/* CANTO SUPERIOR DIREITO: NOVA BADGE VIP */}
+                            {/* Motivo: Feedback visual de que o desconto VIP está ativo neste jogo. */}
+                            {jogo.rank_aplicado > 0 && !isEmBreve && (
+                              <div className="pointer-events-none absolute right-4 top-4 z-20">
+                                <span className="flex items-center gap-1 rounded-lg border border-amber-400/50 bg-amber-500/90 px-3 py-1.5 text-[10px] font-black uppercase tracking-wider text-white shadow-lg backdrop-blur-md">
+                                  <span className="animate-pulse">⭐</span> VIP -
+                                  {jogo.rank_aplicado}%
+                                </span>
+                              </div>
+                            )}
+
                             {/* CANTO SUPERIOR ESQUERDO: Grupo de Status da Conta */}
                             <div className="pointer-events-none absolute left-4 top-4 z-20 flex flex-col items-start gap-1.5">
                               {temEstoque && !isEmBreve ? (
@@ -3021,10 +3078,26 @@ function App() {
                                       <span className="text-[10px] font-black uppercase leading-none tracking-wider text-white/90 [text-shadow:1px_1px_0px_black,-1px_-1px_0px_black,1px_-1px_0px_black,-1px_1px_0px_black]">
                                         🎮 Alugar Agora
                                       </span>
-                                      {/* Valor de Entrada de Alta Visibilidade */}
-                                      <span className="mt-1 text-base font-black leading-none text-emerald-300 [text-shadow:1px_1px_0px_black,-1px_-1px_0px_black,1px_-1px_0px_black,-1px_1px_0px_black]">
-                                        A partir de R$ {precoExibicao.toFixed(2)}
-                                      </span>
+
+                                      {/* Lógica do Preço Riscado VIP */}
+                                      {jogo.rank_aplicado > 0 ? (
+                                        <div className="mt-1 flex flex-col items-center leading-none">
+                                          <span className="text-[10px] font-bold text-zinc-300/80 line-through">
+                                            De R${' '}
+                                            {(
+                                              precoExibicao /
+                                              (1 - jogo.rank_aplicado / 100)
+                                            ).toFixed(2)}
+                                          </span>
+                                          <span className="text-base font-black text-emerald-300 [text-shadow:1px_1px_0px_black,-1px_-1px_0px_black,1px_-1px_0px_black,-1px_1px_0px_black]">
+                                            Por R$ {precoExibicao.toFixed(2)}
+                                          </span>
+                                        </div>
+                                      ) : (
+                                        <span className="mt-1 text-base font-black leading-none text-emerald-300 [text-shadow:1px_1px_0px_black,-1px_-1px_0px_black,1px_-1px_0px_black,-1px_1px_0px_black]">
+                                          A partir de R$ {precoExibicao.toFixed(2)}
+                                        </span>
+                                      )}
                                     </>
                                   ) : (
                                     /* Layout para quando o botão virar Fila de Espera */
@@ -3107,11 +3180,21 @@ function App() {
                       <span className="flex items-center gap-1.5 rounded-lg border border-zinc-800 bg-zinc-950 px-3 py-1.5 text-[10px] font-black uppercase tracking-wider text-white">
                         🎮 {totalAlugueis} Locações
                       </span>
+
+                      {/* ATUALIZAÇÃO VIP: Mostrando o Rank Real e o Desconto */}
                       <span
                         className={`${meuRank.cor} flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[10px] font-black uppercase tracking-widest shadow-[0_0_10px_rgba(255,255,255,0.05)]`}
+                        title="Seu Rank determina seu desconto na loja e sua prioridade na fila de lançamentos!"
                       >
-                        {meuRank.icon} Rank: {meuRank.nome}
+                        {meuRank.icon} Rank {usuarioLogado.rank || 0}: {meuRank.nome}
                       </span>
+
+                      {/* Mostra o percentual de desconto real que ele tem direito (com teto de 20%) */}
+                      {(usuarioLogado.rank || 0) > 0 && (
+                        <span className="flex items-center gap-1.5 rounded-lg border border-emerald-500/30 bg-emerald-900/20 px-3 py-1.5 text-[10px] font-black uppercase tracking-wider text-emerald-400">
+                          💸 Desconto Ativo: {Math.min(usuarioLogado.rank || 0, 20)}%
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -3510,9 +3593,20 @@ function App() {
                                 <span className="w-14 text-[10px] font-bold uppercase tracking-wider text-zinc-500">
                                   Senha
                                 </span>
-                                <span className="inline-block w-max select-all rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-1 font-mono text-sm font-bold tracking-widest text-zinc-200 md:text-base">
-                                  {item.senha_login}
-                                </span>
+                                <div className="flex items-center gap-2">
+                                  <span className="inline-block w-max select-all rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-1 font-mono text-sm font-bold tracking-widest text-zinc-200 md:text-base">
+                                    {/* MÁSCARA INTELIGENTE: Mostra asteriscos até clicar e confirmar a leitura do aviso */}
+                                    {item.senha_revelada ? item.senha_login : '••••••••'}
+                                  </span>
+                                  {!item.senha_revelada && (
+                                    <button
+                                      onClick={() => setModalCredenciaisAviso(item)}
+                                      className="rounded bg-blue-600 px-3 py-1 text-[10px] font-bold uppercase text-white transition-colors hover:bg-blue-500"
+                                    >
+                                      Ver Senha
+                                    </button>
+                                  )}
+                                </div>
                               </div>
                             </div>
 
