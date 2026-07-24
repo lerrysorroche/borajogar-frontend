@@ -292,8 +292,13 @@ function App() {
   // ==========================================================================
 
   const carregarDados = () => {
-    // Vitrine
-    fetch('https://borajogar-api.onrender.com/jogos', { cache: 'no-store' })
+    // 1. Vitrine (AGORA COM INTELIGÊNCIA VIP)
+    let urlJogos = 'https://borajogar-api.onrender.com/jogos';
+    if (usuarioLogado && usuarioLogado.id) {
+      urlJogos += `?usuario_id=${usuarioLogado.id}`;
+    }
+
+    fetch(urlJogos, { cache: 'no-store' })
       .then(async (res) => {
         if (!res.ok) {
           const erroText = await res.text();
