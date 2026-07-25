@@ -34,6 +34,11 @@ export default function Auth({
   const [verSenhaCad, setVerSenhaCad] = useState(false);
   const [verSenhaCadConf, setVerSenhaCadConf] = useState(false);
 
+  // --- Estados de Verificação de E-mail (NOVO) ---
+  const [modoVerificacaoEmail, setModoVerificacaoEmail] = useState(false);
+  const [codigoVerificacao, setCodigoVerificacao] = useState('');
+  const [emailParaVerificar, setEmailParaVerificar] = useState(''); // Guarda o email recém cadastrado
+
   // --- Estado de Recuperação de Senha ---
   const [esqueciEmail, setEsqueciEmail] = useState('');
 
@@ -169,9 +174,12 @@ export default function Auth({
     }).then(async (res) => {
       const data = await res.json();
       if (res.ok) {
-        mostrarToast('Conta criada! Faça o login para continuar.', 'sucesso');
+        mostrarToast('Conta criada! Enviamos um código para o seu e-mail.', 'aviso');
         if (window.fbq) window.fbq('track', 'CompleteRegistration'); // Disparo de Evento de Conversão Meta
-        setModoLogin(true);
+
+        // NOVO: Vai para a tela de verificação de e-mail
+        setEmailParaVerificar(cadEmail);
+        setModoVerificacaoEmail(true);
       } else {
         mostrarToast(data.detail, 'erro');
       }
@@ -193,6 +201,40 @@ export default function Auth({
         setAbaAtual(data.usuario.is_admin ? 'admin' : 'vitrine');
         mostrarToast(`Bem-vindo(a), ${data.usuario.nome}!`, 'sucesso');
         ReactGA.event({ category: 'User', action: 'Login_Success', label: data.usuario.email });
+      } else if (data.detail === 'conta_pendente') {
+        // NOVO: Intercepta a conta não verificada
+        mostrarToast(
+          'Sua conta ainda não foi ativada. Verifique o código enviado pro seu e-mail.',
+          'aviso',
+        );
+        setEmailParaVerificar(formEmail);
+        setModoVerificacaoEmail(true);
+      } else {
+        mostrarToast(data.detail, 'erro');
+      }
+    });
+  };
+
+  const verificarCodigo = (e) => {
+    e.preventDefault();
+    if (codigoVerificacao.length !== 6) {
+      mostrarToast('O código deve ter 6 dígitos.', 'erro');
+      return;
+    }
+
+    fetch('https://borajogar-api.onrender.com/verificar-email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: emailParaVerificar, codigo: codigoVerificacao }),
+    }).then(async (res) => {
+      const data = await res.json();
+      if (res.ok) {
+        mostrarToast('E-mail verificado! Agora você pode fazer login.', 'sucesso');
+        setModoVerificacaoEmail(false);
+        setModoLogin(true);
+        // Preenche o formulário de login automaticamente pra ajudar o cliente
+        setFormEmail(emailParaVerificar);
+        setCodigoVerificacao('');
       } else {
         mostrarToast(data.detail, 'erro');
       }
@@ -269,6 +311,60 @@ export default function Auth({
             >
               Concluir Cadastro
             </button>
+          </form>
+        ) : modoVerificacaoEmail ? (
+          // ================================================================
+          // TELA 1.5: VERIFICAÇÃO DE E-MAIL (NOVO)
+          // ================================================================
+          <form onSubmit={verificarCodigo} className="animate-fade-in space-y-5">
+            <div className="rounded-xl border border-blue-500/30 bg-blue-950/30 p-5 text-center shadow-inner">
+              <span className="mb-3 block text-3xl">📧</span>
+              <h3 className="mb-2 text-sm font-bold text-blue-400">
+                Verifique sua Caixa de Entrada
+              </h3>
+              <p className="text-xs font-medium leading-relaxed text-zinc-300">
+                Enviamos um código de segurança de 6 dígitos para o e-mail: <br />
+                <strong className="text-white">{emailParaVerificar}</strong>
+              </p>
+              <p className="mt-2 text-[10px] text-zinc-500">
+                (Lembre-se de checar a pasta de Spam ou Lixo Eletrônico)
+              </p>
+            </div>
+
+            <div>
+              <label className="mb-2 block text-center text-[10px] font-bold uppercase tracking-wider text-zinc-500">
+                Digite o Código de Confirmação
+              </label>
+              <input
+                type="text"
+                placeholder="Ex: 123456"
+                maxLength="6"
+                value={codigoVerificacao}
+                onChange={(e) => setCodigoVerificacao(e.target.value.replace(/\D/g, ''))} // Permite apenas números
+                className={`${inputClass} py-4 text-center text-2xl font-black tracking-widest`}
+                required
+              />
+            </div>
+
+            <button
+              type="submit"
+              className="w-full rounded-xl bg-blue-600 py-4 text-sm font-bold uppercase tracking-wide text-white shadow-lg transition-all hover:bg-blue-500"
+            >
+              Confirmar E-mail
+            </button>
+
+            <div className="mt-6 border-t border-zinc-800 pt-6 text-center">
+              <button
+                type="button"
+                onClick={() => {
+                  setModoVerificacaoEmail(false);
+                  setModoLogin(true);
+                }}
+                className="text-xs font-bold uppercase tracking-wider text-zinc-400 transition-colors hover:text-white"
+              >
+                Voltar para o Login
+              </button>
+            </div>
           </form>
         ) : modoEsqueciSenha ? (
           // ================================================================
