@@ -238,7 +238,12 @@ export default function Auth({
         setFormEmail(emailParaVerificar);
         setCodigoVerificacao('');
       } else {
-        mostrarToast(data.detail || 'Código inválido.', 'erro');
+        // [ANTI-TELA PRETA]: Se o erro for uma lista (422), transforma em texto seguro
+        const msgErro =
+          typeof data.detail === 'string'
+            ? data.detail
+            : 'Erro de validação. Verifique se digitou o código corretamente.';
+        mostrarToast(msgErro, 'erro');
       }
     } catch (error) {
       mostrarToast('Erro ao validar o código. O servidor pode estar offline.', 'erro');
@@ -261,7 +266,10 @@ export default function Auth({
           'sucesso',
         );
       } else {
-        mostrarToast(data.detail || 'Erro ao reenviar o código.', 'erro');
+        // [ANTI-TELA PRETA]
+        const msgErro =
+          typeof data.detail === 'string' ? data.detail : 'Erro ao processar o reenvio.';
+        mostrarToast(msgErro, 'erro');
       }
     } catch (error) {
       mostrarToast('Erro de conexão ao tentar reenviar.', 'erro');
