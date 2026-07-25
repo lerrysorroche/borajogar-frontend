@@ -201,7 +201,11 @@ export default function Auth({
         localStorage.setItem('token_locadora', data.token);
         setAbaAtual(data.usuario.is_admin ? 'admin' : 'vitrine');
         mostrarToast(`Bem-vindo(a), ${data.usuario.nome}!`, 'sucesso');
-        ReactGA.event({ category: 'User', action: 'Login_Success', label: data.usuario.email });
+        ReactGA.event({
+          category: 'User',
+          action: 'Login_Success',
+          label: `ID_${data.usuario.id}`,
+        });
       } else if (data.detail === 'conta_pendente') {
         // NOVO: Intercepta a conta não verificada
         mostrarToast(
