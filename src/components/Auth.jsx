@@ -38,6 +38,7 @@ export default function Auth({
   const [modoVerificacaoEmail, setModoVerificacaoEmail] = useState(false);
   const [codigoVerificacao, setCodigoVerificacao] = useState('');
   const [emailParaVerificar, setEmailParaVerificar] = useState(''); // Guarda o email recém cadastrado
+  const [carregandoReenvio, setCarregandoReenvio] = useState(false);
 
   // --- Estado de Recuperação de Senha ---
   const [esqueciEmail, setEsqueciEmail] = useState('');
@@ -215,30 +216,58 @@ export default function Auth({
     });
   };
 
-  const verificarCodigo = (e) => {
+  const verificarCodigo = async (e) => {
     e.preventDefault();
-    if (codigoVerificacao.length !== 6) {
-      mostrarToast('O código deve ter 6 dígitos.', 'erro');
+    if (!codigoVerificacao || codigoVerificacao.length !== 6) {
+      mostrarToast('O código deve ter exatamente 6 dígitos.', 'erro');
       return;
     }
 
-    fetch('https://borajogar-api.onrender.com/verificar-email', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: emailParaVerificar, codigo: codigoVerificacao }),
-    }).then(async (res) => {
+    try {
+      const res = await fetch('https://borajogar-api.onrender.com/verificar-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: emailParaVerificar, codigo: codigoVerificacao }),
+      });
       const data = await res.json();
+
       if (res.ok) {
         mostrarToast('E-mail verificado! Agora você pode fazer login.', 'sucesso');
         setModoVerificacaoEmail(false);
         setModoLogin(true);
-        // Preenche o formulário de login automaticamente pra ajudar o cliente
         setFormEmail(emailParaVerificar);
         setCodigoVerificacao('');
       } else {
-        mostrarToast(data.detail, 'erro');
+        mostrarToast(data.detail || 'Código inválido.', 'erro');
       }
-    });
+    } catch (error) {
+      mostrarToast('Erro ao validar o código. O servidor pode estar offline.', 'erro');
+    }
+  };
+
+  const reenviarCodigo = async () => {
+    setCarregandoReenvio(true);
+    try {
+      const res = await fetch('https://borajogar-api.onrender.com/reenviar-codigo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: emailParaVerificar }),
+      });
+      const data = await res.json();
+
+      if (res.ok) {
+        mostrarToast(
+          'Novo código enviado! Verifique sua caixa de entrada e o Lixo Eletrônico.',
+          'sucesso',
+        );
+      } else {
+        mostrarToast(data.detail || 'Erro ao reenviar o código.', 'erro');
+      }
+    } catch (error) {
+      mostrarToast('Erro de conexão ao tentar reenviar.', 'erro');
+    } finally {
+      setCarregandoReenvio(false);
+    }
   };
 
   const solicitarRecuperacaoSenha = (e) => {
@@ -314,7 +343,7 @@ export default function Auth({
           </form>
         ) : modoVerificacaoEmail ? (
           // ================================================================
-          // TELA 1.5: VERIFICAÇÃO DE E-MAIL (NOVO)
+          // TELA 1.5: VERIFICAÇÃO DE E-MAIL (BLINDADA)
           // ================================================================
           <form onSubmit={verificarCodigo} className="animate-fade-in space-y-5">
             <div className="rounded-xl border border-blue-500/30 bg-blue-950/30 p-5 text-center shadow-inner">
@@ -322,10 +351,14 @@ export default function Auth({
               <h3 className="mb-2 text-sm font-bold text-blue-400">
                 Verifique sua Caixa de Entrada
               </h3>
+
+              {/* TEXTO COM A QUEBRA DE LINHA SOLICITADA */}
               <p className="text-xs font-medium leading-relaxed text-zinc-300">
-                Enviamos um código de segurança de 6 dígitos para o e-mail: <br />
-                <strong className="text-white">{emailParaVerificar}</strong>
+                Enviamos um código de segurança <br />
+                de 6 dígitos para o e-mail: <br />
+                <strong className="mt-1 block text-white">{emailParaVerificar}</strong>
               </p>
+
               <p className="mt-2 text-[10px] text-zinc-500">
                 (Lembre-se de checar a pasta de Spam ou Lixo Eletrônico)
               </p>
@@ -340,7 +373,7 @@ export default function Auth({
                 placeholder="Ex: 123456"
                 maxLength="6"
                 value={codigoVerificacao}
-                onChange={(e) => setCodigoVerificacao(e.target.value.replace(/\D/g, ''))} // Permite apenas números
+                onChange={(e) => setCodigoVerificacao(e.target.value.replace(/\D/g, ''))}
                 className={`${inputClass} py-4 text-center text-2xl font-black tracking-widest`}
                 required
               />
@@ -352,6 +385,20 @@ export default function Auth({
             >
               Confirmar E-mail
             </button>
+
+            {/* NOVO BOTÃO DE REENVIAR CÓDIGO */}
+            <div className="mt-4 flex flex-col items-center gap-2">
+              <button
+                type="button"
+                disabled={carregandoReenvio}
+                onClick={reenviarCodigo}
+                className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 transition-colors hover:text-white disabled:opacity-50"
+              >
+                {carregandoReenvio
+                  ? '⏳ Enviando novo código...'
+                  : '🔄 Não recebeu? Reenviar código'}
+              </button>
+            </div>
 
             <div className="mt-6 border-t border-zinc-800 pt-6 text-center">
               <button
