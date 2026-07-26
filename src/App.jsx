@@ -14,6 +14,29 @@ import Auth from './components/Auth';
 // Inicialização do Google Analytics
 ReactGA.initialize('G-QGNBJ6L7JZ');
 
+const API_BASE = 'https://borajogar-api.onrender.com';
+
+// Detector de sessão morta (instalado uma única vez).
+// Quando o token expira — ou quando o segredo do servidor é rotacionado, o que
+// invalida todos os tokens de uma vez — as chamadas autenticadas passam a voltar
+// 401. Sem isto o app continua "achando" que a pessoa está logada e as telas
+// simplesmente param de responder, sem erro visível. Aqui a sessão morta vira um
+// logout de verdade, com aviso.
+// É um interceptador global porque o app faz fetch direto em dezenas de pontos;
+// tratar 401 em cada um deles seria muito mais fácil de esquecer num lugar só.
+if (!window.__interceptador401) {
+  window.__interceptador401 = true;
+  const fetchOriginal = window.fetch;
+  window.fetch = async (...args) => {
+    const resposta = await fetchOriginal(...args);
+    const url = typeof args[0] === 'string' ? args[0] : args[0]?.url || '';
+    if (resposta.status === 401 && url.startsWith(API_BASE)) {
+      window.dispatchEvent(new CustomEvent('sessao-expirada'));
+    }
+    return resposta;
+  };
+}
+
 function App() {
   // ==========================================================================
   // 1. CONFIGURAÇÕES GLOBAIS E ESTADOS (MEMÓRIA DO REACT)
@@ -200,6 +223,19 @@ function App() {
   // 3. EFEITOS DE CICLO DE VIDA (USE EFFECT)
   // ==========================================================================
 
+  // Sessão expirada: o interceptador lá de cima avisa quando a API devolve 401
+  // em qualquer chamada. Aqui isso vira logout + aviso, em vez de um app mudo.
+  useEffect(() => {
+    const aoExpirarSessao = () => {
+      // Ignora 401 de quem já está deslogado (ex: senha errada na tela de login).
+      if (!localStorage.getItem('token_locadora')) return;
+      sair();
+      mostrarToast('Sua sessão expirou. Faça login novamente.', 'aviso');
+    };
+    window.addEventListener('sessao-expirada', aoExpirarSessao);
+    return () => window.removeEventListener('sessao-expirada', aoExpirarSessao);
+  }, []);
+
   // Dispara visualizações de página no Google Analytics
   useEffect(() => {
     ReactGA.send({ hitType: 'pageview', page: `/${abaAtual}` });
@@ -239,7 +275,9 @@ function App() {
     let intervalId;
     if (pixPendente) {
       intervalId = setInterval(() => {
-        fetch(`https://borajogar-api.onrender.com/recarga/status/${pixPendente.payment_id}`)
+        fetch(`https://borajogar-api.onrender.com/recarga/status/${pixPendente.payment_id}`, {
+          headers: getAuthHeaders(),
+        })
           .then((res) => res.json())
           .then((data) => {
             if (data.status === 'PAGO') {
@@ -273,7 +311,9 @@ function App() {
     let intervalId;
     if (aguardandoConfirmacaoWhats && usuarioLogado?.id) {
       intervalId = setInterval(() => {
-        fetch(`https://borajogar-api.onrender.com/usuarios/${usuarioLogado.id}/status-whatsapp`)
+        fetch(`https://borajogar-api.onrender.com/usuarios/${usuarioLogado.id}/status-whatsapp`, {
+          headers: getAuthHeaders(),
+        })
           .then((res) => res.json())
           .then((data) => {
             if (data.whatsapp_verificado) {
@@ -310,7 +350,9 @@ function App() {
     if (stripeCancelado) mostrarToast('Operação de pagamento com cartão cancelada.', 'aviso');
     if (stripeSession) {
       mostrarToast('Verificando seu pagamento na Stripe...', 'aviso');
-      fetch(`https://borajogar-api.onrender.com/recarga/status-stripe/${stripeSession}`)
+      fetch(`https://borajogar-api.onrender.com/recarga/status-stripe/${stripeSession}`, {
+        headers: getAuthHeaders(),
+      })
         .then((res) => res.json())
         .then((data) => {
           if (data.status === 'PAGO') {
@@ -402,23 +444,39 @@ function App() {
     }
 
     // Dados Pessoais do Cliente
-    fetch(`https://borajogar-api.onrender.com/meus-alugueis/${usuarioLogado.id}`)
+    // Todas exigem token: o backend identifica o cliente pelo token, não pelo
+    // id da URL (que qualquer um podia trocar pelo de outra pessoa).
+    fetch(`https://borajogar-api.onrender.com/meus-alugueis/${usuarioLogado.id}`, {
+      headers: getAuthHeaders(),
+    })
       .then((res) => (res.ok ? res.json() : []))
       .then((dados) => setMeusAlugueis(Array.isArray(dados) ? dados : []));
-    fetch(`https://borajogar-api.onrender.com/minhas-reservas/${usuarioLogado.id}`)
+    fetch(`https://borajogar-api.onrender.com/minhas-reservas/${usuarioLogado.id}`, {
+      headers: getAuthHeaders(),
+    })
       .then((res) => (res.ok ? res.json() : []))
       .then((dados) => setMinhasReservas(Array.isArray(dados) ? dados : []));
-    fetch(`https://borajogar-api.onrender.com/extrato/${usuarioLogado.id}`)
+    fetch(`https://borajogar-api.onrender.com/extrato/${usuarioLogado.id}`, {
+      headers: getAuthHeaders(),
+    })
       .then((res) => (res.ok ? res.json() : []))
       .then((dados) => setExtrato(Array.isArray(dados) ? dados : []));
-    fetch(`https://borajogar-api.onrender.com/notificacoes/${usuarioLogado.id}`)
+    fetch(`https://borajogar-api.onrender.com/notificacoes/${usuarioLogado.id}`, {
+      headers: getAuthHeaders(),
+    })
       .then((res) => (res.ok ? res.json() : []))
       .then((dados) => setNotificacoes(Array.isArray(dados) ? dados : []));
 
     // [INFO] Reconciliação Financeira Passiva (Lazy Sync)
-    fetch(`https://borajogar-api.onrender.com/recarga/sincronizar/${usuarioLogado.id}`)
+    // O backend tira o id do cliente do token; a rota não recebe mais id na URL.
+    fetch('https://borajogar-api.onrender.com/recarga/sincronizar', {
+      method: 'POST',
+      headers: getAuthHeaders(),
+    })
       .then(() => {
-        fetch(`https://borajogar-api.onrender.com/usuarios/${usuarioLogado.id}/saldo`)
+        fetch(`https://borajogar-api.onrender.com/usuarios/${usuarioLogado.id}/saldo`, {
+          headers: getAuthHeaders(),
+        })
           .then((res) => (res.ok ? res.json() : null))
           .then((data) => {
             if (data && data.saldo !== undefined) {
@@ -576,7 +634,7 @@ function App() {
     if (!modalDevolucao) return;
     fetch('https://borajogar-api.onrender.com/devolver', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders(),
       body: JSON.stringify({
         locacao_id: modalDevolucao.locacaoId,
         utilizador_id: usuarioLogado.id,
@@ -605,7 +663,7 @@ function App() {
       return;
     fetch('https://borajogar-api.onrender.com/reservas/cancelar', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders(),
       body: JSON.stringify({
         reserva_id: reservaId,
         utilizador_id: usuarioLogado.id,
@@ -754,6 +812,7 @@ function App() {
     try {
       const res = await fetch(
         `https://borajogar-api.onrender.com/gerar-2fa/${locacaoId}/${usuarioLogado.id}`,
+        { headers: getAuthHeaders() },
       );
       const data = await res.json();
       if (res.ok) {
@@ -1256,7 +1315,7 @@ function App() {
   const manterReserva = (notificacaoId) => {
     fetch('https://borajogar-api.onrender.com/notificacoes/ler', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders(),
       body: JSON.stringify({ notificacao_id: notificacaoId }),
     }).then(() => {
       mostrarToast('Perfeito! Acompanhe a nova data em Minhas Reservas.', 'sucesso');
@@ -1327,7 +1386,7 @@ function App() {
     setSalvandoTelefone(true);
     fetch(`https://borajogar-api.onrender.com/usuarios/${usuarioLogado.id}/telefone`, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders(),
       body: JSON.stringify({ telefone: telefoneEditavel }),
     })
       .then(async (res) => {
