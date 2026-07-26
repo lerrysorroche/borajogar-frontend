@@ -19,6 +19,9 @@ function App() {
   // 1. CONFIGURAÇÕES GLOBAIS E ESTADOS (MEMÓRIA DO REACT)
   // ==========================================================================
   const NUMERO_WHATSAPP_SUPORTE = '5541995948532';
+  // Número dedicado à API Cloud da Meta, usado SÓ pra verificação automática de WhatsApp.
+  // Separado do número de suporte porque um número não pode estar no app do WhatsApp e na API ao mesmo tempo.
+  const NUMERO_WHATSAPP_VERIFICACAO = '5541997451080';
   const JOGOS_POR_PAGINA = 15;
 
   // --- Estados de Autenticação e Navegação ---
@@ -1335,10 +1338,9 @@ function App() {
             localStorage.setItem('usuario_locadora', JSON.stringify(atualizado));
             return atualizado;
           });
-          let numeroDestino = numeroLimpo.startsWith('55') ? numeroLimpo : '55' + numeroLimpo;
           const mensagem = `Olá! Quero verificar meu WhatsApp na Bora Jogar. Meu código é: #${usuarioLogado.id}`;
           window.open(
-            `https://wa.me/${NUMERO_WHATSAPP_SUPORTE}?text=${encodeURIComponent(mensagem)}`,
+            `https://wa.me/${NUMERO_WHATSAPP_VERIFICACAO}?text=${encodeURIComponent(mensagem)}`,
             '_blank',
           );
           setAguardandoConfirmacaoWhats(true);
