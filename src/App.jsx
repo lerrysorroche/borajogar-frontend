@@ -42,7 +42,13 @@ function App() {
   });
   const [modalEdicaoJogo, setModalEdicaoJogo] = useState(null);
   const [modalEdicaoCliente, setModalEdicaoCliente] = useState(null);
+  const [modalWhatsappBloqueado, setModalWhatsappBloqueado] = useState(false);
   const [indiceBanner, setIndiceBanner] = useState(0);
+
+  // --- Estados da Verificação de WhatsApp ---
+  const [telefoneEditavel, setTelefoneEditavel] = useState('');
+  const [salvandoTelefone, setSalvandoTelefone] = useState(false);
+  const [aguardandoConfirmacaoWhats, setAguardandoConfirmacaoWhats] = useState(false);
 
   // [INFO] O modal agora guarda o JOGO INTEIRO para a lógica de vendas Top-Down (Primária/Secundária/Fila)
   const [modalConfirmacao, setModalConfirmacao] = useState({
@@ -258,6 +264,34 @@ function App() {
     }
     return () => clearInterval(intervalId);
   }, [pixPendente]);
+
+  // Efeito Polling do WhatsApp: fica perguntando se o webhook da Meta já confirmou o número
+  useEffect(() => {
+    let intervalId;
+    if (aguardandoConfirmacaoWhats && usuarioLogado?.id) {
+      intervalId = setInterval(() => {
+        fetch(`https://borajogar-api.onrender.com/usuarios/${usuarioLogado.id}/status-whatsapp`)
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.whatsapp_verificado) {
+              setAguardandoConfirmacaoWhats(false);
+              mostrarToast('✅ WhatsApp verificado com sucesso! Já pode alugar seus jogos.', 'sucesso');
+              setUsuarioLogado((prev) => {
+                const atualizado = { ...prev, whatsapp_verificado: true };
+                localStorage.setItem('usuario_locadora', JSON.stringify(atualizado));
+                return atualizado;
+              });
+            }
+          });
+      }, 5000);
+    }
+    return () => clearInterval(intervalId);
+  }, [aguardandoConfirmacaoWhats, usuarioLogado?.id]);
+
+  // Inicializa o campo de telefone editável do Dashboard com o valor atual do cliente
+  useEffect(() => {
+    if (usuarioLogado?.id) setTelefoneEditavel(usuarioLogado.telefone || '');
+  }, [usuarioLogado?.id]);
 
   // Efeito do Retorno do Checkout (Stripe)
   useEffect(() => {
@@ -501,6 +535,8 @@ function App() {
       if (res.ok) {
         mostrarToast(data.mensagem, 'sucesso');
         carregarDados();
+      } else if (data.detail === 'whatsapp_nao_verificado') {
+        setModalWhatsappBloqueado(true);
       } else {
         mostrarToast(data.detail, 'erro');
       }
@@ -522,6 +558,8 @@ function App() {
       if (res.ok) {
         mostrarToast(data.mensagem, 'sucesso');
         carregarDados();
+      } else if (data.detail === 'whatsapp_nao_verificado') {
+        setModalWhatsappBloqueado(true);
       } else {
         mostrarToast(data.detail, 'erro');
       }
@@ -1012,6 +1050,28 @@ function App() {
       });
   };
 
+  const confirmarWhatsAdmin = (idUsuario) => {
+    if (
+      !window.confirm(
+        'Confirmar manualmente que este cliente enviou a mensagem de verificação no WhatsApp?',
+      )
+    )
+      return;
+    fetch('https://borajogar-api.onrender.com/admin/whatsapp/verificar', {
+      method: 'PUT',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ utilizador_id: idUsuario }),
+    }).then(async (res) => {
+      const data = await res.json();
+      if (res.ok) {
+        mostrarToast(data.mensagem, 'sucesso');
+        carregarDados();
+      } else {
+        mostrarToast(data.detail, 'erro');
+      }
+    });
+  };
+
   const confirmarResetSenha = (contaId) => {
     const senha = novasSenhasTemp[contaId];
     if (!senha) {
@@ -1253,6 +1313,42 @@ function App() {
         }
       })
       .catch(() => mostrarToast('Erro de conexão.', 'erro'));
+  };
+
+  const salvarTelefoneWhats = () => {
+    const numeroLimpo = telefoneEditavel.replace(/\D/g, '');
+    if (numeroLimpo.length < 10) {
+      mostrarToast('Digite um número de WhatsApp válido, com DDD.', 'erro');
+      return;
+    }
+    setSalvandoTelefone(true);
+    fetch(`https://borajogar-api.onrender.com/usuarios/${usuarioLogado.id}/telefone`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ telefone: telefoneEditavel }),
+    })
+      .then(async (res) => {
+        const data = await res.json();
+        if (res.ok) {
+          setUsuarioLogado((prev) => {
+            const atualizado = { ...prev, telefone: telefoneEditavel };
+            localStorage.setItem('usuario_locadora', JSON.stringify(atualizado));
+            return atualizado;
+          });
+          let numeroDestino = numeroLimpo.startsWith('55') ? numeroLimpo : '55' + numeroLimpo;
+          const mensagem = `Olá! Quero verificar meu WhatsApp na Bora Jogar. Meu código é: #${usuarioLogado.id}`;
+          window.open(
+            `https://wa.me/${NUMERO_WHATSAPP_SUPORTE}?text=${encodeURIComponent(mensagem)}`,
+            '_blank',
+          );
+          setAguardandoConfirmacaoWhats(true);
+          mostrarToast('Agora envie a mensagem que abriu no WhatsApp para confirmar!', 'sucesso');
+        } else {
+          mostrarToast(data.detail, 'erro');
+        }
+      })
+      .catch(() => mostrarToast('Erro de conexão.', 'erro'))
+      .finally(() => setSalvandoTelefone(false));
   };
 
   // ==========================================================================
@@ -2223,6 +2319,43 @@ function App() {
       )}
 
       {/* ========================================================================= */}
+      {/* MODAL DE BLOQUEIO - WHATSAPP AINDA NÃO VERIFICADO                        */}
+      {/* ========================================================================= */}
+      {modalWhatsappBloqueado && (
+        <div className="animate-fade-in fixed inset-0 z-[300] flex items-center justify-center bg-black/90 p-4 backdrop-blur-md">
+          <div className="w-full max-w-md rounded-3xl border border-rose-500/50 bg-zinc-900 p-8 shadow-[0_0_40px_rgba(244,63,94,0.2)]">
+            <div className="mb-4 flex justify-center text-5xl">🚨</div>
+            <h3 className="mb-4 text-center text-xl font-black uppercase tracking-tight text-rose-400">
+              Ação Necessária
+            </h3>
+            <p className="mb-6 text-center text-sm leading-relaxed text-zinc-300">
+              Antes de alugar, você precisa verificar seu WhatsApp. É rápido: acesse{' '}
+              <strong className="text-white">Meus Acessos</strong> e envie a mensagem padrão pro
+              nosso WhatsApp.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setModalWhatsappBloqueado(false)}
+                className="flex-1 rounded-xl border border-zinc-700 bg-zinc-800 py-3 text-xs font-bold uppercase tracking-wider text-zinc-300 transition-colors hover:bg-zinc-700"
+              >
+                Fechar
+              </button>
+              <button
+                onClick={() => {
+                  setModalWhatsappBloqueado(false);
+                  setAbaAtual('dashboard');
+                  window.scrollTo(0, 0);
+                }}
+                className="flex-1 rounded-xl bg-rose-600 py-3 text-xs font-bold uppercase tracking-wider text-white shadow-lg transition-colors hover:bg-rose-500"
+              >
+                Verificar Agora
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
       {/* MODAL DE CONFIRMAÇÃO DO 2FA (ZERO TRUST - VAGA SECUNDÁRIA)                */}
       {/* ========================================================================= */}
       {modalConfirmacao2FA.visivel && (
@@ -2394,11 +2527,11 @@ function App() {
                         className="group relative hidden h-10 w-10 items-center justify-center rounded-xl border border-zinc-800 bg-zinc-900 transition-all hover:border-orange-500/50 hover:bg-orange-500/10 md:flex"
                       >
                         <span
-                          className={`text-lg transition-all ${notificacoes.length > 0 ? 'grayscale-0' : 'grayscale group-hover:grayscale-0'}`}
+                          className={`text-lg transition-all ${notificacoes.length > 0 || !usuarioLogado.whatsapp_verificado ? 'grayscale-0' : 'grayscale group-hover:grayscale-0'}`}
                         >
                           🔔
                         </span>
-                        {notificacoes.length > 0 && (
+                        {(notificacoes.length > 0 || !usuarioLogado.whatsapp_verificado) && (
                           <span className="absolute -right-1 -top-1 flex h-3 w-3">
                             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-orange-400 opacity-75"></span>
                             <span className="relative inline-flex h-3 w-3 rounded-full border border-zinc-900 bg-orange-500"></span>
@@ -3210,9 +3343,39 @@ function App() {
                     <h2 className="mb-2 text-2xl font-black leading-none tracking-tight text-white md:text-3xl">
                       {usuarioLogado.nome}
                     </h2>
-                    <p className="mb-4 font-mono-tech text-sm text-zinc-400">
+                    <p className="mb-1 font-mono-tech text-sm text-zinc-400">
                       {usuarioLogado.email}
                     </p>
+
+                    {usuarioLogado.whatsapp_verificado ? (
+                      <p className="mb-4 flex items-center justify-center gap-1.5 font-mono-tech text-sm text-emerald-400 md:justify-start">
+                        🔒 {usuarioLogado.telefone} <span title="WhatsApp verificado">✅</span>
+                      </p>
+                    ) : (
+                      <div className="mb-4 flex flex-col items-center gap-2 md:items-start">
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="text"
+                            value={telefoneEditavel}
+                            onChange={(e) => setTelefoneEditavel(e.target.value)}
+                            placeholder="(41) 99999-9999"
+                            className="rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-1.5 font-mono-tech text-sm text-white focus:border-purple-500 focus:outline-none"
+                          />
+                          <button
+                            onClick={salvarTelefoneWhats}
+                            disabled={salvandoTelefone || aguardandoConfirmacaoWhats}
+                            className="rounded-lg bg-emerald-600 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-white transition-colors hover:bg-emerald-500 disabled:opacity-50"
+                          >
+                            {aguardandoConfirmacaoWhats ? '⏳ Aguardando...' : '📱 Salvar e Verificar'}
+                          </button>
+                        </div>
+                        <p className="max-w-md text-[10px] leading-relaxed text-zinc-500">
+                          ⚠️ Você pode editar este número livremente até confirmá-lo no WhatsApp.
+                          Depois de verificado, ele fica travado para sempre.
+                        </p>
+                      </div>
+                    )}
+
                     <div className="flex flex-wrap items-center justify-center gap-3 md:justify-start">
                       <span className="flex items-center gap-1.5 rounded-lg border border-zinc-800 bg-zinc-950 px-3 py-1.5 text-[10px] font-black uppercase tracking-wider text-white">
                         🎮 {totalAlugueis} Locações
@@ -3235,6 +3398,25 @@ function App() {
                     </div>
                   </div>
                 </div>
+
+                {!usuarioLogado.whatsapp_verificado && (
+                  <div className="animate-fade-in relative mb-4 flex flex-col gap-4 overflow-hidden rounded-3xl border border-purple-500/40 bg-purple-950/30 p-6 shadow-[0_0_20px_rgba(168,85,247,0.1)] md:p-8">
+                    <div className="absolute left-0 top-0 h-full w-1 bg-purple-500"></div>
+                    <div className="flex items-start gap-4">
+                      <span className="animate-bounce text-3xl">📱</span>
+                      <div>
+                        <h3 className="mb-1 text-lg font-black uppercase tracking-tight text-purple-400">
+                          Verifique seu WhatsApp para liberar aluguéis
+                        </h3>
+                        <p className="text-sm font-medium leading-relaxed text-zinc-300">
+                          Por segurança, só liberamos aluguéis para clientes com um WhatsApp real
+                          confirmado. Confira seu número acima e clique em "Salvar e Verificar"
+                          para enviar a mensagem de confirmação.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 {notificacoes.map((notif) => (
                   <div
@@ -5150,6 +5332,15 @@ function App() {
                                         >
                                           📱 Whats
                                         </a>
+                                      )}
+                                      {!u.whatsapp_verificado && (
+                                        <button
+                                          onClick={() => confirmarWhatsAdmin(u.id)}
+                                          title="Confirme manualmente caso o cliente já tenha mandado a mensagem de verificação"
+                                          className="flex items-center gap-1 rounded-lg border border-purple-500/30 bg-purple-900/30 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-purple-400 transition-colors hover:bg-purple-600 hover:text-white"
+                                        >
+                                          ✅ Confirmar Whats
+                                        </button>
                                       )}
                                       <button
                                         onClick={() => setModalEdicaoCliente(u)}
