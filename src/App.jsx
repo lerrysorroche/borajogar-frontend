@@ -16,6 +16,62 @@ ReactGA.initialize('G-QGNBJ6L7JZ');
 
 const API_BASE = 'https://borajogar-api.onrender.com';
 
+// Seções do Painel Admin, na ordem em que aparecem no menu lateral.
+// A classe de "ativo" vai escrita inteira porque o Tailwind varre o código-fonte
+// em busca de nomes de classe literais — montar 'bg-' + cor + '-600' resultaria
+// numa classe que o build descarta por não encontrá-la escrita em lugar nenhum.
+const SECOES_ADMIN = [
+  {
+    id: 'visao-geral',
+    icone: '📊',
+    nome: 'Visão Geral',
+    ativo: 'bg-emerald-600 text-white shadow-md shadow-emerald-600/20',
+  },
+  {
+    id: 'jogos',
+    icone: '🎮',
+    nome: 'Jogos',
+    ativo: 'bg-blue-600 text-white shadow-md shadow-blue-600/20',
+  },
+  {
+    id: 'locacoes',
+    icone: '🔑',
+    nome: 'Locações',
+    ativo: 'bg-emerald-600 text-white shadow-md shadow-emerald-600/20',
+  },
+  {
+    id: 'fila',
+    icone: '⏳',
+    nome: 'Fila de Espera',
+    ativo: 'bg-amber-600 text-white shadow-md shadow-amber-600/20',
+  },
+  {
+    id: 'clientes',
+    icone: '👥',
+    nome: 'Clientes',
+    ativo: 'bg-purple-600 text-white shadow-md shadow-purple-600/20',
+  },
+  {
+    id: 'manutencao',
+    icone: '🚨',
+    nome: 'Manutenção',
+    ativo: 'bg-rose-600 text-white shadow-md shadow-rose-600/20',
+    alerta: true, // contador vira vermelho quando há conta esperando senha
+  },
+  {
+    id: 'cupons',
+    icone: '🎫',
+    nome: 'Cupons',
+    ativo: 'bg-fuchsia-600 text-white shadow-md shadow-fuchsia-600/20',
+  },
+  {
+    id: 'vitrine',
+    icone: '🖼️',
+    nome: 'Vitrine',
+    ativo: 'bg-orange-600 text-white shadow-md shadow-orange-600/20',
+  },
+];
+
 // Detector de sessão morta (instalado uma única vez).
 // Quando o token expira — ou quando o segredo do servidor é rotacionado, o que
 // invalida todos os tokens de uma vez — as chamadas autenticadas passam a voltar
@@ -68,6 +124,9 @@ function App() {
   });
   const [modalEdicaoJogo, setModalEdicaoJogo] = useState(null);
   const [modalEdicaoCliente, setModalEdicaoCliente] = useState(null);
+  // Dossiê financeiro do cliente (botão 💰 Extrato na Base de Clientes)
+  const [modalDossie, setModalDossie] = useState(null);
+  const [carregandoDossie, setCarregandoDossie] = useState(false);
   const [modalWhatsappBloqueado, setModalWhatsappBloqueado] = useState(false);
   const [indiceBanner, setIndiceBanner] = useState(0);
 
@@ -139,6 +198,8 @@ function App() {
   const [listaCupons, setListaCupons] = useState([]);
   const [paginaCatalogo, setPaginaCatalogo] = useState(0);
   const [paginaClientes, setPaginaClientes] = useState(0);
+  // Seção visível do Painel Admin (ver SECOES_ADMIN no topo do arquivo)
+  const [secaoAdmin, setSecaoAdmin] = useState('visao-geral');
 
   // Admin: Filtros Internos
   const [buscaEstoque, setBuscaEstoque] = useState('');
@@ -318,7 +379,10 @@ function App() {
           .then((data) => {
             if (data.whatsapp_verificado) {
               setAguardandoConfirmacaoWhats(false);
-              mostrarToast('✅ WhatsApp verificado com sucesso! Já pode alugar seus jogos.', 'sucesso');
+              mostrarToast(
+                '✅ WhatsApp verificado com sucesso! Já pode alugar seus jogos.',
+                'sucesso',
+              );
               setUsuarioLogado((prev) => {
                 const atualizado = { ...prev, whatsapp_verificado: true };
                 localStorage.setItem('usuario_locadora', JSON.stringify(atualizado));
@@ -1112,6 +1176,30 @@ function App() {
       });
   };
 
+  const abrirDossieCliente = (cliente) => {
+    // Abre já com os dados básicos que a lista tem, para o modal aparecer na
+    // hora; o resto (extrato, locações, pendências) chega logo em seguida.
+    setModalDossie({ cliente, dados: null });
+    setCarregandoDossie(true);
+    fetch(`https://borajogar-api.onrender.com/admin/clientes/${cliente.id}/dossie`, {
+      headers: getAuthHeaders(),
+    })
+      .then(async (res) => {
+        const data = await res.json();
+        if (res.ok) {
+          setModalDossie({ cliente, dados: data });
+        } else {
+          mostrarToast(data.detail || 'Erro ao carregar o dossiê.', 'erro');
+          setModalDossie(null);
+        }
+      })
+      .catch(() => {
+        mostrarToast('Erro de conexão.', 'erro');
+        setModalDossie(null);
+      })
+      .finally(() => setCarregandoDossie(false));
+  };
+
   const confirmarWhatsAdmin = (idUsuario) => {
     if (
       !window.confirm(
@@ -1892,6 +1980,201 @@ function App() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* MODAL DOSSIÊ FINANCEIRO DO CLIENTE (ADMIN)                                */}
+      {/* ========================================================================= */}
+      {modalDossie && (
+        <div
+          className="animate-fade-in fixed inset-0 z-[260] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm"
+          onClick={() => setModalDossie(null)}
+        >
+          <div
+            className="custom-scrollbar max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-3xl border border-amber-500/30 bg-gradient-to-br from-amber-900/10 to-zinc-900 p-6 shadow-2xl shadow-amber-500/10 md:p-8"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="mb-6 flex items-start justify-between gap-4">
+              <div>
+                <h3 className="flex items-center gap-3 text-xl font-black tracking-tight text-amber-400">
+                  💰 Dossiê Financeiro
+                </h3>
+                <p className="mt-1 text-sm font-bold text-white">{modalDossie.cliente.nome}</p>
+                <p className="font-mono-tech text-xs text-zinc-500">{modalDossie.cliente.email}</p>
+              </div>
+              <button
+                onClick={() => setModalDossie(null)}
+                className="shrink-0 rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-zinc-300 transition-colors hover:bg-zinc-700"
+              >
+                Fechar
+              </button>
+            </div>
+
+            {carregandoDossie || !modalDossie.dados ? (
+              <p className="animate-pulse py-12 text-center text-sm font-bold text-zinc-500">
+                Carregando dossiê...
+              </p>
+            ) : (
+              <div className="space-y-6">
+                {/* RESUMO DE CAIXA */}
+                <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+                  {[
+                    {
+                      rotulo: 'Saldo Atual',
+                      valor: `R$ ${modalDossie.dados.cliente.saldo.toFixed(2)}`,
+                      cor:
+                        modalDossie.dados.cliente.saldo < 0 ? 'text-rose-400' : 'text-emerald-400',
+                    },
+                    {
+                      rotulo: 'Total Recarregado',
+                      valor: `R$ ${modalDossie.dados.resumo.total_recargas.toFixed(2)}`,
+                      cor: 'text-cyan-400',
+                    },
+                    {
+                      rotulo: 'Total Gasto',
+                      valor: `R$ ${modalDossie.dados.resumo.total_saidas.toFixed(2)}`,
+                      cor: 'text-orange-400',
+                    },
+                    {
+                      rotulo: 'Nº de Recargas',
+                      valor: modalDossie.dados.resumo.qtd_recargas,
+                      cor: 'text-white',
+                    },
+                  ].map((c) => (
+                    <div
+                      key={c.rotulo}
+                      className="rounded-2xl border border-zinc-800 bg-zinc-950 p-4"
+                    >
+                      <p className="mb-1 text-[9px] font-bold uppercase tracking-widest text-zinc-500">
+                        {c.rotulo}
+                      </p>
+                      <p className={`text-lg font-black tracking-tight ${c.cor}`}>{c.valor}</p>
+                    </div>
+                  ))}
+                </div>
+
+                {/* PAGAMENTOS PRESOS EM PENDENTE */}
+                {modalDossie.dados.pedidos_pendentes.length > 0 && (
+                  <div className="rounded-2xl border border-rose-500/40 bg-rose-950/20 p-5">
+                    <h4 className="mb-3 flex items-center gap-2 text-xs font-black uppercase tracking-wider text-rose-400">
+                      ⚠️ Recargas não confirmadas ({modalDossie.dados.pedidos_pendentes.length})
+                    </h4>
+                    <p className="mb-3 text-[11px] leading-relaxed text-zinc-400">
+                      Pedidos que nunca fecharam. Normalmente é pagamento abandonado — mas se o
+                      cliente afirma ter pago, é aqui que o valor estaria parado.
+                    </p>
+                    <ul className="space-y-2">
+                      {modalDossie.dados.pedidos_pendentes.map((pd) => (
+                        <li
+                          key={pd.id}
+                          className="flex items-center justify-between gap-3 rounded-xl bg-zinc-950/70 px-4 py-2.5"
+                        >
+                          <span className="truncate font-mono-tech text-[10px] text-zinc-500">
+                            {pd.id.slice(0, 26)}…
+                          </span>
+                          <span className="shrink-0 text-xs font-black text-rose-300">
+                            R$ {pd.valor_pago.toFixed(2)}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {/* HISTÓRICO DE LOCAÇÕES */}
+                <div>
+                  <h4 className="mb-3 text-xs font-black uppercase tracking-wider text-zinc-400">
+                    🎮 Locações ({modalDossie.dados.locacoes.length})
+                  </h4>
+                  {modalDossie.dados.locacoes.length === 0 ? (
+                    <p className="text-xs text-zinc-600">Nenhuma locação registrada.</p>
+                  ) : (
+                    <div className="custom-scrollbar max-h-52 overflow-y-auto pr-2">
+                      <ul className="space-y-2">
+                        {modalDossie.dados.locacoes.map((l) => (
+                          <li
+                            key={l.id}
+                            className="flex items-center justify-between gap-3 rounded-xl border border-zinc-800/60 bg-zinc-950/50 px-4 py-2.5"
+                          >
+                            <div className="min-w-0">
+                              <p className="truncate text-xs font-bold text-white">{l.jogo}</p>
+                              <p className="text-[10px] text-zinc-500">
+                                {l.tipo_slot} · até{' '}
+                                {new Date(l.data_fim).toLocaleDateString('pt-BR')}
+                              </p>
+                            </div>
+                            <span
+                              className={`shrink-0 rounded-md px-2 py-0.5 text-[9px] font-black uppercase ${l.status === 'ATIVA' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-zinc-800 text-zinc-500'}`}
+                            >
+                              {l.status}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+
+                {/* FILA DE ESPERA */}
+                {modalDossie.dados.reservas.length > 0 && (
+                  <div>
+                    <h4 className="mb-3 text-xs font-black uppercase tracking-wider text-zinc-400">
+                      ⏳ Na fila ({modalDossie.dados.reservas.length})
+                    </h4>
+                    <ul className="space-y-2">
+                      {modalDossie.dados.reservas.map((r) => (
+                        <li
+                          key={r.id}
+                          className="flex items-center justify-between gap-3 rounded-xl border border-amber-500/20 bg-amber-950/10 px-4 py-2.5"
+                        >
+                          <span className="truncate text-xs font-bold text-white">{r.jogo}</span>
+                          <span className="shrink-0 text-[10px] text-zinc-500">
+                            {r.tipo_slot} · {r.dias_aluguel}d
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {/* EXTRATO COMPLETO */}
+                <div>
+                  <h4 className="mb-3 text-xs font-black uppercase tracking-wider text-zinc-400">
+                    🧾 Extrato ({modalDossie.dados.transacoes.length})
+                  </h4>
+                  {modalDossie.dados.transacoes.length === 0 ? (
+                    <p className="text-xs text-zinc-600">Nenhuma movimentação.</p>
+                  ) : (
+                    <div className="custom-scrollbar max-h-72 overflow-y-auto pr-2">
+                      <ul className="space-y-1.5">
+                        {modalDossie.dados.transacoes.map((t, i) => (
+                          <li
+                            key={i}
+                            className="flex items-center justify-between gap-3 rounded-lg bg-zinc-950/50 px-3 py-2"
+                          >
+                            <div className="min-w-0">
+                              <p className="truncate text-[11px] font-medium text-zinc-300">
+                                {t.descricao}
+                              </p>
+                              <p className="text-[9px] text-zinc-600">
+                                {new Date(t.data_transacao).toLocaleString('pt-BR')}
+                              </p>
+                            </div>
+                            <span
+                              className={`shrink-0 text-xs font-black ${t.tipo === 'ENTRADA' ? 'text-emerald-400' : 'text-rose-400'}`}
+                            >
+                              {t.tipo === 'ENTRADA' ? '+' : '−'} R$ {t.valor.toFixed(2)}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -3427,7 +3710,9 @@ function App() {
                             disabled={salvandoTelefone || aguardandoConfirmacaoWhats}
                             className="rounded-lg bg-emerald-600 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-white transition-colors hover:bg-emerald-500 disabled:opacity-50"
                           >
-                            {aguardandoConfirmacaoWhats ? '⏳ Aguardando...' : '📱 Salvar e Verificar'}
+                            {aguardandoConfirmacaoWhats
+                              ? '⏳ Aguardando...'
+                              : '📱 Salvar e Verificar'}
                           </button>
                         </div>
                         <p className="max-w-md text-[10px] leading-relaxed text-zinc-500">
@@ -3471,8 +3756,8 @@ function App() {
                         </h3>
                         <p className="text-sm font-medium leading-relaxed text-zinc-300">
                           Por segurança, só liberamos aluguéis para clientes com um WhatsApp real
-                          confirmado. Confira seu número acima e clique em "Salvar e Verificar"
-                          para enviar a mensagem de confirmação.
+                          confirmado. Confira seu número acima e clique em "Salvar e Verificar" para
+                          enviar a mensagem de confirmação.
                         </p>
                       </div>
                     </div>
@@ -4138,1311 +4423,1412 @@ function App() {
 
             {/* PAINEL DE ADMINISTRAÇÃO */}
             {abaAtual === 'admin' && usuarioLogado.is_admin && (
-              <div className="animate-fade-in mx-auto mt-2 max-w-6xl">
-                <div className="mb-8 flex flex-col justify-between gap-4 md:flex-row md:items-center">
+              <div className="animate-fade-in mx-auto mt-2 max-w-7xl">
+                <div className="mb-6 flex flex-col justify-between gap-4 md:flex-row md:items-center">
                   <h2 className="text-2xl font-black tracking-tight text-white md:text-3xl">
                     Administração do Sistema
                   </h2>
                 </div>
 
-                {/* 📊 BLOCOS ESTATISTICAS DO SISTEMA */}
-                <div className="mb-4 flex justify-end">
-                  <select
-                    value={periodoFiltroEstatisticas}
-                    onChange={(e) => {
-                      const novoPeriodo = e.target.value;
-                      setPeriodoFiltroEstatisticas(novoPeriodo);
-                      fetch(
-                        `https://borajogar-api.onrender.com/admin/estatisticas?periodo=${novoPeriodo}`,
-                        { headers: getAuthHeaders() },
-                      )
-                        .then((res) =>
-                          res.ok
-                            ? res.json()
-                            : { faturamento: 0, total_clientes: 0, locacoes_ativas: 0 },
-                        )
-                        .then((dados) => setEstatisticasAdmin(dados));
-                    }}
-                    className="cursor-pointer rounded-xl border border-zinc-800 bg-zinc-900 px-4 py-2 text-[10px] font-black uppercase tracking-widest text-zinc-400 shadow-lg outline-none transition-all hover:border-emerald-500/50"
-                  >
-                    <option value="mes">📅 Mês Atual</option>
-                    <option value="30dias">⏳ Últimos 30 Dias</option>
-                    <option value="ano">🗓️ Ano Atual</option>
-                    <option value="tudo">♾️ Todo o Período</option>
-                  </select>
-                </div>
-                <section className="mb-10 grid grid-cols-1 gap-6 md:grid-cols-3">
-                  <div className="relative overflow-hidden rounded-3xl border border-emerald-500/30 bg-gradient-to-br from-emerald-900/40 to-zinc-900 p-8 shadow-xl shadow-emerald-500/10 transition-transform duration-300 hover:-translate-y-1">
-                    <div className="absolute -right-4 -top-4 text-8xl opacity-5">💰</div>
-                    <h4 className="mb-3 text-[10px] font-bold uppercase tracking-widest text-zinc-400">
-                      Faturamento Total
-                    </h4>
-                    <span className="text-3xl font-black tracking-tighter text-emerald-400 md:text-4xl">
-                      R$ {estatisticasAdmin.faturamento.toFixed(2)}
-                    </span>
-                  </div>
-                  <div className="relative overflow-hidden rounded-3xl border border-blue-500/30 bg-gradient-to-br from-blue-900/40 to-zinc-900 p-8 shadow-xl shadow-blue-500/10 transition-transform duration-300 hover:-translate-y-1">
-                    <div className="absolute -right-4 -top-4 text-8xl opacity-5">👥</div>
-                    <h4 className="mb-3 text-[10px] font-bold uppercase tracking-widest text-zinc-400">
-                      Clientes Cadastrados
-                    </h4>
-                    <span className="text-3xl font-black tracking-tighter text-blue-400 md:text-4xl">
-                      {estatisticasAdmin.total_clientes}
-                    </span>
-                  </div>
-                  <div className="relative overflow-hidden rounded-3xl border border-amber-500/30 bg-gradient-to-br from-amber-900/40 to-zinc-900 p-8 shadow-xl shadow-amber-500/10 transition-transform duration-300 hover:-translate-y-1">
-                    <div className="absolute -right-4 -top-4 text-8xl opacity-5">🎮</div>
-                    <h4 className="mb-3 text-[10px] font-bold uppercase tracking-widest text-zinc-400">
-                      Locações Ativas
-                    </h4>
-                    <span className="text-3xl font-black tracking-tighter text-amber-400 md:text-4xl">
-                      {estatisticasAdmin.locacoes_ativas || 0}
-                    </span>
-                  </div>
-                </section>
-
-                <div className="mb-10 flex flex-col gap-8">
-                  {/* 🖼️ BLOCO CONFIGURAÇÕES DA VITRINE E BANNERS */}
-                  <details className="group overflow-hidden rounded-3xl border border-l-4 border-zinc-800 border-l-orange-500 bg-zinc-900/80 shadow-2xl shadow-orange-500/10 [&_summary::-webkit-details-marker]:hidden">
-                    <summary className="relative flex cursor-pointer select-none items-center justify-between p-6 transition-colors hover:bg-orange-900/10 md:p-8">
-                      <span className="relative z-10 flex items-center gap-3 text-lg font-black tracking-tight text-orange-400">
-                        🖼️ Configurações da Vitrine e Banners
-                      </span>
-                      <span className="relative z-10 text-lg text-orange-500 transition duration-300 group-open:-rotate-180">
-                        ▼
-                      </span>
-                    </summary>
-                    <div className="border-t border-zinc-800/50 px-6 pb-6 pt-8 md:px-8 md:pb-8">
-                      <div className="mb-4 flex flex-col items-start justify-between gap-5 sm:flex-row sm:items-center">
-                        <div>
-                          <h4 className="text-base font-bold tracking-tight text-white">
-                            📣 Hero Alert (Faixa de Anúncio)
-                          </h4>
-                          <p className="mt-1 text-xs font-medium text-zinc-400">
-                            Faixa colorida que aparece abaixo dos banners principais.
-                          </p>
-                        </div>
-                        <button
-                          onClick={toggleAnuncio}
-                          className={`w-full rounded-xl px-6 py-3 text-xs font-bold uppercase tracking-wider shadow-lg transition-all sm:w-auto ${configSistema.anuncio_ativo ? 'bg-orange-600 text-white shadow-orange-600/20' : 'border border-zinc-700 bg-zinc-800 text-zinc-400 hover:text-white'}`}
-                        >
-                          {configSistema.anuncio_ativo ? '✅ FAIXA LIGADA' : '❌ FAIXA DESLIGADA'}
-                        </button>
-                      </div>
-                      <textarea
-                        placeholder="Ex: PROMOÇÃO DE FIM DE SEMANA! Recarregue R$ 50..."
-                        value={configSistema.mensagem_anuncio}
-                        onChange={(e) =>
-                          setConfigSistema({ ...configSistema, mensagem_anuncio: e.target.value })
-                        }
-                        className={`${adminInputClass} h-16 resize-none border-zinc-700 bg-zinc-950 text-sm focus:ring-orange-500`}
-                      />
-
-                      <div className="mt-8 border-t border-zinc-800/50 pt-6">
-                        <h4 className="text-base font-bold tracking-tight text-white">
-                          🖼️ Banners do Carrossel (Imagens)
-                        </h4>
-                        <p className="mb-4 mt-1 text-xs font-medium text-zinc-400">
-                          Cole as URLs das imagens que irão ficar trocando no topo do site.{' '}
-                          <strong className="text-emerald-400">
-                            Separe cada URL com uma vírgula.
-                          </strong>
-                        </p>
-
-                        {/* [INFO] PREVIEW EM TEMPO REAL DOS BANNERS */}
-                        {(() => {
-                          const urls = configSistema.banners_url
-                            ? configSistema.banners_url
-                                .split(',')
-                                .map((u) => u.trim())
-                                .filter((u) => u)
-                            : [];
-
-                          if (urls.length > 0) {
-                            return (
-                              <div className="custom-scrollbar mb-4 flex w-full gap-4 overflow-x-auto rounded-2xl border border-zinc-800/50 bg-black/20 p-4 shadow-inner">
-                                {urls.map((url, index) => (
-                                  <div
-                                    key={index}
-                                    className="relative flex shrink-0 flex-col transition-transform hover:scale-105"
-                                  >
-                                    <div className="relative h-24 w-48 overflow-hidden rounded-xl border border-zinc-700 bg-zinc-900 shadow-md">
-                                      <img
-                                        src={url}
-                                        alt={`Preview do Banner ${index + 1}`}
-                                        className="h-full w-full object-cover"
-                                        onError={(e) => {
-                                          e.target.src =
-                                            'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="%2352525b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>';
-                                          e.target.className =
-                                            'h-full w-full object-none opacity-50 p-4';
-                                        }}
-                                      />
-                                      {/* Badge mostrando a ordem do banner */}
-                                      <div className="absolute left-2 top-2 flex h-5 w-5 items-center justify-center rounded-md border border-orange-500/30 bg-black/80 text-[10px] font-black text-orange-400 backdrop-blur-md">
-                                        {index + 1}
-                                      </div>
-                                    </div>
-                                  </div>
-                                ))}
-                              </div>
-                            );
-                          }
-                          return null;
-                        })()}
-
-                        <textarea
-                          placeholder="https://imagem1.jpg, https://imagem2.jpg..."
-                          value={configSistema.banners_url || ''}
-                          onChange={(e) =>
-                            setConfigSistema({ ...configSistema, banners_url: e.target.value })
-                          }
-                          className={`${adminInputClass} h-24 resize-none border-zinc-700 bg-zinc-950 text-sm focus:ring-orange-500`}
-                        />
-                      </div>
-
-                      <div className="mt-6 flex justify-end">
-                        <button
-                          onClick={salvarConfiguracoesGlobais}
-                          className="rounded-xl bg-blue-600 px-8 py-4 text-xs font-bold uppercase tracking-wider text-white shadow-lg shadow-blue-600/20 transition-colors hover:bg-blue-500"
-                        >
-                          💾 Salvar Configurações
-                        </button>
-                      </div>
-                    </div>
-                  </details>
-
-                  {/* 📊 BLOCO GESTÃO DA ENQUETE */}
-                  <details className="group overflow-hidden rounded-3xl border border-l-4 border-fuchsia-500/30 border-l-fuchsia-500 bg-gradient-to-r from-fuchsia-900/20 to-zinc-900 shadow-2xl shadow-fuchsia-500/10 [&_summary::-webkit-details-marker]:hidden">
-                    <summary className="relative flex cursor-pointer select-none items-center justify-between p-6 transition-colors hover:bg-fuchsia-900/10 md:p-8">
-                      <span className="relative z-10 flex items-center gap-3 text-lg font-black tracking-tight text-fuchsia-400">
-                        📊 Gestão da Enquete
-                      </span>
-                      <span className="relative z-10 text-lg text-fuchsia-500 transition duration-300 group-open:-rotate-180">
-                        ▼
-                      </span>
-                    </summary>
-                    <div className="border-t border-fuchsia-500/20 px-6 pb-6 pt-8 md:px-8 md:pb-8">
-                      {/* 1. TEXTOS DA ENQUETE */}
-                      <div className="mb-8 rounded-2xl border border-zinc-800/50 bg-zinc-950 p-5">
-                        <h4 className="mb-1 text-sm font-bold tracking-tight text-white">
-                          📝 Textos de Exibição
-                        </h4>
-                        <p className="mb-4 text-xs font-medium text-zinc-400">
-                          Personalize as frases que aparecem na área de votação para os clientes.
-                        </p>
-                        <div className="grid gap-4 md:grid-cols-2">
-                          <div>
-                            <label className="mb-2 block text-[10px] font-bold uppercase tracking-wider text-zinc-500">
-                              Título da Enquete
-                            </label>
-                            <input
-                              type="text"
-                              placeholder="Ex: Próximas Adições: Você Decide!"
-                              value={configSistema.enquete_titulo || ''}
-                              onChange={(e) =>
-                                setConfigSistema({
-                                  ...configSistema,
-                                  enquete_titulo: e.target.value,
-                                })
-                              }
-                              className={`${adminInputClass} focus:ring-fuchsia-500`}
-                            />
-                          </div>
-                          <div>
-                            <label className="mb-2 block text-[10px] font-bold uppercase tracking-wider text-zinc-500">
-                              Subtítulo / Descrição
-                            </label>
-                            <textarea
-                              placeholder="Subtítulo..."
-                              value={configSistema.enquete_subtitulo || ''}
-                              onChange={(e) =>
-                                setConfigSistema({
-                                  ...configSistema,
-                                  enquete_subtitulo: e.target.value,
-                                })
-                              }
-                              className={`${adminInputClass} h-[42px] resize-none focus:ring-fuchsia-500`}
-                            />
-                          </div>
-                        </div>
-                        <div className="mt-4 flex justify-end">
+                <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
+                  {/* MENU LATERAL DE SECOES DO PAINEL */}
+                  <nav className="lg:w-56 lg:shrink-0">
+                    <div className="custom-scrollbar flex gap-2 overflow-x-auto rounded-2xl border border-zinc-800/80 bg-zinc-950 p-2 shadow-inner lg:sticky lg:top-6 lg:flex-col lg:overflow-visible">
+                      {SECOES_ADMIN.map((s) => {
+                        const contador =
+                          s.id === 'jogos'
+                            ? jogos.length
+                            : s.id === 'locacoes'
+                              ? locacoesAtivasFiltradas.length
+                              : s.id === 'fila'
+                                ? reservasAdminFiltradas.length
+                                : s.id === 'clientes'
+                                  ? todosUsuarios.length
+                                  : s.id === 'manutencao'
+                                    ? contasManutencao.length
+                                    : 0;
+                        const ativa = secaoAdmin === s.id;
+                        return (
                           <button
-                            onClick={() =>
-                              salvarConfiguracoesDireto(
-                                configSistema,
-                                '💾 Textos da enquete atualizados!',
-                              )
-                            }
-                            className="rounded-xl bg-fuchsia-600 px-6 py-2.5 text-xs font-bold uppercase tracking-wider text-white shadow-lg shadow-fuchsia-600/20 transition-colors hover:bg-fuchsia-500"
+                            key={s.id}
+                            onClick={() => {
+                              setSecaoAdmin(s.id);
+                              window.scrollTo(0, 0);
+                            }}
+                            className={`flex shrink-0 items-center gap-2.5 whitespace-nowrap rounded-xl px-3.5 py-2.5 text-left text-[11px] font-bold uppercase tracking-wider transition-all lg:w-full ${ativa ? s.ativo : 'text-zinc-400 hover:bg-zinc-900 hover:text-white'}`}
                           >
-                            Salvar Textos
-                          </button>
-                        </div>
-                      </div>
-
-                      {/* 2. GESTÃO DAS OPÇÕES DA ENQUETE */}
-                      <div className="flex flex-col gap-8 lg:flex-row">
-                        <form
-                          onSubmit={adicionarOpcaoEnquete}
-                          className="flex flex-1 flex-col gap-4"
-                        >
-                          <h4 className="mb-2 text-sm font-bold tracking-tight text-white">
-                            Adicionar Opção (Máx. Recomendado: 5)
-                          </h4>
-                          <div className="flex gap-3">
-                            <input
-                              type="text"
-                              placeholder="Título do Jogo"
-                              value={novaOpcaoEnqueteTitulo}
-                              onChange={(e) => setNovaOpcaoEnqueteTitulo(e.target.value)}
-                              className={adminInputClass}
-                              required
-                            />
-                            <button
-                              type="button"
-                              onClick={buscarImagemEnquete}
-                              className="whitespace-nowrap rounded-xl bg-amber-500 px-5 text-[10px] font-bold uppercase tracking-wider text-zinc-900 shadow-lg shadow-amber-500/20 transition-colors hover:bg-amber-400"
-                            >
-                              ✨ Buscar
-                            </button>
-                          </div>
-                          <input
-                            type="url"
-                            placeholder="URL da Capa (Preenchimento Automático)"
-                            value={novaOpcaoEnqueteImagem}
-                            onChange={(e) => setNovaOpcaoEnqueteImagem(e.target.value)}
-                            className={adminInputClass}
-                            required
-                          />
-                          <button
-                            type="submit"
-                            className="mt-2 rounded-xl bg-fuchsia-600 py-3.5 text-xs font-bold uppercase tracking-wider text-white shadow-lg shadow-fuchsia-500/20 transition-colors hover:bg-fuchsia-500"
-                          >
-                            Salvar Opção
-                          </button>
-                        </form>
-
-                        <div className="flex-1 rounded-2xl border border-zinc-800/80 bg-zinc-950/50 p-5">
-                          <div className="mb-4 flex items-center justify-between">
-                            <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-400">
-                              Opções Atuais
-                            </h4>
-                            <button
-                              onClick={limparEnquete}
-                              type="button"
-                              className="rounded-lg border border-rose-500/30 bg-rose-900/30 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-rose-400 transition-colors hover:bg-rose-600 hover:text-white"
-                            >
-                              Limpar Enquete
-                            </button>
-                          </div>
-                          <div className="custom-scrollbar flex max-h-[200px] flex-col gap-3 overflow-y-auto pr-2">
-                            {enqueteOpcoes.length === 0 ? (
-                              <p className="text-xs font-medium text-zinc-500">
-                                Nenhuma opção cadastrada.
-                              </p>
-                            ) : (
-                              enqueteOpcoes.map((op) => (
-                                <div
-                                  key={op.id}
-                                  className="flex items-center justify-between rounded-xl border border-zinc-800 bg-zinc-900 p-3"
-                                >
-                                  <div className="flex items-center gap-3">
-                                    <img
-                                      src={op.url_imagem}
-                                      className="h-10 w-10 rounded-lg border border-zinc-700 object-cover"
-                                      alt="capa"
-                                    />
-                                    <div className="flex flex-col">
-                                      <span className="text-xs font-bold text-white">
-                                        {op.titulo}
-                                      </span>
-                                      <span className="text-[10px] font-black text-fuchsia-400">
-                                        {op.total_votos} votos
-                                      </span>
-                                    </div>
-                                  </div>
-                                  <button
-                                    onClick={() => removerOpcaoEnquete(op.id)}
-                                    className="text-lg text-zinc-500 transition-colors hover:text-rose-400"
-                                    title="Remover"
-                                  >
-                                    🗑️
-                                  </button>
-                                </div>
-                              ))
+                            <span className="text-base leading-none">{s.icone}</span>
+                            <span className="flex-1">{s.nome}</span>
+                            {contador > 0 && (
+                              <span
+                                className={`rounded-md px-1.5 py-0.5 text-[9px] font-black leading-none ${s.alerta && !ativa ? 'bg-rose-500 text-white' : ativa ? 'bg-black/25 text-white' : 'bg-zinc-800 text-zinc-400'}`}
+                              >
+                                {contador}
+                              </span>
                             )}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </details>
-
-                  {/* 🎫 BLOCO CUPONS PROMOCIONAIS */}
-                  <details className="group overflow-hidden rounded-3xl border border-purple-500/30 bg-gradient-to-r from-purple-900/20 to-zinc-900 shadow-2xl shadow-purple-500/10 [&_summary::-webkit-details-marker]:hidden">
-                    <summary className="relative flex cursor-pointer select-none items-center justify-between p-6 transition-colors hover:bg-purple-900/10 md:p-8">
-                      <span className="relative z-10 flex items-center gap-3 text-lg font-black tracking-tight text-purple-400">
-                        🎫 Gerenciar Cupons Promocionais
-                      </span>
-                      <span className="relative z-10 text-lg text-purple-500 transition duration-300 group-open:-rotate-180">
-                        ▼
-                      </span>
-                    </summary>
-                    <div className="border-t border-purple-500/20 px-6 pb-6 pt-8 md:px-8 md:pb-8">
-                      <div className="grid grid-cols-1 gap-10 lg:grid-cols-3">
-                        <form
-                          onSubmit={cadastrarCupom}
-                          className="flex flex-col gap-4 lg:col-span-1"
-                        >
-                          <input
-                            type="text"
-                            placeholder="Código (Ex: VIP20)"
-                            value={novoCupomCodigo}
-                            onChange={(e) => setNovoCupomCodigo(e.target.value.toUpperCase())}
-                            className={adminInputClass}
-                            required
-                          />
-                          <div className="flex gap-3">
-                            <select
-                              value={novoCupomTipo}
-                              onChange={(e) => setNovoCupomTipo(e.target.value)}
-                              className={adminInputClass}
-                            >
-                              <option value="PORCENTAGEM">% Porcentagem</option>
-                              <option value="FIXO">R$ Valor Fixo</option>
-                            </select>
-                            <input
-                              type="number"
-                              step="0.01"
-                              placeholder="Valor"
-                              value={novoCupomValor}
-                              onChange={(e) => setNovoCupomValor(e.target.value)}
-                              className={adminInputClass}
-                              required
-                            />
-                          </div>
-                          <button
-                            type="submit"
-                            className="mt-2 w-full rounded-xl bg-purple-600 py-3.5 text-xs font-bold uppercase tracking-wider text-white shadow-lg shadow-purple-500/20 transition-colors hover:bg-purple-500"
-                          >
-                            Criar Cupom
                           </button>
-                        </form>
-
-                        <div className="scrollbar-thin scrollbar-thumb-purple-700 scrollbar-track-transparent max-h-[200px] overflow-y-auto pr-3 lg:col-span-2">
-                          {listaCupons.length === 0 ? (
-                            <p className="text-sm font-medium text-zinc-500">Nenhum cupom ativo.</p>
-                          ) : (
-                            <table className="w-full whitespace-nowrap text-left text-sm">
-                              <thead>
-                                <tr className="border-b border-purple-500/30 text-zinc-400">
-                                  <th className="pb-3 text-[10px] font-bold uppercase tracking-wider">
-                                    Código
-                                  </th>
-                                  <th className="pb-3 text-[10px] font-bold uppercase tracking-wider">
-                                    Tipo
-                                  </th>
-                                  <th className="pb-3 text-[10px] font-bold uppercase tracking-wider">
-                                    Bônus
-                                  </th>
-                                  <th className="pb-3 text-right text-[10px] font-bold uppercase tracking-wider">
-                                    Ação
-                                  </th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {listaCupons.map((c) => (
-                                  <tr
-                                    key={c.id}
-                                    className="border-b border-purple-500/10 transition-colors hover:bg-purple-900/20"
-                                  >
-                                    <td className="py-4 text-sm font-black tracking-widest text-white">
-                                      {c.codigo}
-                                    </td>
-                                    <td className="py-4 text-[10px] font-bold uppercase tracking-wider text-zinc-400">
-                                      {c.tipo}
-                                    </td>
-                                    <td className="py-4 text-sm font-black text-emerald-400">
-                                      {c.tipo === 'FIXO'
-                                        ? `+ R$ ${c.valor.toFixed(2)}`
-                                        : `+ ${c.valor}%`}
-                                    </td>
-                                    <td className="py-4 text-right">
-                                      <button
-                                        onClick={() => removerCupom(c.id)}
-                                        className="rounded-lg border border-rose-500/30 bg-rose-900/30 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-rose-400 transition-colors hover:text-white"
-                                      >
-                                        Excluir
-                                      </button>
-                                    </td>
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </table>
-                          )}
-                        </div>
-                      </div>
+                        );
+                      })}
                     </div>
-                  </details>
-                </div>
+                  </nav>
 
-                {/* 🚨 BLOCO MANUTENÇÃO DE CONTAS */}
-                {contasManutencao.length > 0 && (
-                  <section className="animate-pulse-slow mb-10 rounded-3xl border border-rose-500/50 bg-rose-950/20 p-8 shadow-2xl shadow-rose-500/10">
-                    <div className="mb-6 flex flex-col justify-between gap-4 md:flex-row md:items-center">
-                      <div>
-                        <h3 className="mb-2 flex items-center gap-3 text-xl font-black tracking-tight text-rose-400">
-                          🚨 Atenção: Troca de Senha Necessária
-                        </h3>
-                        <p className="text-xs font-medium text-zinc-300 md:text-sm">
-                          As locações abaixo terminaram. Altere a senha na PSN e informe aqui para
-                          liberar a conta.
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="mb-8 flex flex-col gap-4 rounded-2xl border border-rose-500/20 bg-rose-950/30 p-4 shadow-inner md:flex-row">
-                      <input
-                        type="text"
-                        placeholder="🔍 Buscar por jogo ou último cliente..."
-                        value={buscaManutencao}
-                        onChange={(e) => setBuscaManutencao(e.target.value)}
-                        className={`${adminInputClass} flex-1 border-rose-500/30 focus:ring-rose-500`}
-                      />
-                      <div className="flex w-full flex-col gap-1 md:w-auto">
-                        <select
-                          value={ordenacaoManutencao}
-                          onChange={(e) => setOrdenacaoManutencao(e.target.value)}
-                          className="h-full w-full cursor-pointer rounded-xl border border-rose-500/30 bg-zinc-900 px-3 py-2.5 text-sm font-bold text-zinc-300 outline-none transition-colors hover:border-rose-400 focus:ring-2 focus:ring-rose-500 md:w-56"
-                        >
-                          <option value="urgente">⚠️ Mais Urgentes (Cashback)</option>
-                          <option value="az_jogo">🎮 Jogo (A-Z)</option>
-                        </select>
-                      </div>
-                    </div>
-
-                    {contasManutencaoFiltradas.length === 0 ? (
-                      <p className="py-8 text-center text-sm font-medium text-zinc-500">
-                        Nenhuma conta em manutenção no momento.
-                      </p>
-                    ) : (
-                      <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
-                        {contasManutencaoFiltradas.map((conta) => (
-                          <div
-                            key={`manu-${conta.conta_psn_id}`}
-                            className="flex flex-col gap-6 rounded-3xl border border-rose-500/50 bg-zinc-900 p-6 shadow-lg md:p-8"
+                  {/* CONTEUDO DA SECAO SELECIONADA */}
+                  <div className="min-w-0 flex-1">
+                    {secaoAdmin === 'visao-geral' && (
+                      <div className="animate-fade-in flex flex-col gap-8">
+                        {/* 📊 BLOCOS ESTATISTICAS DO SISTEMA */}
+                        <div className="mb-4 flex justify-end">
+                          <select
+                            value={periodoFiltroEstatisticas}
+                            onChange={(e) => {
+                              const novoPeriodo = e.target.value;
+                              setPeriodoFiltroEstatisticas(novoPeriodo);
+                              fetch(
+                                `https://borajogar-api.onrender.com/admin/estatisticas?periodo=${novoPeriodo}`,
+                                { headers: getAuthHeaders() },
+                              )
+                                .then((res) =>
+                                  res.ok
+                                    ? res.json()
+                                    : { faturamento: 0, total_clientes: 0, locacoes_ativas: 0 },
+                                )
+                                .then((dados) => setEstatisticasAdmin(dados));
+                            }}
+                            className="cursor-pointer rounded-xl border border-zinc-800 bg-zinc-900 px-4 py-2 text-[10px] font-black uppercase tracking-widest text-zinc-400 shadow-lg outline-none transition-all hover:border-emerald-500/50"
                           >
-                            <div className="flex flex-col items-start justify-between gap-4 sm:flex-row">
-                              <div className="flex flex-col gap-1.5">
-                                <span
-                                  className={`w-max rounded-lg border px-2 py-1 text-[9px] font-black uppercase tracking-wider ${conta.status_primaria === 'MANUTENCAO' ? 'border-blue-500/30 bg-blue-500/20 text-blue-400' : 'border-fuchsia-500/30 bg-fuchsia-500/20 text-fuchsia-400'}`}
+                            <option value="mes">📅 Mês Atual</option>
+                            <option value="30dias">⏳ Últimos 30 Dias</option>
+                            <option value="ano">🗓️ Ano Atual</option>
+                            <option value="tudo">♾️ Todo o Período</option>
+                          </select>
+                        </div>
+                        <section className="mb-10 grid grid-cols-1 gap-6 md:grid-cols-3">
+                          <div className="relative overflow-hidden rounded-3xl border border-emerald-500/30 bg-gradient-to-br from-emerald-900/40 to-zinc-900 p-8 shadow-xl shadow-emerald-500/10 transition-transform duration-300 hover:-translate-y-1">
+                            <div className="absolute -right-4 -top-4 text-8xl opacity-5">💰</div>
+                            <h4 className="mb-3 text-[10px] font-bold uppercase tracking-widest text-zinc-400">
+                              Faturamento Total
+                            </h4>
+                            <span className="text-3xl font-black tracking-tighter text-emerald-400 md:text-4xl">
+                              R$ {estatisticasAdmin.faturamento.toFixed(2)}
+                            </span>
+                          </div>
+                          <div className="relative overflow-hidden rounded-3xl border border-blue-500/30 bg-gradient-to-br from-blue-900/40 to-zinc-900 p-8 shadow-xl shadow-blue-500/10 transition-transform duration-300 hover:-translate-y-1">
+                            <div className="absolute -right-4 -top-4 text-8xl opacity-5">👥</div>
+                            <h4 className="mb-3 text-[10px] font-bold uppercase tracking-widest text-zinc-400">
+                              Clientes Cadastrados
+                            </h4>
+                            <span className="text-3xl font-black tracking-tighter text-blue-400 md:text-4xl">
+                              {estatisticasAdmin.total_clientes}
+                            </span>
+                          </div>
+                          <div className="relative overflow-hidden rounded-3xl border border-amber-500/30 bg-gradient-to-br from-amber-900/40 to-zinc-900 p-8 shadow-xl shadow-amber-500/10 transition-transform duration-300 hover:-translate-y-1">
+                            <div className="absolute -right-4 -top-4 text-8xl opacity-5">🎮</div>
+                            <h4 className="mb-3 text-[10px] font-bold uppercase tracking-widest text-zinc-400">
+                              Locações Ativas
+                            </h4>
+                            <span className="text-3xl font-black tracking-tighter text-amber-400 md:text-4xl">
+                              {estatisticasAdmin.locacoes_ativas || 0}
+                            </span>
+                          </div>
+                        </section>
+                      </div>
+                    )}
+
+                    {secaoAdmin === 'jogos' && (
+                      <div className="animate-fade-in flex flex-col gap-8">
+                        <div className="mb-10 grid grid-cols-1 gap-8 xl:grid-cols-2">
+                          {/* ➕ BLOCO CADASTRAR NOVO JOGO */}
+                          <div className="flex flex-col rounded-3xl border border-blue-500/30 bg-gradient-to-br from-blue-900/20 to-zinc-900 p-8 shadow-2xl shadow-blue-500/10">
+                            <h3 className="mb-8 flex items-center gap-3 text-lg font-black tracking-tight text-blue-400">
+                              ➕ Cadastrar Novo Jogo
+                            </h3>
+                            <form
+                              onSubmit={cadastrarJogo}
+                              className="flex flex-1 flex-col space-y-4"
+                            >
+                              <div className="flex gap-3">
+                                <input
+                                  type="text"
+                                  placeholder="Título do jogo"
+                                  value={novoJogoTitulo}
+                                  onChange={(e) => setNovoJogoTitulo(e.target.value)}
+                                  className={adminInputClass}
+                                  required
+                                />
+                                <button
+                                  type="button"
+                                  onClick={buscarDadosDoJogo}
+                                  className="whitespace-nowrap rounded-xl bg-amber-500 px-5 text-[10px] font-bold uppercase tracking-wider text-zinc-900 shadow-lg shadow-amber-500/20 transition-colors hover:bg-amber-400"
                                 >
-                                  🕹️ Slot:{' '}
-                                  {conta.status_primaria === 'MANUTENCAO'
-                                    ? 'PRIMARIA'
-                                    : 'SECUNDARIA'}
-                                </span>
-                                <strong className="text-lg font-black tracking-tight text-white">
-                                  {conta.jogo}
-                                </strong>
-                                <span className="text-xs font-bold tracking-wide text-zinc-400">
-                                  Login:{' '}
-                                  <span className="select-all font-medium text-white">
-                                    {conta.email_login}
-                                  </span>
-                                </span>
-                                <span className="text-xs font-bold tracking-wide text-zinc-500 line-through">
-                                  Senha Velha:{' '}
-                                  <span className="font-mono">{conta.senha_antiga}</span>
-                                </span>
-                                <span className="mt-4 w-max rounded-xl border border-amber-500/20 bg-amber-500/10 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-amber-500">
-                                  Último Cliente: {conta.ultimo_cliente_nome || 'Desconhecido'}
-                                </span>
-                                {conta.cashback_pendente > 0 && (
-                                  <span className="mt-3 w-max rounded-xl border border-emerald-500/30 bg-emerald-400/10 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-emerald-400">
-                                    💸 Cashback Pendente: R$ {conta.cashback_pendente.toFixed(2)}
-                                  </span>
-                                )}
+                                  ✨ Buscar
+                                </button>
                               </div>
-                              <div className="flex w-full flex-col gap-3 sm:w-auto">
-                                {conta.ultimo_cliente_telefone && (
-                                  <button
-                                    onClick={() =>
-                                      cobrarNoWhatsApp(
-                                        conta.ultimo_cliente_nome,
-                                        conta.ultimo_cliente_telefone,
-                                        conta.jogo,
-                                      )
-                                    }
-                                    className="flex items-center justify-center gap-2 rounded-xl border border-emerald-500/30 bg-emerald-900/40 px-4 py-2.5 text-[10px] font-bold uppercase tracking-wider text-emerald-400 shadow transition-colors hover:bg-emerald-600 hover:text-white"
+
+                              <div className="flex flex-col gap-4 md:flex-row">
+                                <div className="w-full">
+                                  <select
+                                    value={novoJogoPlataforma}
+                                    onChange={(e) => setNovoJogoPlataforma(e.target.value)}
+                                    className={adminInputClass}
                                   >
-                                    📱 Cobrar via Whats
-                                  </button>
-                                )}
-                                {conta.ultimo_cliente_id && (
-                                  <button
-                                    onClick={() =>
-                                      aplicarMultaCliente(
-                                        conta.ultimo_cliente_id,
-                                        conta.ultimo_cliente_nome,
-                                      )
-                                    }
-                                    className="flex items-center justify-center gap-2 rounded-xl border border-rose-500/30 bg-rose-900/40 px-4 py-2.5 text-[10px] font-bold uppercase tracking-wider text-rose-400 shadow transition-colors hover:bg-rose-600 hover:text-white"
-                                  >
-                                    🚨 Aplicar Multa
-                                  </button>
-                                )}
+                                    <option value="PS5">PS5</option>
+                                    <option value="PS4/PS5">PS4/PS5</option>
+                                  </select>
+                                </div>
+                                <div className="relative w-full">
+                                  <label className="absolute -top-2 left-3 bg-zinc-900 px-1 text-[10px] font-bold uppercase tracking-wider text-zinc-500">
+                                    Lançamento (Pré-venda)
+                                  </label>
+                                  <input
+                                    type="date"
+                                    value={novoJogoDataLancamento}
+                                    onChange={(e) => setNovoJogoDataLancamento(e.target.value)}
+                                    className={adminInputClass}
+                                  />
+                                </div>
                               </div>
-                            </div>
-                            <div className="mt-2 flex flex-col gap-3 border-t border-rose-900/50 pt-6 sm:flex-row">
+
+                              <div className="flex gap-3">
+                                <input
+                                  type="text"
+                                  placeholder="Tempo (ex: 20h)"
+                                  value={novoJogoTempo}
+                                  onChange={(e) => setNovoJogoTempo(e.target.value)}
+                                  className={adminInputClass}
+                                />
+                                <input
+                                  type="number"
+                                  step="0.1"
+                                  placeholder="Nota"
+                                  value={novoJogoNota}
+                                  onChange={(e) => setNovoJogoNota(e.target.value)}
+                                  className={adminInputClass}
+                                />
+                              </div>
+
+                              <input
+                                type="url"
+                                placeholder="URL da Capa"
+                                value={novoJogoImagem}
+                                onChange={(e) => setNovoJogoImagem(e.target.value)}
+                                className={adminInputClass}
+                              />
+
+                              <div className="flex gap-3">
+                                <div className="relative w-full">
+                                  <label className="mb-1 block text-xs font-bold uppercase tracking-wider text-zinc-500">
+                                    Preço Primária 7 Dias (R$)
+                                  </label>
+                                  <input
+                                    type="number"
+                                    step="0.01"
+                                    value={novoJogoPreco}
+                                    onChange={(e) => setNovoJogoPreco(e.target.value)}
+                                    className={adminInputClass}
+                                    required
+                                  />
+                                </div>
+                                <div className="relative w-full">
+                                  <label className="mb-1 block text-xs font-bold uppercase tracking-wider text-zinc-500">
+                                    Preço Primária 14 Dias (R$)
+                                  </label>
+                                  <input
+                                    type="number"
+                                    step="0.01"
+                                    value={novoJogoPreco14}
+                                    onChange={(e) => setNovoJogoPreco14(e.target.value)}
+                                    className={adminInputClass}
+                                  />
+                                </div>
+                              </div>
+
+                              {/* [INFO] Novos campos financeiros da Vaga Secundária (New Form) */}
+                              <div className="flex gap-3">
+                                <div className="relative w-full">
+                                  <label className="mb-1 block text-xs font-bold uppercase tracking-wider text-fuchsia-500">
+                                    Preço Secundária 7 Dias (R$)
+                                  </label>
+                                  <input
+                                    type="number"
+                                    step="0.01"
+                                    value={novoJogoPrecoSec}
+                                    onChange={(e) => setNovoJogoPrecoSec(e.target.value)}
+                                    className={`${adminInputClass} border-fuchsia-500/30 focus:ring-fuchsia-500`}
+                                  />
+                                </div>
+                                <div className="relative w-full">
+                                  <label className="mb-1 block text-xs font-bold uppercase tracking-wider text-fuchsia-500">
+                                    Preço Secundária 14 Dias (R$)
+                                  </label>
+                                  <input
+                                    type="number"
+                                    step="0.01"
+                                    value={novoJogoPrecoSec14}
+                                    onChange={(e) => setNovoJogoPrecoSec14(e.target.value)}
+                                    className={`${adminInputClass} border-fuchsia-500/30 focus:ring-fuchsia-500`}
+                                  />
+                                </div>
+                              </div>
+
+                              <textarea
+                                placeholder="Descrição curta do jogo..."
+                                value={novoJogoDescricao}
+                                onChange={(e) => setNovoJogoDescricao(e.target.value)}
+                                className={`${adminInputClass} h-24 resize-none`}
+                                required
+                              />
+
+                              <label className="flex w-max cursor-pointer items-center gap-3 rounded-xl border border-zinc-800 bg-zinc-950 px-4 py-3 transition-colors hover:border-yellow-500/50">
+                                <input
+                                  type="checkbox"
+                                  checked={novoJogoRecomendacao}
+                                  onChange={(e) => setNovoJogoRecomendacao(e.target.checked)}
+                                  className="h-4 w-4 rounded border-zinc-700 bg-zinc-900 text-yellow-500 focus:ring-yellow-500 focus:ring-offset-zinc-950"
+                                />
+                                <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">
+                                  Jogo recomendado por cliente?
+                                </span>
+                              </label>
+
+                              <button
+                                type="submit"
+                                className="mt-auto w-full rounded-xl bg-blue-600 py-4 text-xs font-bold uppercase tracking-wider text-white shadow-lg shadow-blue-500/20 transition-colors hover:bg-blue-500"
+                              >
+                                Salvar no Catálogo
+                              </button>
+                            </form>
+                          </div>
+
+                          {/* 📦 BLOCO ABASTECER ESTOQUE */}
+                          <div className="flex flex-col rounded-3xl border border-fuchsia-500/30 bg-gradient-to-br from-fuchsia-900/20 to-zinc-900 p-8 shadow-2xl shadow-fuchsia-500/10">
+                            <h3 className="mb-8 flex items-center gap-3 text-lg font-black tracking-tight text-fuchsia-400">
+                              📦 Abastecer Estoque
+                            </h3>
+                            <input
+                              type="text"
+                              placeholder="🔍 Filtrar jogo na lista abaixo..."
+                              value={buscaEstoque}
+                              onChange={(e) => setBuscaEstoque(e.target.value)}
+                              className={`${adminInputClass} mb-4 border-fuchsia-500/30 focus:ring-fuchsia-500`}
+                            />
+                            <form
+                              onSubmit={cadastrarConta}
+                              className="flex flex-1 flex-col space-y-4"
+                            >
+                              <select
+                                value={novaContaJogoId}
+                                onChange={(e) => setNovaContaJogoId(e.target.value)}
+                                className={adminInputClass}
+                                required
+                              >
+                                <option value="">Selecione o Jogo...</option>
+                                {jogosEstoqueFiltrados.map((j) => (
+                                  <option key={j.id} value={j.id}>
+                                    {j.titulo}
+                                  </option>
+                                ))}
+                              </select>
+                              <input
+                                type="email"
+                                placeholder="E-mail da Conta PSN"
+                                value={novaContaEmail}
+                                onChange={(e) => setNovaContaEmail(e.target.value)}
+                                className={adminInputClass}
+                                required
+                              />
                               <input
                                 type="text"
-                                placeholder="Digite a NOVA senha para liberar"
-                                value={novasSenhasTemp[conta.conta_psn_id] || ''}
-                                onChange={(e) =>
-                                  setNovasSenhasTemp({
-                                    ...novasSenhasTemp,
-                                    [conta.conta_psn_id]: e.target.value,
-                                  })
-                                }
-                                className="flex-1 rounded-2xl border border-zinc-800 bg-zinc-950 px-5 py-3.5 text-sm font-bold text-white outline-none focus:border-rose-500"
+                                placeholder="Senha da Conta PSN"
+                                value={novaContaSenha}
+                                onChange={(e) => setNovaContaSenha(e.target.value)}
+                                className={adminInputClass}
+                                required
+                              />
+                              <input
+                                type="text"
+                                placeholder="Segredo MFA (Opcional - Texto do Autenticador)"
+                                value={novaContaMfaSecret}
+                                onChange={(e) => setNovaContaMfaSecret(e.target.value)}
+                                className={adminInputClass}
                               />
                               <button
-                                onClick={() => confirmarResetSenha(conta.conta_psn_id)}
-                                className="whitespace-nowrap rounded-2xl bg-emerald-600 px-6 py-3.5 text-xs font-bold uppercase tracking-wider text-white shadow-lg shadow-emerald-600/20 transition-colors hover:bg-emerald-500"
+                                type="submit"
+                                className="mt-auto w-full rounded-xl bg-fuchsia-600 py-4 text-xs font-bold uppercase tracking-wider text-white shadow-lg shadow-fuchsia-500/20 transition-colors hover:bg-fuchsia-500"
                               >
-                                Liberar Jogo
+                                Adicionar Conta ao Cofre
+                              </button>
+                            </form>
+                          </div>
+                        </div>
+                        {/* 🎮 BLOCO CATALOGO DE JOGOS */}
+                        <div className="overflow-hidden rounded-3xl border border-l-4 border-zinc-800 border-l-blue-500 bg-zinc-900/80 shadow-2xl shadow-blue-500/10">
+                          <div className="flex items-center justify-between p-6 md:p-8">
+                            <span className="flex items-center gap-3 text-lg font-black tracking-tight text-blue-400">
+                              🎮 Catálogo de Jogos ({jogos.length})
+                            </span>
+                          </div>
+                          <div className="border-t border-zinc-800/50 px-6 pb-6 pt-8 md:px-8 md:pb-8">
+                            <div className="mb-6 flex flex-col items-center gap-4 rounded-2xl border border-zinc-800/80 bg-zinc-950 p-4 shadow-inner lg:flex-row">
+                              <input
+                                type="text"
+                                placeholder="🔍 Pesquisar por nome do jogo..."
+                                value={termoBusca}
+                                onChange={(e) => setTermoBusca(e.target.value)}
+                                className={`${adminInputClass} w-full flex-1`}
+                              />
+                              <div className="flex w-full overflow-x-auto rounded-xl border border-zinc-700/50 bg-zinc-900 p-1 shadow-inner lg:w-auto">
+                                <button
+                                  onClick={() => setFiltroStatusCatalogo('todos')}
+                                  className={`flex-1 rounded-lg px-4 py-2 text-[10px] font-bold uppercase tracking-wider transition-all lg:flex-none ${filtroStatusCatalogo === 'todos' ? 'bg-blue-600 text-white' : 'text-zinc-400 hover:text-white'}`}
+                                >
+                                  Todos
+                                </button>
+                                <button
+                                  onClick={() => setFiltroStatusCatalogo('disponiveis')}
+                                  className={`flex-1 rounded-lg px-4 py-2 text-[10px] font-bold uppercase tracking-wider transition-all lg:flex-none ${filtroStatusCatalogo === 'disponiveis' ? 'bg-emerald-600 text-white' : 'text-zinc-400 hover:text-white'}`}
+                                >
+                                  Livres
+                                </button>
+                                <button
+                                  onClick={() => setFiltroStatusCatalogo('alugados')}
+                                  className={`flex-1 rounded-lg px-4 py-2 text-[10px] font-bold uppercase tracking-wider transition-all lg:flex-none ${filtroStatusCatalogo === 'alugados' ? 'bg-rose-600 text-white' : 'text-zinc-400 hover:text-white'}`}
+                                >
+                                  Alugados
+                                </button>
+                                <button
+                                  onClick={() => setFiltroStatusCatalogo('lancamentos')}
+                                  className={`flex-1 rounded-lg px-4 py-2 text-[10px] font-bold uppercase tracking-wider transition-all lg:flex-none ${filtroStatusCatalogo === 'lancamentos' ? 'bg-fuchsia-600 text-white' : 'text-zinc-400 hover:text-white'}`}
+                                >
+                                  🔥 Lançam.
+                                </button>
+                              </div>
+                            </div>
+
+                            <div className="custom-scrollbar max-h-[600px] overflow-y-auto pr-3">
+                              {jogosCatalogoAdminFiltrados.length === 0 ? (
+                                <p className="text-sm font-medium text-zinc-500">
+                                  Nenhum jogo encontrado.
+                                </p>
+                              ) : (
+                                <ul className="space-y-3">
+                                  {jogosCatalogoAdminFiltrados
+                                    .slice(paginaCatalogo * 50, (paginaCatalogo + 1) * 50)
+                                    .map((jogo) => (
+                                      <li
+                                        key={`cat-${jogo.id}`}
+                                        className="flex flex-col items-start justify-between gap-4 rounded-2xl border-l-2 border-blue-500 bg-zinc-950/50 p-4 shadow-sm transition-colors hover:bg-zinc-800/50 md:flex-row md:items-center md:p-5"
+                                      >
+                                        <div className="flex w-full flex-col gap-1 leading-relaxed md:w-auto">
+                                          <span className="max-w-[300px] truncate text-sm font-black tracking-tight text-white">
+                                            {jogo.titulo}
+                                          </span>
+                                          <div className="flex items-center gap-3">
+                                            <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">
+                                              7D: R$ {jogo.preco_aluguel.toFixed(2)}
+                                            </span>
+                                            <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">
+                                              14D: R$ {jogo.preco_aluguel_14.toFixed(2)}
+                                            </span>
+                                          </div>
+                                          {jogo.estoque_primaria > 0 ||
+                                          jogo.estoque_secundaria > 0 ? (
+                                            <span className="mt-1 text-[10px] font-bold uppercase tracking-wider text-emerald-400">
+                                              ✅ {jogo.estoque_primaria + jogo.estoque_secundaria}{' '}
+                                              Vagas Disponíveis
+                                            </span>
+                                          ) : (
+                                            <span className="mt-1 text-[10px] font-bold uppercase tracking-wider text-rose-400">
+                                              ❌ Alugado
+                                            </span>
+                                          )}
+                                        </div>
+                                        <div className="flex w-full justify-end gap-2 md:w-auto">
+                                          <button
+                                            onClick={() => setModalEdicaoJogo(jogo)}
+                                            className="rounded-lg border border-blue-500/30 bg-blue-900/30 px-4 py-2 text-[10px] font-bold uppercase tracking-wider text-blue-400 transition-colors hover:bg-blue-600 hover:text-white"
+                                          >
+                                            Editar
+                                          </button>
+                                          <button
+                                            onClick={() => removerJogo(jogo.id)}
+                                            className="rounded-lg border border-rose-500/30 bg-rose-900/30 px-4 py-2 text-[10px] font-bold uppercase tracking-wider text-rose-400 transition-colors hover:bg-rose-600 hover:text-white"
+                                          >
+                                            Excluir
+                                          </button>
+                                        </div>
+                                      </li>
+                                    ))}
+                                </ul>
+                              )}
+                            </div>
+
+                            <div className="mt-6 flex items-center justify-between rounded-2xl border border-zinc-800/80 bg-zinc-950 p-4">
+                              <button
+                                onClick={() => setPaginaCatalogo(Math.max(0, paginaCatalogo - 1))}
+                                disabled={paginaCatalogo === 0}
+                                className="rounded-xl bg-zinc-800 px-5 py-2.5 text-[10px] font-bold uppercase tracking-wider text-white transition-colors hover:bg-zinc-700 disabled:opacity-50"
+                              >
+                                ◀ Anterior
+                              </button>
+                              <span className="text-xs font-bold text-zinc-400">
+                                Página {paginaCatalogo + 1}
+                              </span>
+                              <button
+                                onClick={() => setPaginaCatalogo(paginaCatalogo + 1)}
+                                disabled={
+                                  (paginaCatalogo + 1) * 50 >= jogosCatalogoAdminFiltrados.length
+                                }
+                                className="rounded-xl bg-zinc-800 px-5 py-2.5 text-[10px] font-bold uppercase tracking-wider text-white transition-colors hover:bg-zinc-700 disabled:opacity-50"
+                              >
+                                Próxima ▶
                               </button>
                             </div>
                           </div>
-                        ))}
+                        </div>
                       </div>
                     )}
-                  </section>
-                )}
 
-                <div className="mb-10 grid grid-cols-1 gap-8 xl:grid-cols-2">
-                  {/* ➕ BLOCO CADASTRAR NOVO JOGO */}
-                  <div className="flex flex-col rounded-3xl border border-blue-500/30 bg-gradient-to-br from-blue-900/20 to-zinc-900 p-8 shadow-2xl shadow-blue-500/10">
-                    <h3 className="mb-8 flex items-center gap-3 text-lg font-black tracking-tight text-blue-400">
-                      ➕ Cadastrar Novo Jogo
-                    </h3>
-                    <form onSubmit={cadastrarJogo} className="flex flex-1 flex-col space-y-4">
-                      <div className="flex gap-3">
-                        <input
-                          type="text"
-                          placeholder="Título do jogo"
-                          value={novoJogoTitulo}
-                          onChange={(e) => setNovoJogoTitulo(e.target.value)}
-                          className={adminInputClass}
-                          required
-                        />
-                        <button
-                          type="button"
-                          onClick={buscarDadosDoJogo}
-                          className="whitespace-nowrap rounded-xl bg-amber-500 px-5 text-[10px] font-bold uppercase tracking-wider text-zinc-900 shadow-lg shadow-amber-500/20 transition-colors hover:bg-amber-400"
-                        >
-                          ✨ Buscar
-                        </button>
-                      </div>
-
-                      <div className="flex flex-col gap-4 md:flex-row">
-                        <div className="w-full">
-                          <select
-                            value={novoJogoPlataforma}
-                            onChange={(e) => setNovoJogoPlataforma(e.target.value)}
-                            className={adminInputClass}
-                          >
-                            <option value="PS5">PS5</option>
-                            <option value="PS4/PS5">PS4/PS5</option>
-                          </select>
-                        </div>
-                        <div className="relative w-full">
-                          <label className="absolute -top-2 left-3 bg-zinc-900 px-1 text-[10px] font-bold uppercase tracking-wider text-zinc-500">
-                            Lançamento (Pré-venda)
-                          </label>
-                          <input
-                            type="date"
-                            value={novoJogoDataLancamento}
-                            onChange={(e) => setNovoJogoDataLancamento(e.target.value)}
-                            className={adminInputClass}
-                          />
-                        </div>
-                      </div>
-
-                      <div className="flex gap-3">
-                        <input
-                          type="text"
-                          placeholder="Tempo (ex: 20h)"
-                          value={novoJogoTempo}
-                          onChange={(e) => setNovoJogoTempo(e.target.value)}
-                          className={adminInputClass}
-                        />
-                        <input
-                          type="number"
-                          step="0.1"
-                          placeholder="Nota"
-                          value={novoJogoNota}
-                          onChange={(e) => setNovoJogoNota(e.target.value)}
-                          className={adminInputClass}
-                        />
-                      </div>
-
-                      <input
-                        type="url"
-                        placeholder="URL da Capa"
-                        value={novoJogoImagem}
-                        onChange={(e) => setNovoJogoImagem(e.target.value)}
-                        className={adminInputClass}
-                      />
-
-                      <div className="flex gap-3">
-                        <div className="relative w-full">
-                          <label className="mb-1 block text-xs font-bold uppercase tracking-wider text-zinc-500">
-                            Preço Primária 7 Dias (R$)
-                          </label>
-                          <input
-                            type="number"
-                            step="0.01"
-                            value={novoJogoPreco}
-                            onChange={(e) => setNovoJogoPreco(e.target.value)}
-                            className={adminInputClass}
-                            required
-                          />
-                        </div>
-                        <div className="relative w-full">
-                          <label className="mb-1 block text-xs font-bold uppercase tracking-wider text-zinc-500">
-                            Preço Primária 14 Dias (R$)
-                          </label>
-                          <input
-                            type="number"
-                            step="0.01"
-                            value={novoJogoPreco14}
-                            onChange={(e) => setNovoJogoPreco14(e.target.value)}
-                            className={adminInputClass}
-                          />
-                        </div>
-                      </div>
-
-                      {/* [INFO] Novos campos financeiros da Vaga Secundária (New Form) */}
-                      <div className="flex gap-3">
-                        <div className="relative w-full">
-                          <label className="mb-1 block text-xs font-bold uppercase tracking-wider text-fuchsia-500">
-                            Preço Secundária 7 Dias (R$)
-                          </label>
-                          <input
-                            type="number"
-                            step="0.01"
-                            value={novoJogoPrecoSec}
-                            onChange={(e) => setNovoJogoPrecoSec(e.target.value)}
-                            className={`${adminInputClass} border-fuchsia-500/30 focus:ring-fuchsia-500`}
-                          />
-                        </div>
-                        <div className="relative w-full">
-                          <label className="mb-1 block text-xs font-bold uppercase tracking-wider text-fuchsia-500">
-                            Preço Secundária 14 Dias (R$)
-                          </label>
-                          <input
-                            type="number"
-                            step="0.01"
-                            value={novoJogoPrecoSec14}
-                            onChange={(e) => setNovoJogoPrecoSec14(e.target.value)}
-                            className={`${adminInputClass} border-fuchsia-500/30 focus:ring-fuchsia-500`}
-                          />
-                        </div>
-                      </div>
-
-                      <textarea
-                        placeholder="Descrição curta do jogo..."
-                        value={novoJogoDescricao}
-                        onChange={(e) => setNovoJogoDescricao(e.target.value)}
-                        className={`${adminInputClass} h-24 resize-none`}
-                        required
-                      />
-
-                      <label className="flex w-max cursor-pointer items-center gap-3 rounded-xl border border-zinc-800 bg-zinc-950 px-4 py-3 transition-colors hover:border-yellow-500/50">
-                        <input
-                          type="checkbox"
-                          checked={novoJogoRecomendacao}
-                          onChange={(e) => setNovoJogoRecomendacao(e.target.checked)}
-                          className="h-4 w-4 rounded border-zinc-700 bg-zinc-900 text-yellow-500 focus:ring-yellow-500 focus:ring-offset-zinc-950"
-                        />
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">
-                          Jogo recomendado por cliente?
-                        </span>
-                      </label>
-
-                      <button
-                        type="submit"
-                        className="mt-auto w-full rounded-xl bg-blue-600 py-4 text-xs font-bold uppercase tracking-wider text-white shadow-lg shadow-blue-500/20 transition-colors hover:bg-blue-500"
-                      >
-                        Salvar no Catálogo
-                      </button>
-                    </form>
-                  </div>
-
-                  {/* 📦 BLOCO ABASTECER ESTOQUE */}
-                  <div className="flex flex-col rounded-3xl border border-fuchsia-500/30 bg-gradient-to-br from-fuchsia-900/20 to-zinc-900 p-8 shadow-2xl shadow-fuchsia-500/10">
-                    <h3 className="mb-8 flex items-center gap-3 text-lg font-black tracking-tight text-fuchsia-400">
-                      📦 Abastecer Estoque
-                    </h3>
-                    <input
-                      type="text"
-                      placeholder="🔍 Filtrar jogo na lista abaixo..."
-                      value={buscaEstoque}
-                      onChange={(e) => setBuscaEstoque(e.target.value)}
-                      className={`${adminInputClass} mb-4 border-fuchsia-500/30 focus:ring-fuchsia-500`}
-                    />
-                    <form onSubmit={cadastrarConta} className="flex flex-1 flex-col space-y-4">
-                      <select
-                        value={novaContaJogoId}
-                        onChange={(e) => setNovaContaJogoId(e.target.value)}
-                        className={adminInputClass}
-                        required
-                      >
-                        <option value="">Selecione o Jogo...</option>
-                        {jogosEstoqueFiltrados.map((j) => (
-                          <option key={j.id} value={j.id}>
-                            {j.titulo}
-                          </option>
-                        ))}
-                      </select>
-                      <input
-                        type="email"
-                        placeholder="E-mail da Conta PSN"
-                        value={novaContaEmail}
-                        onChange={(e) => setNovaContaEmail(e.target.value)}
-                        className={adminInputClass}
-                        required
-                      />
-                      <input
-                        type="text"
-                        placeholder="Senha da Conta PSN"
-                        value={novaContaSenha}
-                        onChange={(e) => setNovaContaSenha(e.target.value)}
-                        className={adminInputClass}
-                        required
-                      />
-                      <input
-                        type="text"
-                        placeholder="Segredo MFA (Opcional - Texto do Autenticador)"
-                        value={novaContaMfaSecret}
-                        onChange={(e) => setNovaContaMfaSecret(e.target.value)}
-                        className={adminInputClass}
-                      />
-                      <button
-                        type="submit"
-                        className="mt-auto w-full rounded-xl bg-fuchsia-600 py-4 text-xs font-bold uppercase tracking-wider text-white shadow-lg shadow-fuchsia-500/20 transition-colors hover:bg-fuchsia-500"
-                      >
-                        Adicionar Conta ao Cofre
-                      </button>
-                    </form>
-                  </div>
-                </div>
-
-                <div className="mb-10 flex flex-col gap-8">
-                  {/* 🎮 BLOCO CATALOGO DE JOGOS */}
-                  <details className="group overflow-hidden rounded-3xl border border-l-4 border-zinc-800 border-l-blue-500 bg-zinc-900/80 shadow-2xl shadow-blue-500/10 [&_summary::-webkit-details-marker]:hidden">
-                    <summary className="flex cursor-pointer select-none items-center justify-between p-6 transition-colors hover:bg-blue-900/10 md:p-8">
-                      <span className="flex items-center gap-3 text-lg font-black tracking-tight text-blue-400">
-                        🎮 Catálogo de Jogos ({jogos.length})
-                      </span>
-                      <span className="text-lg text-blue-500 transition duration-300 group-open:-rotate-180">
-                        ▼
-                      </span>
-                    </summary>
-                    <div className="border-t border-zinc-800/50 px-6 pb-6 pt-8 md:px-8 md:pb-8">
-                      <div className="mb-6 flex flex-col items-center gap-4 rounded-2xl border border-zinc-800/80 bg-zinc-950 p-4 shadow-inner lg:flex-row">
-                        <input
-                          type="text"
-                          placeholder="🔍 Pesquisar por nome do jogo..."
-                          value={termoBusca}
-                          onChange={(e) => setTermoBusca(e.target.value)}
-                          className={`${adminInputClass} w-full flex-1`}
-                        />
-                        <div className="flex w-full overflow-x-auto rounded-xl border border-zinc-700/50 bg-zinc-900 p-1 shadow-inner lg:w-auto">
-                          <button
-                            onClick={() => setFiltroStatusCatalogo('todos')}
-                            className={`flex-1 rounded-lg px-4 py-2 text-[10px] font-bold uppercase tracking-wider transition-all lg:flex-none ${filtroStatusCatalogo === 'todos' ? 'bg-blue-600 text-white' : 'text-zinc-400 hover:text-white'}`}
-                          >
-                            Todos
-                          </button>
-                          <button
-                            onClick={() => setFiltroStatusCatalogo('disponiveis')}
-                            className={`flex-1 rounded-lg px-4 py-2 text-[10px] font-bold uppercase tracking-wider transition-all lg:flex-none ${filtroStatusCatalogo === 'disponiveis' ? 'bg-emerald-600 text-white' : 'text-zinc-400 hover:text-white'}`}
-                          >
-                            Livres
-                          </button>
-                          <button
-                            onClick={() => setFiltroStatusCatalogo('alugados')}
-                            className={`flex-1 rounded-lg px-4 py-2 text-[10px] font-bold uppercase tracking-wider transition-all lg:flex-none ${filtroStatusCatalogo === 'alugados' ? 'bg-rose-600 text-white' : 'text-zinc-400 hover:text-white'}`}
-                          >
-                            Alugados
-                          </button>
-                          <button
-                            onClick={() => setFiltroStatusCatalogo('lancamentos')}
-                            className={`flex-1 rounded-lg px-4 py-2 text-[10px] font-bold uppercase tracking-wider transition-all lg:flex-none ${filtroStatusCatalogo === 'lancamentos' ? 'bg-fuchsia-600 text-white' : 'text-zinc-400 hover:text-white'}`}
-                          >
-                            🔥 Lançam.
-                          </button>
-                        </div>
-                      </div>
-
-                      <div className="custom-scrollbar max-h-[600px] overflow-y-auto pr-3">
-                        {jogosCatalogoAdminFiltrados.length === 0 ? (
-                          <p className="text-sm font-medium text-zinc-500">
-                            Nenhum jogo encontrado.
-                          </p>
-                        ) : (
-                          <ul className="space-y-3">
-                            {jogosCatalogoAdminFiltrados
-                              .slice(paginaCatalogo * 50, (paginaCatalogo + 1) * 50)
-                              .map((jogo) => (
-                                <li
-                                  key={`cat-${jogo.id}`}
-                                  className="flex flex-col items-start justify-between gap-4 rounded-2xl border-l-2 border-blue-500 bg-zinc-950/50 p-4 shadow-sm transition-colors hover:bg-zinc-800/50 md:flex-row md:items-center md:p-5"
-                                >
-                                  <div className="flex w-full flex-col gap-1 leading-relaxed md:w-auto">
-                                    <span className="max-w-[300px] truncate text-sm font-black tracking-tight text-white">
-                                      {jogo.titulo}
-                                    </span>
-                                    <div className="flex items-center gap-3">
-                                      <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">
-                                        7D: R$ {jogo.preco_aluguel.toFixed(2)}
-                                      </span>
-                                      <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">
-                                        14D: R$ {jogo.preco_aluguel_14.toFixed(2)}
-                                      </span>
-                                    </div>
-                                    {jogo.estoque_primaria > 0 || jogo.estoque_secundaria > 0 ? (
-                                      <span className="mt-1 text-[10px] font-bold uppercase tracking-wider text-emerald-400">
-                                        ✅ {jogo.estoque_primaria + jogo.estoque_secundaria} Vagas
-                                        Disponíveis
-                                      </span>
-                                    ) : (
-                                      <span className="mt-1 text-[10px] font-bold uppercase tracking-wider text-rose-400">
-                                        ❌ Alugado
-                                      </span>
-                                    )}
-                                  </div>
-                                  <div className="flex w-full justify-end gap-2 md:w-auto">
-                                    <button
-                                      onClick={() => setModalEdicaoJogo(jogo)}
-                                      className="rounded-lg border border-blue-500/30 bg-blue-900/30 px-4 py-2 text-[10px] font-bold uppercase tracking-wider text-blue-400 transition-colors hover:bg-blue-600 hover:text-white"
-                                    >
-                                      Editar
-                                    </button>
-                                    <button
-                                      onClick={() => removerJogo(jogo.id)}
-                                      className="rounded-lg border border-rose-500/30 bg-rose-900/30 px-4 py-2 text-[10px] font-bold uppercase tracking-wider text-rose-400 transition-colors hover:bg-rose-600 hover:text-white"
-                                    >
-                                      Excluir
-                                    </button>
-                                  </div>
-                                </li>
-                              ))}
-                          </ul>
-                        )}
-                      </div>
-
-                      <div className="mt-6 flex items-center justify-between rounded-2xl border border-zinc-800/80 bg-zinc-950 p-4">
-                        <button
-                          onClick={() => setPaginaCatalogo(Math.max(0, paginaCatalogo - 1))}
-                          disabled={paginaCatalogo === 0}
-                          className="rounded-xl bg-zinc-800 px-5 py-2.5 text-[10px] font-bold uppercase tracking-wider text-white transition-colors hover:bg-zinc-700 disabled:opacity-50"
-                        >
-                          ◀ Anterior
-                        </button>
-                        <span className="text-xs font-bold text-zinc-400">
-                          Página {paginaCatalogo + 1}
-                        </span>
-                        <button
-                          onClick={() => setPaginaCatalogo(paginaCatalogo + 1)}
-                          disabled={(paginaCatalogo + 1) * 50 >= jogosCatalogoAdminFiltrados.length}
-                          className="rounded-xl bg-zinc-800 px-5 py-2.5 text-[10px] font-bold uppercase tracking-wider text-white transition-colors hover:bg-zinc-700 disabled:opacity-50"
-                        >
-                          Próxima ▶
-                        </button>
-                      </div>
-                    </div>
-                  </details>
-
-                  {/* 🔑 BLOCO LOCAÇÕES ATIVAS */}
-                  <details className="group overflow-hidden rounded-3xl border border-l-4 border-zinc-800 border-l-emerald-500 bg-zinc-900/80 shadow-2xl shadow-emerald-500/10 [&_summary::-webkit-details-marker]:hidden">
-                    <summary className="flex cursor-pointer select-none items-center justify-between p-6 transition-colors hover:bg-emerald-900/10 md:p-8">
-                      <span className="flex items-center gap-3 text-lg font-black tracking-tight text-emerald-400">
-                        🔑 Locações Ativas ({locacoesAtivasFiltradas.length})
-                      </span>
-                      <span className="text-lg text-emerald-500 transition duration-300 group-open:-rotate-180">
-                        ▼
-                      </span>
-                    </summary>
-                    <div className="border-t border-zinc-800/50 px-6 pb-6 pt-8 md:px-8 md:pb-8">
-                      <div className="mb-6 flex flex-col gap-4 rounded-2xl border border-zinc-800/80 bg-zinc-950 p-4 shadow-inner md:flex-row">
-                        <input
-                          type="text"
-                          placeholder="🔍 Buscar locação por jogo ou cliente..."
-                          value={buscaLocacao}
-                          onChange={(e) => setBuscaLocacao(e.target.value)}
-                          className={`${adminInputClass} flex-1`}
-                        />
-                        <select
-                          value={ordenacaoLocacoes}
-                          onChange={(e) => setOrdenacaoLocacoes(e.target.value)}
-                          className="w-full cursor-pointer rounded-xl border border-emerald-500/30 bg-zinc-900 px-3 py-2.5 text-sm font-bold text-zinc-300 outline-none transition-colors hover:border-emerald-400 focus:ring-2 focus:ring-emerald-500 md:w-56"
-                        >
-                          <option value="expira_breve">⏳ Expira em Breve</option>
-                          <option value="recentes">🆕 Mais Recentes</option>
-                          <option value="az_jogo">🎮 Jogo (A-Z)</option>
-                          <option value="az_cliente">👤 Cliente (A-Z)</option>
-                        </select>
-                      </div>
-                      <div className="custom-scrollbar max-h-[600px] overflow-y-auto pr-3">
-                        {locacoesAtivasFiltradas.length === 0 ? (
-                          <p className="text-sm font-medium text-zinc-500">
-                            Nenhuma locação ativa.
-                          </p>
-                        ) : (
-                          <table className="w-full whitespace-nowrap text-left text-sm">
-                            <thead>
-                              <tr className="border-b border-zinc-800 text-zinc-500">
-                                <th className="pb-3 text-[10px] font-bold uppercase tracking-wider">
-                                  Cliente
-                                </th>
-                                <th className="pb-3 text-[10px] font-bold uppercase tracking-wider">
-                                  Jogo
-                                </th>
-                                <th className="pb-3 text-[10px] font-bold uppercase tracking-wider">
-                                  Vaga
-                                </th>
-                                <th className="pb-3 text-[10px] font-bold uppercase tracking-wider">
-                                  Expira
-                                </th>
-                                <th className="pb-3 text-right text-[10px] font-bold uppercase tracking-wider">
-                                  Ações
-                                </th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {locacoesAtivasFiltradas.map((loc) => (
-                                <tr
-                                  key={`locAtiva-${loc.id}`}
-                                  className="border-b border-zinc-800/50 transition-colors hover:bg-zinc-800/30"
-                                >
-                                  <td className="py-4 text-xs font-medium text-zinc-300">
-                                    {loc.cliente}
-                                  </td>
-                                  <td className="py-4 text-sm font-black tracking-tight text-white">
-                                    {loc.jogo}
-                                  </td>
-                                  <td className="py-4 text-xs font-bold text-purple-400">
-                                    {loc.tipo_slot}
-                                  </td>
-                                  <td className="py-4 text-xs font-bold text-amber-400">
-                                    {new Date(loc.data_fim).toLocaleDateString()}
-                                  </td>
-                                  <td className="py-4">
-                                    <div className="flex justify-end gap-2">
-                                      {/* [INFO] Botão de socorro Admin para falha de 2FA */}
-                                      {loc.tipo_slot === 'SECUNDARIA' && (
-                                        <button
-                                          onClick={() => resetar2FAAdmin(loc.id)}
-                                          className="rounded-lg border border-fuchsia-500/30 bg-fuchsia-900/30 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-fuchsia-400 shadow transition-colors hover:bg-fuchsia-600 hover:text-white"
-                                          title="Permitir que o cliente gere o 2FA de novo"
-                                        >
-                                          🔄 2FA
-                                        </button>
-                                      )}
-                                      <button
-                                        onClick={() => avisarLiberacao(loc.cliente, loc.jogo)}
-                                        className="flex items-center gap-1.5 rounded-lg border border-emerald-500/30 bg-emerald-900/30 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-emerald-400 shadow transition-colors hover:bg-emerald-600 hover:text-white"
+                    {secaoAdmin === 'locacoes' && (
+                      <div className="animate-fade-in flex flex-col gap-8">
+                        {/* 🔑 BLOCO LOCAÇÕES ATIVAS */}
+                        <div className="overflow-hidden rounded-3xl border border-l-4 border-zinc-800 border-l-emerald-500 bg-zinc-900/80 shadow-2xl shadow-emerald-500/10">
+                          <div className="flex items-center justify-between p-6 md:p-8">
+                            <span className="flex items-center gap-3 text-lg font-black tracking-tight text-emerald-400">
+                              🔑 Locações Ativas ({locacoesAtivasFiltradas.length})
+                            </span>
+                          </div>
+                          <div className="border-t border-zinc-800/50 px-6 pb-6 pt-8 md:px-8 md:pb-8">
+                            <div className="mb-6 flex flex-col gap-4 rounded-2xl border border-zinc-800/80 bg-zinc-950 p-4 shadow-inner md:flex-row">
+                              <input
+                                type="text"
+                                placeholder="🔍 Buscar locação por jogo ou cliente..."
+                                value={buscaLocacao}
+                                onChange={(e) => setBuscaLocacao(e.target.value)}
+                                className={`${adminInputClass} flex-1`}
+                              />
+                              <select
+                                value={ordenacaoLocacoes}
+                                onChange={(e) => setOrdenacaoLocacoes(e.target.value)}
+                                className="w-full cursor-pointer rounded-xl border border-emerald-500/30 bg-zinc-900 px-3 py-2.5 text-sm font-bold text-zinc-300 outline-none transition-colors hover:border-emerald-400 focus:ring-2 focus:ring-emerald-500 md:w-56"
+                              >
+                                <option value="expira_breve">⏳ Expira em Breve</option>
+                                <option value="recentes">🆕 Mais Recentes</option>
+                                <option value="az_jogo">🎮 Jogo (A-Z)</option>
+                                <option value="az_cliente">👤 Cliente (A-Z)</option>
+                              </select>
+                            </div>
+                            <div className="custom-scrollbar max-h-[600px] overflow-y-auto pr-3">
+                              {locacoesAtivasFiltradas.length === 0 ? (
+                                <p className="text-sm font-medium text-zinc-500">
+                                  Nenhuma locação ativa.
+                                </p>
+                              ) : (
+                                <table className="w-full whitespace-nowrap text-left text-sm">
+                                  <thead>
+                                    <tr className="border-b border-zinc-800 text-zinc-500">
+                                      <th className="pb-3 text-[10px] font-bold uppercase tracking-wider">
+                                        Cliente
+                                      </th>
+                                      <th className="pb-3 text-[10px] font-bold uppercase tracking-wider">
+                                        Jogo
+                                      </th>
+                                      <th className="pb-3 text-[10px] font-bold uppercase tracking-wider">
+                                        Vaga
+                                      </th>
+                                      <th className="pb-3 text-[10px] font-bold uppercase tracking-wider">
+                                        Expira
+                                      </th>
+                                      <th className="pb-3 text-right text-[10px] font-bold uppercase tracking-wider">
+                                        Ações
+                                      </th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    {locacoesAtivasFiltradas.map((loc) => (
+                                      <tr
+                                        key={`locAtiva-${loc.id}`}
+                                        className="border-b border-zinc-800/50 transition-colors hover:bg-zinc-800/30"
                                       >
-                                        <span className="text-sm">📲</span> Avisar
-                                      </button>
-                                      <button
-                                        onClick={() => revogarLocacao(loc.id)}
-                                        className="rounded-lg border border-rose-500/30 bg-rose-900/30 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-rose-400 shadow transition-colors hover:bg-rose-600 hover:text-white"
-                                      >
-                                        Revogar
-                                      </button>
-                                    </div>
-                                  </td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        )}
-                      </div>
-                    </div>
-                  </details>
-
-                  {/* ⏳ BLOCO FILA DE ESPERA GLOBAL */}
-                  <details className="group overflow-hidden rounded-3xl border border-l-4 border-zinc-800 border-l-amber-500 bg-zinc-900/80 shadow-2xl shadow-amber-500/10 [&_summary::-webkit-details-marker]:hidden">
-                    <summary className="flex cursor-pointer select-none items-center justify-between p-6 transition-colors hover:bg-amber-900/10 md:p-8">
-                      <span className="flex items-center gap-3 text-lg font-black tracking-tight text-amber-400">
-                        ⏳ Fila de Espera Global ({reservasAdminFiltradas.length})
-                      </span>
-                      <span className="text-lg text-amber-500 transition duration-300 group-open:-rotate-180">
-                        ▼
-                      </span>
-                    </summary>
-                    <div className="border-t border-zinc-800/50 px-6 pb-6 pt-8 md:px-8 md:pb-8">
-                      <div className="mb-6 flex flex-col gap-4 rounded-2xl border border-zinc-800/80 bg-zinc-950 p-4 shadow-inner md:flex-row">
-                        <input
-                          type="text"
-                          placeholder="🔍 Buscar reserva por jogo ou cliente..."
-                          value={buscaReservaAdmin}
-                          onChange={(e) => setBuscaReservaAdmin(e.target.value)}
-                          className={`${adminInputClass} flex-1`}
-                        />
-                        <select
-                          value={ordenacaoReservaAdmin}
-                          onChange={(e) => setOrdenacaoReservaAdmin(e.target.value)}
-                          className="w-full cursor-pointer rounded-xl border border-amber-500/30 bg-zinc-900 px-3 py-2.5 text-sm font-bold text-zinc-300 outline-none transition-colors hover:border-amber-400 focus:ring-2 focus:ring-amber-500 md:w-56"
-                        >
-                          <option value="antigas">⏳ Mais Antigas</option>
-                          <option value="recentes">🆕 Mais Recentes</option>
-                          <option value="az_cliente">👤 Cliente (A-Z)</option>
-                        </select>
-                      </div>
-                      <div className="custom-scrollbar max-h-[600px] overflow-y-auto pr-3">
-                        {reservasAdminFiltradas.length === 0 ? (
-                          <p className="text-sm font-medium text-zinc-500">
-                            Nenhuma reserva pendente.
-                          </p>
-                        ) : (
-                          <table className="w-full whitespace-nowrap text-left text-sm">
-                            <thead>
-                              <tr className="border-b border-zinc-800 text-zinc-500">
-                                <th className="pb-3 text-[10px] font-bold uppercase tracking-wider">
-                                  Cliente
-                                </th>
-                                <th className="pb-3 text-[10px] font-bold uppercase tracking-wider">
-                                  Jogo
-                                </th>
-                                <th className="pb-3 text-[10px] font-bold uppercase tracking-wider">
-                                  Início Previsto
-                                </th>
-                                <th className="pb-3 text-[10px] font-bold uppercase tracking-wider">
-                                  Fim Previsto
-                                </th>
-                                <th className="pb-3 text-right text-[10px] font-bold uppercase tracking-wider">
-                                  Ações
-                                </th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {reservasAdminFiltradas.map((reserva) => (
-                                <tr
-                                  key={`reservaAdm-${reserva.id}`}
-                                  className="border-b border-zinc-800/50 transition-colors hover:bg-zinc-800/30"
-                                >
-                                  <td className="py-4 text-xs font-medium text-zinc-300">
-                                    {reserva.cliente}
-                                    <div className="mt-1 text-[9px] font-bold text-zinc-500">
-                                      Feita em:{' '}
-                                      {new Date(reserva.data_solicitacao).toLocaleDateString()}
-                                    </div>
-                                  </td>
-                                  <td className="py-4 text-sm font-black tracking-tight text-white">
-                                    {reserva.jogo}
-                                  </td>
-                                  <td className="py-4 text-xs font-bold text-blue-400">
-                                    {reserva.data_inicio}
-                                  </td>
-                                  <td className="py-4 text-xs font-bold text-amber-400">
-                                    {reserva.data_fim}{' '}
-                                    <span className="ml-1 font-normal text-zinc-500">
-                                      ({reserva.dias_aluguel}d)
-                                    </span>
-                                  </td>
-                                  <td className="py-4 text-right">
-                                    <button
-                                      onClick={() =>
-                                        cancelarReservaAdmin(
-                                          reserva.id,
-                                          reserva.cliente,
-                                          reserva.jogo,
-                                        )
-                                      }
-                                      className="rounded-lg border border-rose-500/30 bg-rose-900/30 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-rose-400 shadow transition-colors hover:bg-rose-600 hover:text-white"
-                                    >
-                                      Cancelar e Estornar
-                                    </button>
-                                  </td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        )}
-                      </div>
-                    </div>
-                  </details>
-
-                  {/* 👥 BLOCO BASE DE CLIENTES */}
-                  <details className="group overflow-hidden rounded-3xl border border-l-4 border-zinc-800 border-l-purple-500 bg-zinc-900/80 shadow-2xl shadow-purple-500/10 [&_summary::-webkit-details-marker]:hidden">
-                    <summary className="relative flex cursor-pointer select-none items-center justify-between p-6 transition-colors hover:bg-purple-900/10 md:p-8">
-                      <span className="flex items-center gap-3 text-lg font-black tracking-tight text-purple-400">
-                        👥 Base de Clientes ({todosUsuarios.length})
-                      </span>
-                      <span className="text-lg text-purple-500 transition duration-300 group-open:-rotate-180">
-                        ▼
-                      </span>
-                    </summary>
-                    <div className="border-t border-zinc-800/50 px-6 pb-6 pt-8 md:px-8 md:pb-8">
-                      <div className="mb-6 flex flex-col items-center gap-4 rounded-2xl border border-zinc-800/80 bg-zinc-950 p-4 shadow-inner lg:flex-row">
-                        <input
-                          type="text"
-                          placeholder="🔍 Buscar cliente por nome ou e-mail..."
-                          value={buscaCliente}
-                          onChange={(e) => {
-                            setBuscaCliente(e.target.value);
-                            setPaginaClientes(0);
-                          }}
-                          className={`${adminInputClass} w-full flex-1`}
-                        />
-                        <div className="flex w-full flex-col gap-3 sm:flex-row lg:w-auto">
-                          <select
-                            value={ordenacaoClientes}
-                            onChange={(e) => {
-                              setOrdenacaoClientes(e.target.value);
-                              setPaginaClientes(0);
-                            }}
-                            className="w-full cursor-pointer rounded-xl border border-purple-500/30 bg-zinc-900 px-3 py-2.5 text-sm font-bold text-zinc-300 outline-none transition-colors hover:border-purple-400 focus:ring-2 focus:ring-purple-500 sm:w-48"
-                          >
-                            <option value="recentes">⏰ Mais Recentes</option>
-                            <option value="antigos">🕰️ Mais Antigos</option>
-                            <option value="maior_saldo">💰 Maior Saldo</option>
-                            <option value="menor_saldo">📉 Menor Saldo</option>
-                            <option value="az">🔤 Ordem (A-Z)</option>
-                            <option value="za">🔠 Ordem (Z-A)</option>
-                          </select>
-                          <div className="flex w-full rounded-xl border border-zinc-700/50 bg-zinc-900 p-1 shadow-inner sm:w-auto">
-                            <button
-                              onClick={() => {
-                                setFiltroSaldoClientes('todos');
-                                setPaginaClientes(0);
-                              }}
-                              className={`flex-1 rounded-lg px-4 py-2 text-[10px] font-bold uppercase tracking-wider transition-all sm:flex-none ${filtroSaldoClientes === 'todos' ? 'bg-purple-600 text-white shadow-md' : 'text-zinc-400 hover:bg-zinc-800 hover:text-white'}`}
-                            >
-                              Todos
-                            </button>
-                            <button
-                              onClick={() => {
-                                setFiltroSaldoClientes('positivo');
-                                setPaginaClientes(0);
-                              }}
-                              className={`flex-1 rounded-lg px-4 py-2 text-[10px] font-bold uppercase tracking-wider transition-all sm:flex-none ${filtroSaldoClientes === 'positivo' ? 'bg-emerald-600 text-white shadow-md' : 'text-zinc-400 hover:bg-zinc-800 hover:text-white'}`}
-                            >
-                              Positivos
-                            </button>
-                            <button
-                              onClick={() => {
-                                setFiltroSaldoClientes('negativo');
-                                setPaginaClientes(0);
-                              }}
-                              className={`flex-1 rounded-lg px-4 py-2 text-[10px] font-bold uppercase tracking-wider transition-all sm:flex-none ${filtroSaldoClientes === 'negativo' ? 'bg-rose-600 text-white shadow-md' : 'text-zinc-400 hover:bg-zinc-800 hover:text-white'}`}
-                            >
-                              Negativados
-                            </button>
+                                        <td className="py-4 text-xs font-medium text-zinc-300">
+                                          {loc.cliente}
+                                        </td>
+                                        <td className="py-4 text-sm font-black tracking-tight text-white">
+                                          {loc.jogo}
+                                        </td>
+                                        <td className="py-4 text-xs font-bold text-purple-400">
+                                          {loc.tipo_slot}
+                                        </td>
+                                        <td className="py-4 text-xs font-bold text-amber-400">
+                                          {new Date(loc.data_fim).toLocaleDateString()}
+                                        </td>
+                                        <td className="py-4">
+                                          <div className="flex justify-end gap-2">
+                                            {/* [INFO] Botão de socorro Admin para falha de 2FA */}
+                                            {loc.tipo_slot === 'SECUNDARIA' && (
+                                              <button
+                                                onClick={() => resetar2FAAdmin(loc.id)}
+                                                className="rounded-lg border border-fuchsia-500/30 bg-fuchsia-900/30 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-fuchsia-400 shadow transition-colors hover:bg-fuchsia-600 hover:text-white"
+                                                title="Permitir que o cliente gere o 2FA de novo"
+                                              >
+                                                🔄 2FA
+                                              </button>
+                                            )}
+                                            <button
+                                              onClick={() => avisarLiberacao(loc.cliente, loc.jogo)}
+                                              className="flex items-center gap-1.5 rounded-lg border border-emerald-500/30 bg-emerald-900/30 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-emerald-400 shadow transition-colors hover:bg-emerald-600 hover:text-white"
+                                            >
+                                              <span className="text-sm">📲</span> Avisar
+                                            </button>
+                                            <button
+                                              onClick={() => revogarLocacao(loc.id)}
+                                              className="rounded-lg border border-rose-500/30 bg-rose-900/30 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-rose-400 shadow transition-colors hover:bg-rose-600 hover:text-white"
+                                            >
+                                              Revogar
+                                            </button>
+                                          </div>
+                                        </td>
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                </table>
+                              )}
+                            </div>
                           </div>
                         </div>
                       </div>
-                      <div className="custom-scrollbar max-h-[600px] overflow-y-auto pr-3">
-                        {clientesFiltrados.length === 0 ? (
-                          <p className="text-sm font-medium text-zinc-500">Vazio.</p>
-                        ) : (
-                          <ul className="space-y-4">
-                            {clientesFiltrados
-                              .slice(paginaClientes * 50, (paginaClientes + 1) * 50)
-                              .map((u) => (
-                                <li
-                                  key={`cli-${u.id}`}
-                                  className="flex flex-col items-start justify-between gap-4 rounded-2xl border border-l-2 border-zinc-800/50 border-l-purple-500 bg-zinc-950/50 p-4 shadow-sm transition-colors hover:bg-zinc-800/50 md:flex-row md:items-center md:p-5"
+                    )}
+
+                    {secaoAdmin === 'fila' && (
+                      <div className="animate-fade-in flex flex-col gap-8">
+                        {/* ⏳ BLOCO FILA DE ESPERA GLOBAL */}
+                        <div className="overflow-hidden rounded-3xl border border-l-4 border-zinc-800 border-l-amber-500 bg-zinc-900/80 shadow-2xl shadow-amber-500/10">
+                          <div className="flex items-center justify-between p-6 md:p-8">
+                            <span className="flex items-center gap-3 text-lg font-black tracking-tight text-amber-400">
+                              ⏳ Fila de Espera Global ({reservasAdminFiltradas.length})
+                            </span>
+                          </div>
+                          <div className="border-t border-zinc-800/50 px-6 pb-6 pt-8 md:px-8 md:pb-8">
+                            <div className="mb-6 flex flex-col gap-4 rounded-2xl border border-zinc-800/80 bg-zinc-950 p-4 shadow-inner md:flex-row">
+                              <input
+                                type="text"
+                                placeholder="🔍 Buscar reserva por jogo ou cliente..."
+                                value={buscaReservaAdmin}
+                                onChange={(e) => setBuscaReservaAdmin(e.target.value)}
+                                className={`${adminInputClass} flex-1`}
+                              />
+                              <select
+                                value={ordenacaoReservaAdmin}
+                                onChange={(e) => setOrdenacaoReservaAdmin(e.target.value)}
+                                className="w-full cursor-pointer rounded-xl border border-amber-500/30 bg-zinc-900 px-3 py-2.5 text-sm font-bold text-zinc-300 outline-none transition-colors hover:border-amber-400 focus:ring-2 focus:ring-amber-500 md:w-56"
+                              >
+                                <option value="antigas">⏳ Mais Antigas</option>
+                                <option value="recentes">🆕 Mais Recentes</option>
+                                <option value="az_cliente">👤 Cliente (A-Z)</option>
+                              </select>
+                            </div>
+                            <div className="custom-scrollbar max-h-[600px] overflow-y-auto pr-3">
+                              {reservasAdminFiltradas.length === 0 ? (
+                                <p className="text-sm font-medium text-zinc-500">
+                                  Nenhuma reserva pendente.
+                                </p>
+                              ) : (
+                                <table className="w-full whitespace-nowrap text-left text-sm">
+                                  <thead>
+                                    <tr className="border-b border-zinc-800 text-zinc-500">
+                                      <th className="pb-3 text-[10px] font-bold uppercase tracking-wider">
+                                        Cliente
+                                      </th>
+                                      <th className="pb-3 text-[10px] font-bold uppercase tracking-wider">
+                                        Jogo
+                                      </th>
+                                      <th className="pb-3 text-[10px] font-bold uppercase tracking-wider">
+                                        Início Previsto
+                                      </th>
+                                      <th className="pb-3 text-[10px] font-bold uppercase tracking-wider">
+                                        Fim Previsto
+                                      </th>
+                                      <th className="pb-3 text-right text-[10px] font-bold uppercase tracking-wider">
+                                        Ações
+                                      </th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    {reservasAdminFiltradas.map((reserva) => (
+                                      <tr
+                                        key={`reservaAdm-${reserva.id}`}
+                                        className="border-b border-zinc-800/50 transition-colors hover:bg-zinc-800/30"
+                                      >
+                                        <td className="py-4 text-xs font-medium text-zinc-300">
+                                          {reserva.cliente}
+                                          <div className="mt-1 text-[9px] font-bold text-zinc-500">
+                                            Feita em:{' '}
+                                            {new Date(
+                                              reserva.data_solicitacao,
+                                            ).toLocaleDateString()}
+                                          </div>
+                                        </td>
+                                        <td className="py-4 text-sm font-black tracking-tight text-white">
+                                          {reserva.jogo}
+                                        </td>
+                                        <td className="py-4 text-xs font-bold text-blue-400">
+                                          {reserva.data_inicio}
+                                        </td>
+                                        <td className="py-4 text-xs font-bold text-amber-400">
+                                          {reserva.data_fim}{' '}
+                                          <span className="ml-1 font-normal text-zinc-500">
+                                            ({reserva.dias_aluguel}d)
+                                          </span>
+                                        </td>
+                                        <td className="py-4 text-right">
+                                          <button
+                                            onClick={() =>
+                                              cancelarReservaAdmin(
+                                                reserva.id,
+                                                reserva.cliente,
+                                                reserva.jogo,
+                                              )
+                                            }
+                                            className="rounded-lg border border-rose-500/30 bg-rose-900/30 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-rose-400 shadow transition-colors hover:bg-rose-600 hover:text-white"
+                                          >
+                                            Cancelar e Estornar
+                                          </button>
+                                        </td>
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                </table>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {secaoAdmin === 'clientes' && (
+                      <div className="animate-fade-in flex flex-col gap-8">
+                        {/* 👥 BLOCO BASE DE CLIENTES */}
+                        <div className="overflow-hidden rounded-3xl border border-l-4 border-zinc-800 border-l-purple-500 bg-zinc-900/80 shadow-2xl shadow-purple-500/10">
+                          <div className="flex items-center justify-between p-6 md:p-8">
+                            <span className="flex items-center gap-3 text-lg font-black tracking-tight text-purple-400">
+                              👥 Base de Clientes ({todosUsuarios.length})
+                            </span>
+                          </div>
+                          <div className="border-t border-zinc-800/50 px-6 pb-6 pt-8 md:px-8 md:pb-8">
+                            <div className="mb-6 flex flex-col items-center gap-4 rounded-2xl border border-zinc-800/80 bg-zinc-950 p-4 shadow-inner lg:flex-row">
+                              <input
+                                type="text"
+                                placeholder="🔍 Buscar cliente por nome ou e-mail..."
+                                value={buscaCliente}
+                                onChange={(e) => {
+                                  setBuscaCliente(e.target.value);
+                                  setPaginaClientes(0);
+                                }}
+                                className={`${adminInputClass} w-full flex-1`}
+                              />
+                              <div className="flex w-full flex-col gap-3 sm:flex-row lg:w-auto">
+                                <select
+                                  value={ordenacaoClientes}
+                                  onChange={(e) => {
+                                    setOrdenacaoClientes(e.target.value);
+                                    setPaginaClientes(0);
+                                  }}
+                                  className="w-full cursor-pointer rounded-xl border border-purple-500/30 bg-zinc-900 px-3 py-2.5 text-sm font-bold text-zinc-300 outline-none transition-colors hover:border-purple-400 focus:ring-2 focus:ring-purple-500 sm:w-48"
                                 >
-                                  <div className="flex flex-col gap-1.5">
-                                    <span className="text-sm font-black tracking-tight text-white">
-                                      {u.nome}{' '}
-                                      {u.is_admin && (
-                                        <span className="ml-2 rounded-md bg-amber-500/20 px-2 py-0.5 text-[8px] uppercase tracking-wider text-amber-400">
-                                          Admin
+                                  <option value="recentes">⏰ Mais Recentes</option>
+                                  <option value="antigos">🕰️ Mais Antigos</option>
+                                  <option value="maior_saldo">💰 Maior Saldo</option>
+                                  <option value="menor_saldo">📉 Menor Saldo</option>
+                                  <option value="az">🔤 Ordem (A-Z)</option>
+                                  <option value="za">🔠 Ordem (Z-A)</option>
+                                </select>
+                                <div className="flex w-full rounded-xl border border-zinc-700/50 bg-zinc-900 p-1 shadow-inner sm:w-auto">
+                                  <button
+                                    onClick={() => {
+                                      setFiltroSaldoClientes('todos');
+                                      setPaginaClientes(0);
+                                    }}
+                                    className={`flex-1 rounded-lg px-4 py-2 text-[10px] font-bold uppercase tracking-wider transition-all sm:flex-none ${filtroSaldoClientes === 'todos' ? 'bg-purple-600 text-white shadow-md' : 'text-zinc-400 hover:bg-zinc-800 hover:text-white'}`}
+                                  >
+                                    Todos
+                                  </button>
+                                  <button
+                                    onClick={() => {
+                                      setFiltroSaldoClientes('positivo');
+                                      setPaginaClientes(0);
+                                    }}
+                                    className={`flex-1 rounded-lg px-4 py-2 text-[10px] font-bold uppercase tracking-wider transition-all sm:flex-none ${filtroSaldoClientes === 'positivo' ? 'bg-emerald-600 text-white shadow-md' : 'text-zinc-400 hover:bg-zinc-800 hover:text-white'}`}
+                                  >
+                                    Positivos
+                                  </button>
+                                  <button
+                                    onClick={() => {
+                                      setFiltroSaldoClientes('negativo');
+                                      setPaginaClientes(0);
+                                    }}
+                                    className={`flex-1 rounded-lg px-4 py-2 text-[10px] font-bold uppercase tracking-wider transition-all sm:flex-none ${filtroSaldoClientes === 'negativo' ? 'bg-rose-600 text-white shadow-md' : 'text-zinc-400 hover:bg-zinc-800 hover:text-white'}`}
+                                  >
+                                    Negativados
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                            <div className="custom-scrollbar max-h-[600px] overflow-y-auto pr-3">
+                              {clientesFiltrados.length === 0 ? (
+                                <p className="text-sm font-medium text-zinc-500">Vazio.</p>
+                              ) : (
+                                <ul className="space-y-4">
+                                  {clientesFiltrados
+                                    .slice(paginaClientes * 50, (paginaClientes + 1) * 50)
+                                    .map((u) => (
+                                      <li
+                                        key={`cli-${u.id}`}
+                                        className="flex flex-col items-start justify-between gap-4 rounded-2xl border border-l-2 border-zinc-800/50 border-l-purple-500 bg-zinc-950/50 p-4 shadow-sm transition-colors hover:bg-zinc-800/50 md:flex-row md:items-center md:p-5"
+                                      >
+                                        <div className="flex flex-col gap-1.5">
+                                          <span className="text-sm font-black tracking-tight text-white">
+                                            {u.nome}{' '}
+                                            {u.is_admin && (
+                                              <span className="ml-2 rounded-md bg-amber-500/20 px-2 py-0.5 text-[8px] uppercase tracking-wider text-amber-400">
+                                                Admin
+                                              </span>
+                                            )}
+                                          </span>
+                                          <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">
+                                            Saldo:{' '}
+                                            <strong
+                                              className={`ml-1 text-xs tracking-normal ${u.saldo < 0 ? 'text-rose-400' : 'text-emerald-400'}`}
+                                            >
+                                              R$ {parseFloat(u.saldo).toFixed(2)}
+                                            </strong>
+                                          </span>
+                                          <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">
+                                            E-mail:{' '}
+                                            <span className="ml-1 truncate text-zinc-300">
+                                              {u.email}
+                                            </span>
+                                          </span>
+                                        </div>
+                                        {!u.is_admin && (
+                                          <div className="mt-2 flex w-full flex-wrap justify-end gap-2 md:mt-0 md:w-auto">
+                                            {u.telefone && (
+                                              <a
+                                                href={`whatsapp://send?phone=${u.telefone.replace(/\D/g, '').startsWith('55') ? u.telefone.replace(/\D/g, '') : '55' + u.telefone.replace(/\D/g, '')}`}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="flex items-center gap-1 rounded-lg border border-emerald-500/30 bg-emerald-900/30 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-emerald-400 transition-colors hover:bg-emerald-600 hover:text-white"
+                                              >
+                                                📱 Whats
+                                              </a>
+                                            )}
+                                            {!u.whatsapp_verificado && (
+                                              <button
+                                                onClick={() => confirmarWhatsAdmin(u.id)}
+                                                title="Confirme manualmente caso o cliente já tenha mandado a mensagem de verificação"
+                                                className="flex items-center gap-1 rounded-lg border border-purple-500/30 bg-purple-900/30 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-purple-400 transition-colors hover:bg-purple-600 hover:text-white"
+                                              >
+                                                ✅ Confirmar Whats
+                                              </button>
+                                            )}
+                                            <button
+                                              onClick={() => abrirDossieCliente(u)}
+                                              title="Ver extrato, locações e pagamentos pendentes deste cliente"
+                                              className="flex items-center gap-1 rounded-lg border border-amber-500/30 bg-amber-900/30 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-amber-400 transition-colors hover:bg-amber-600 hover:text-white"
+                                            >
+                                              💰 Extrato
+                                            </button>
+                                            <button
+                                              onClick={() => setModalEdicaoCliente(u)}
+                                              className="flex items-center gap-1 rounded-lg border border-blue-500/30 bg-blue-900/30 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-blue-400 transition-colors hover:bg-blue-600 hover:text-white"
+                                            >
+                                              ✏️ Editar
+                                            </button>
+                                            <button
+                                              onClick={() => removerUsuario(u.id)}
+                                              className="flex items-center gap-1 rounded-lg border border-rose-500/30 bg-rose-900/30 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-rose-400 transition-colors hover:bg-rose-600 hover:text-white"
+                                            >
+                                              🗑️ Excluir
+                                            </button>
+                                          </div>
+                                        )}
+                                      </li>
+                                    ))}
+                                </ul>
+                              )}
+                            </div>
+                            <div className="mt-6 flex items-center justify-between rounded-2xl border border-zinc-800/80 bg-zinc-950 p-4">
+                              <button
+                                onClick={() => setPaginaClientes(Math.max(0, paginaClientes - 1))}
+                                disabled={paginaClientes === 0}
+                                className="rounded-xl bg-zinc-800 px-5 py-2.5 text-[10px] font-bold uppercase tracking-wider text-white transition-colors hover:bg-zinc-700 disabled:opacity-50"
+                              >
+                                ◀ Anterior
+                              </button>
+                              <span className="text-xs font-bold text-zinc-400">
+                                Página {paginaClientes + 1}
+                              </span>
+                              <button
+                                onClick={() => setPaginaClientes(paginaClientes + 1)}
+                                disabled={(paginaClientes + 1) * 50 >= clientesFiltrados.length}
+                                className="rounded-xl bg-zinc-800 px-5 py-2.5 text-[10px] font-bold uppercase tracking-wider text-white transition-colors hover:bg-zinc-700 disabled:opacity-50"
+                              >
+                                Próxima ▶
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {secaoAdmin === 'manutencao' && (
+                      <div className="animate-fade-in flex flex-col gap-8">
+                        {/* 🚨 BLOCO MANUTENÇÃO DE CONTAS */}
+                        {contasManutencao.length > 0 && (
+                          <section className="animate-pulse-slow mb-10 rounded-3xl border border-rose-500/50 bg-rose-950/20 p-8 shadow-2xl shadow-rose-500/10">
+                            <div className="mb-6 flex flex-col justify-between gap-4 md:flex-row md:items-center">
+                              <div>
+                                <h3 className="mb-2 flex items-center gap-3 text-xl font-black tracking-tight text-rose-400">
+                                  🚨 Atenção: Troca de Senha Necessária
+                                </h3>
+                                <p className="text-xs font-medium text-zinc-300 md:text-sm">
+                                  As locações abaixo terminaram. Altere a senha na PSN e informe
+                                  aqui para liberar a conta.
+                                </p>
+                              </div>
+                            </div>
+
+                            <div className="mb-8 flex flex-col gap-4 rounded-2xl border border-rose-500/20 bg-rose-950/30 p-4 shadow-inner md:flex-row">
+                              <input
+                                type="text"
+                                placeholder="🔍 Buscar por jogo ou último cliente..."
+                                value={buscaManutencao}
+                                onChange={(e) => setBuscaManutencao(e.target.value)}
+                                className={`${adminInputClass} flex-1 border-rose-500/30 focus:ring-rose-500`}
+                              />
+                              <div className="flex w-full flex-col gap-1 md:w-auto">
+                                <select
+                                  value={ordenacaoManutencao}
+                                  onChange={(e) => setOrdenacaoManutencao(e.target.value)}
+                                  className="h-full w-full cursor-pointer rounded-xl border border-rose-500/30 bg-zinc-900 px-3 py-2.5 text-sm font-bold text-zinc-300 outline-none transition-colors hover:border-rose-400 focus:ring-2 focus:ring-rose-500 md:w-56"
+                                >
+                                  <option value="urgente">⚠️ Mais Urgentes (Cashback)</option>
+                                  <option value="az_jogo">🎮 Jogo (A-Z)</option>
+                                </select>
+                              </div>
+                            </div>
+
+                            {contasManutencaoFiltradas.length === 0 ? (
+                              <p className="py-8 text-center text-sm font-medium text-zinc-500">
+                                Nenhuma conta em manutenção no momento.
+                              </p>
+                            ) : (
+                              <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+                                {contasManutencaoFiltradas.map((conta) => (
+                                  <div
+                                    key={`manu-${conta.conta_psn_id}`}
+                                    className="flex flex-col gap-6 rounded-3xl border border-rose-500/50 bg-zinc-900 p-6 shadow-lg md:p-8"
+                                  >
+                                    <div className="flex flex-col items-start justify-between gap-4 sm:flex-row">
+                                      <div className="flex flex-col gap-1.5">
+                                        <span
+                                          className={`w-max rounded-lg border px-2 py-1 text-[9px] font-black uppercase tracking-wider ${conta.status_primaria === 'MANUTENCAO' ? 'border-blue-500/30 bg-blue-500/20 text-blue-400' : 'border-fuchsia-500/30 bg-fuchsia-500/20 text-fuchsia-400'}`}
+                                        >
+                                          🕹️ Slot:{' '}
+                                          {conta.status_primaria === 'MANUTENCAO'
+                                            ? 'PRIMARIA'
+                                            : 'SECUNDARIA'}
                                         </span>
-                                      )}
-                                    </span>
-                                    <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">
-                                      Saldo:{' '}
-                                      <strong
-                                        className={`ml-1 text-xs tracking-normal ${u.saldo < 0 ? 'text-rose-400' : 'text-emerald-400'}`}
-                                      >
-                                        R$ {parseFloat(u.saldo).toFixed(2)}
-                                      </strong>
-                                    </span>
-                                    <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">
-                                      E-mail:{' '}
-                                      <span className="ml-1 truncate text-zinc-300">{u.email}</span>
-                                    </span>
-                                  </div>
-                                  {!u.is_admin && (
-                                    <div className="mt-2 flex w-full flex-wrap justify-end gap-2 md:mt-0 md:w-auto">
-                                      {u.telefone && (
-                                        <a
-                                          href={`whatsapp://send?phone=${u.telefone.replace(/\D/g, '').startsWith('55') ? u.telefone.replace(/\D/g, '') : '55' + u.telefone.replace(/\D/g, '')}`}
-                                          target="_blank"
-                                          rel="noopener noreferrer"
-                                          className="flex items-center gap-1 rounded-lg border border-emerald-500/30 bg-emerald-900/30 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-emerald-400 transition-colors hover:bg-emerald-600 hover:text-white"
-                                        >
-                                          📱 Whats
-                                        </a>
-                                      )}
-                                      {!u.whatsapp_verificado && (
-                                        <button
-                                          onClick={() => confirmarWhatsAdmin(u.id)}
-                                          title="Confirme manualmente caso o cliente já tenha mandado a mensagem de verificação"
-                                          className="flex items-center gap-1 rounded-lg border border-purple-500/30 bg-purple-900/30 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-purple-400 transition-colors hover:bg-purple-600 hover:text-white"
-                                        >
-                                          ✅ Confirmar Whats
-                                        </button>
-                                      )}
+                                        <strong className="text-lg font-black tracking-tight text-white">
+                                          {conta.jogo}
+                                        </strong>
+                                        <span className="text-xs font-bold tracking-wide text-zinc-400">
+                                          Login:{' '}
+                                          <span className="select-all font-medium text-white">
+                                            {conta.email_login}
+                                          </span>
+                                        </span>
+                                        <span className="text-xs font-bold tracking-wide text-zinc-500 line-through">
+                                          Senha Velha:{' '}
+                                          <span className="font-mono">{conta.senha_antiga}</span>
+                                        </span>
+                                        <span className="mt-4 w-max rounded-xl border border-amber-500/20 bg-amber-500/10 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-amber-500">
+                                          Último Cliente:{' '}
+                                          {conta.ultimo_cliente_nome || 'Desconhecido'}
+                                        </span>
+                                        {conta.cashback_pendente > 0 && (
+                                          <span className="mt-3 w-max rounded-xl border border-emerald-500/30 bg-emerald-400/10 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-emerald-400">
+                                            💸 Cashback Pendente: R${' '}
+                                            {conta.cashback_pendente.toFixed(2)}
+                                          </span>
+                                        )}
+                                      </div>
+                                      <div className="flex w-full flex-col gap-3 sm:w-auto">
+                                        {conta.ultimo_cliente_telefone && (
+                                          <button
+                                            onClick={() =>
+                                              cobrarNoWhatsApp(
+                                                conta.ultimo_cliente_nome,
+                                                conta.ultimo_cliente_telefone,
+                                                conta.jogo,
+                                              )
+                                            }
+                                            className="flex items-center justify-center gap-2 rounded-xl border border-emerald-500/30 bg-emerald-900/40 px-4 py-2.5 text-[10px] font-bold uppercase tracking-wider text-emerald-400 shadow transition-colors hover:bg-emerald-600 hover:text-white"
+                                          >
+                                            📱 Cobrar via Whats
+                                          </button>
+                                        )}
+                                        {conta.ultimo_cliente_id && (
+                                          <button
+                                            onClick={() =>
+                                              aplicarMultaCliente(
+                                                conta.ultimo_cliente_id,
+                                                conta.ultimo_cliente_nome,
+                                              )
+                                            }
+                                            className="flex items-center justify-center gap-2 rounded-xl border border-rose-500/30 bg-rose-900/40 px-4 py-2.5 text-[10px] font-bold uppercase tracking-wider text-rose-400 shadow transition-colors hover:bg-rose-600 hover:text-white"
+                                          >
+                                            🚨 Aplicar Multa
+                                          </button>
+                                        )}
+                                      </div>
+                                    </div>
+                                    <div className="mt-2 flex flex-col gap-3 border-t border-rose-900/50 pt-6 sm:flex-row">
+                                      <input
+                                        type="text"
+                                        placeholder="Digite a NOVA senha para liberar"
+                                        value={novasSenhasTemp[conta.conta_psn_id] || ''}
+                                        onChange={(e) =>
+                                          setNovasSenhasTemp({
+                                            ...novasSenhasTemp,
+                                            [conta.conta_psn_id]: e.target.value,
+                                          })
+                                        }
+                                        className="flex-1 rounded-2xl border border-zinc-800 bg-zinc-950 px-5 py-3.5 text-sm font-bold text-white outline-none focus:border-rose-500"
+                                      />
                                       <button
-                                        onClick={() => setModalEdicaoCliente(u)}
-                                        className="flex items-center gap-1 rounded-lg border border-blue-500/30 bg-blue-900/30 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-blue-400 transition-colors hover:bg-blue-600 hover:text-white"
+                                        onClick={() => confirmarResetSenha(conta.conta_psn_id)}
+                                        className="whitespace-nowrap rounded-2xl bg-emerald-600 px-6 py-3.5 text-xs font-bold uppercase tracking-wider text-white shadow-lg shadow-emerald-600/20 transition-colors hover:bg-emerald-500"
                                       >
-                                        ✏️ Editar
-                                      </button>
-                                      <button
-                                        onClick={() => removerUsuario(u.id)}
-                                        className="flex items-center gap-1 rounded-lg border border-rose-500/30 bg-rose-900/30 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-rose-400 transition-colors hover:bg-rose-600 hover:text-white"
-                                      >
-                                        🗑️ Excluir
+                                        Liberar Jogo
                                       </button>
                                     </div>
-                                  )}
-                                </li>
-                              ))}
-                          </ul>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </section>
+                        )}
+                        {contasManutencao.length === 0 && (
+                          <div className="rounded-3xl border border-zinc-800 bg-zinc-900/80 p-12 text-center">
+                            <span className="mb-3 block text-4xl">✅</span>
+                            <p className="text-sm font-bold text-zinc-400">
+                              Nenhuma conta aguardando troca de senha.
+                            </p>
+                          </div>
                         )}
                       </div>
-                      <div className="mt-6 flex items-center justify-between rounded-2xl border border-zinc-800/80 bg-zinc-950 p-4">
-                        <button
-                          onClick={() => setPaginaClientes(Math.max(0, paginaClientes - 1))}
-                          disabled={paginaClientes === 0}
-                          className="rounded-xl bg-zinc-800 px-5 py-2.5 text-[10px] font-bold uppercase tracking-wider text-white transition-colors hover:bg-zinc-700 disabled:opacity-50"
-                        >
-                          ◀ Anterior
-                        </button>
-                        <span className="text-xs font-bold text-zinc-400">
-                          Página {paginaClientes + 1}
-                        </span>
-                        <button
-                          onClick={() => setPaginaClientes(paginaClientes + 1)}
-                          disabled={(paginaClientes + 1) * 50 >= clientesFiltrados.length}
-                          className="rounded-xl bg-zinc-800 px-5 py-2.5 text-[10px] font-bold uppercase tracking-wider text-white transition-colors hover:bg-zinc-700 disabled:opacity-50"
-                        >
-                          Próxima ▶
-                        </button>
+                    )}
+
+                    {secaoAdmin === 'cupons' && (
+                      <div className="animate-fade-in flex flex-col gap-8">
+                        {/* 🎫 BLOCO CUPONS PROMOCIONAIS */}
+                        <div className="overflow-hidden rounded-3xl border border-purple-500/30 bg-gradient-to-r from-purple-900/20 to-zinc-900 shadow-2xl shadow-purple-500/10">
+                          <div className="flex items-center justify-between p-6 md:p-8">
+                            <span className="relative z-10 flex items-center gap-3 text-lg font-black tracking-tight text-purple-400">
+                              🎫 Gerenciar Cupons Promocionais
+                            </span>
+                            <span className="relative z-10 text-lg text-purple-500 transition duration-300 group-open:-rotate-180">
+                              ▼
+                            </span>
+                          </div>
+                          <div className="border-t border-purple-500/20 px-6 pb-6 pt-8 md:px-8 md:pb-8">
+                            <div className="grid grid-cols-1 gap-10 lg:grid-cols-3">
+                              <form
+                                onSubmit={cadastrarCupom}
+                                className="flex flex-col gap-4 lg:col-span-1"
+                              >
+                                <input
+                                  type="text"
+                                  placeholder="Código (Ex: VIP20)"
+                                  value={novoCupomCodigo}
+                                  onChange={(e) => setNovoCupomCodigo(e.target.value.toUpperCase())}
+                                  className={adminInputClass}
+                                  required
+                                />
+                                <div className="flex gap-3">
+                                  <select
+                                    value={novoCupomTipo}
+                                    onChange={(e) => setNovoCupomTipo(e.target.value)}
+                                    className={adminInputClass}
+                                  >
+                                    <option value="PORCENTAGEM">% Porcentagem</option>
+                                    <option value="FIXO">R$ Valor Fixo</option>
+                                  </select>
+                                  <input
+                                    type="number"
+                                    step="0.01"
+                                    placeholder="Valor"
+                                    value={novoCupomValor}
+                                    onChange={(e) => setNovoCupomValor(e.target.value)}
+                                    className={adminInputClass}
+                                    required
+                                  />
+                                </div>
+                                <button
+                                  type="submit"
+                                  className="mt-2 w-full rounded-xl bg-purple-600 py-3.5 text-xs font-bold uppercase tracking-wider text-white shadow-lg shadow-purple-500/20 transition-colors hover:bg-purple-500"
+                                >
+                                  Criar Cupom
+                                </button>
+                              </form>
+
+                              <div className="scrollbar-thin scrollbar-thumb-purple-700 scrollbar-track-transparent max-h-[200px] overflow-y-auto pr-3 lg:col-span-2">
+                                {listaCupons.length === 0 ? (
+                                  <p className="text-sm font-medium text-zinc-500">
+                                    Nenhum cupom ativo.
+                                  </p>
+                                ) : (
+                                  <table className="w-full whitespace-nowrap text-left text-sm">
+                                    <thead>
+                                      <tr className="border-b border-purple-500/30 text-zinc-400">
+                                        <th className="pb-3 text-[10px] font-bold uppercase tracking-wider">
+                                          Código
+                                        </th>
+                                        <th className="pb-3 text-[10px] font-bold uppercase tracking-wider">
+                                          Tipo
+                                        </th>
+                                        <th className="pb-3 text-[10px] font-bold uppercase tracking-wider">
+                                          Bônus
+                                        </th>
+                                        <th className="pb-3 text-right text-[10px] font-bold uppercase tracking-wider">
+                                          Ação
+                                        </th>
+                                      </tr>
+                                    </thead>
+                                    <tbody>
+                                      {listaCupons.map((c) => (
+                                        <tr
+                                          key={c.id}
+                                          className="border-b border-purple-500/10 transition-colors hover:bg-purple-900/20"
+                                        >
+                                          <td className="py-4 text-sm font-black tracking-widest text-white">
+                                            {c.codigo}
+                                          </td>
+                                          <td className="py-4 text-[10px] font-bold uppercase tracking-wider text-zinc-400">
+                                            {c.tipo}
+                                          </td>
+                                          <td className="py-4 text-sm font-black text-emerald-400">
+                                            {c.tipo === 'FIXO'
+                                              ? `+ R$ ${c.valor.toFixed(2)}`
+                                              : `+ ${c.valor}%`}
+                                          </td>
+                                          <td className="py-4 text-right">
+                                            <button
+                                              onClick={() => removerCupom(c.id)}
+                                              className="rounded-lg border border-rose-500/30 bg-rose-900/30 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-rose-400 transition-colors hover:text-white"
+                                            >
+                                              Excluir
+                                            </button>
+                                          </td>
+                                        </tr>
+                                      ))}
+                                    </tbody>
+                                  </table>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  </details>
+                    )}
+
+                    {secaoAdmin === 'vitrine' && (
+                      <div className="animate-fade-in flex flex-col gap-8">
+                        {/* 🖼️ BLOCO CONFIGURAÇÕES DA VITRINE E BANNERS */}
+                        <div className="overflow-hidden rounded-3xl border border-l-4 border-zinc-800 border-l-orange-500 bg-zinc-900/80 shadow-2xl shadow-orange-500/10">
+                          <div className="flex items-center justify-between p-6 md:p-8">
+                            <span className="relative z-10 flex items-center gap-3 text-lg font-black tracking-tight text-orange-400">
+                              🖼️ Configurações da Vitrine e Banners
+                            </span>
+                            <span className="relative z-10 text-lg text-orange-500 transition duration-300 group-open:-rotate-180">
+                              ▼
+                            </span>
+                          </div>
+                          <div className="border-t border-zinc-800/50 px-6 pb-6 pt-8 md:px-8 md:pb-8">
+                            <div className="mb-4 flex flex-col items-start justify-between gap-5 sm:flex-row sm:items-center">
+                              <div>
+                                <h4 className="text-base font-bold tracking-tight text-white">
+                                  📣 Hero Alert (Faixa de Anúncio)
+                                </h4>
+                                <p className="mt-1 text-xs font-medium text-zinc-400">
+                                  Faixa colorida que aparece abaixo dos banners principais.
+                                </p>
+                              </div>
+                              <button
+                                onClick={toggleAnuncio}
+                                className={`w-full rounded-xl px-6 py-3 text-xs font-bold uppercase tracking-wider shadow-lg transition-all sm:w-auto ${configSistema.anuncio_ativo ? 'bg-orange-600 text-white shadow-orange-600/20' : 'border border-zinc-700 bg-zinc-800 text-zinc-400 hover:text-white'}`}
+                              >
+                                {configSistema.anuncio_ativo
+                                  ? '✅ FAIXA LIGADA'
+                                  : '❌ FAIXA DESLIGADA'}
+                              </button>
+                            </div>
+                            <textarea
+                              placeholder="Ex: PROMOÇÃO DE FIM DE SEMANA! Recarregue R$ 50..."
+                              value={configSistema.mensagem_anuncio}
+                              onChange={(e) =>
+                                setConfigSistema({
+                                  ...configSistema,
+                                  mensagem_anuncio: e.target.value,
+                                })
+                              }
+                              className={`${adminInputClass} h-16 resize-none border-zinc-700 bg-zinc-950 text-sm focus:ring-orange-500`}
+                            />
+
+                            <div className="mt-8 border-t border-zinc-800/50 pt-6">
+                              <h4 className="text-base font-bold tracking-tight text-white">
+                                🖼️ Banners do Carrossel (Imagens)
+                              </h4>
+                              <p className="mb-4 mt-1 text-xs font-medium text-zinc-400">
+                                Cole as URLs das imagens que irão ficar trocando no topo do site.{' '}
+                                <strong className="text-emerald-400">
+                                  Separe cada URL com uma vírgula.
+                                </strong>
+                              </p>
+
+                              {/* [INFO] PREVIEW EM TEMPO REAL DOS BANNERS */}
+                              {(() => {
+                                const urls = configSistema.banners_url
+                                  ? configSistema.banners_url
+                                      .split(',')
+                                      .map((u) => u.trim())
+                                      .filter((u) => u)
+                                  : [];
+
+                                if (urls.length > 0) {
+                                  return (
+                                    <div className="custom-scrollbar mb-4 flex w-full gap-4 overflow-x-auto rounded-2xl border border-zinc-800/50 bg-black/20 p-4 shadow-inner">
+                                      {urls.map((url, index) => (
+                                        <div
+                                          key={index}
+                                          className="relative flex shrink-0 flex-col transition-transform hover:scale-105"
+                                        >
+                                          <div className="relative h-24 w-48 overflow-hidden rounded-xl border border-zinc-700 bg-zinc-900 shadow-md">
+                                            <img
+                                              src={url}
+                                              alt={`Preview do Banner ${index + 1}`}
+                                              className="h-full w-full object-cover"
+                                              onError={(e) => {
+                                                e.target.src =
+                                                  'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="%2352525b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>';
+                                                e.target.className =
+                                                  'h-full w-full object-none opacity-50 p-4';
+                                              }}
+                                            />
+                                            {/* Badge mostrando a ordem do banner */}
+                                            <div className="absolute left-2 top-2 flex h-5 w-5 items-center justify-center rounded-md border border-orange-500/30 bg-black/80 text-[10px] font-black text-orange-400 backdrop-blur-md">
+                                              {index + 1}
+                                            </div>
+                                          </div>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  );
+                                }
+                                return null;
+                              })()}
+
+                              <textarea
+                                placeholder="https://imagem1.jpg, https://imagem2.jpg..."
+                                value={configSistema.banners_url || ''}
+                                onChange={(e) =>
+                                  setConfigSistema({
+                                    ...configSistema,
+                                    banners_url: e.target.value,
+                                  })
+                                }
+                                className={`${adminInputClass} h-24 resize-none border-zinc-700 bg-zinc-950 text-sm focus:ring-orange-500`}
+                              />
+                            </div>
+
+                            <div className="mt-6 flex justify-end">
+                              <button
+                                onClick={salvarConfiguracoesGlobais}
+                                className="rounded-xl bg-blue-600 px-8 py-4 text-xs font-bold uppercase tracking-wider text-white shadow-lg shadow-blue-600/20 transition-colors hover:bg-blue-500"
+                              >
+                                💾 Salvar Configurações
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                        {/* 📊 BLOCO GESTÃO DA ENQUETE */}
+                        <div className="overflow-hidden rounded-3xl border border-l-4 border-fuchsia-500/30 border-l-fuchsia-500 bg-gradient-to-r from-fuchsia-900/20 to-zinc-900 shadow-2xl shadow-fuchsia-500/10">
+                          <div className="flex items-center justify-between p-6 md:p-8">
+                            <span className="relative z-10 flex items-center gap-3 text-lg font-black tracking-tight text-fuchsia-400">
+                              📊 Gestão da Enquete
+                            </span>
+                            <span className="relative z-10 text-lg text-fuchsia-500 transition duration-300 group-open:-rotate-180">
+                              ▼
+                            </span>
+                          </div>
+                          <div className="border-t border-fuchsia-500/20 px-6 pb-6 pt-8 md:px-8 md:pb-8">
+                            {/* 1. TEXTOS DA ENQUETE */}
+                            <div className="mb-8 rounded-2xl border border-zinc-800/50 bg-zinc-950 p-5">
+                              <h4 className="mb-1 text-sm font-bold tracking-tight text-white">
+                                📝 Textos de Exibição
+                              </h4>
+                              <p className="mb-4 text-xs font-medium text-zinc-400">
+                                Personalize as frases que aparecem na área de votação para os
+                                clientes.
+                              </p>
+                              <div className="grid gap-4 md:grid-cols-2">
+                                <div>
+                                  <label className="mb-2 block text-[10px] font-bold uppercase tracking-wider text-zinc-500">
+                                    Título da Enquete
+                                  </label>
+                                  <input
+                                    type="text"
+                                    placeholder="Ex: Próximas Adições: Você Decide!"
+                                    value={configSistema.enquete_titulo || ''}
+                                    onChange={(e) =>
+                                      setConfigSistema({
+                                        ...configSistema,
+                                        enquete_titulo: e.target.value,
+                                      })
+                                    }
+                                    className={`${adminInputClass} focus:ring-fuchsia-500`}
+                                  />
+                                </div>
+                                <div>
+                                  <label className="mb-2 block text-[10px] font-bold uppercase tracking-wider text-zinc-500">
+                                    Subtítulo / Descrição
+                                  </label>
+                                  <textarea
+                                    placeholder="Subtítulo..."
+                                    value={configSistema.enquete_subtitulo || ''}
+                                    onChange={(e) =>
+                                      setConfigSistema({
+                                        ...configSistema,
+                                        enquete_subtitulo: e.target.value,
+                                      })
+                                    }
+                                    className={`${adminInputClass} h-[42px] resize-none focus:ring-fuchsia-500`}
+                                  />
+                                </div>
+                              </div>
+                              <div className="mt-4 flex justify-end">
+                                <button
+                                  onClick={() =>
+                                    salvarConfiguracoesDireto(
+                                      configSistema,
+                                      '💾 Textos da enquete atualizados!',
+                                    )
+                                  }
+                                  className="rounded-xl bg-fuchsia-600 px-6 py-2.5 text-xs font-bold uppercase tracking-wider text-white shadow-lg shadow-fuchsia-600/20 transition-colors hover:bg-fuchsia-500"
+                                >
+                                  Salvar Textos
+                                </button>
+                              </div>
+                            </div>
+
+                            {/* 2. GESTÃO DAS OPÇÕES DA ENQUETE */}
+                            <div className="flex flex-col gap-8 lg:flex-row">
+                              <form
+                                onSubmit={adicionarOpcaoEnquete}
+                                className="flex flex-1 flex-col gap-4"
+                              >
+                                <h4 className="mb-2 text-sm font-bold tracking-tight text-white">
+                                  Adicionar Opção (Máx. Recomendado: 5)
+                                </h4>
+                                <div className="flex gap-3">
+                                  <input
+                                    type="text"
+                                    placeholder="Título do Jogo"
+                                    value={novaOpcaoEnqueteTitulo}
+                                    onChange={(e) => setNovaOpcaoEnqueteTitulo(e.target.value)}
+                                    className={adminInputClass}
+                                    required
+                                  />
+                                  <button
+                                    type="button"
+                                    onClick={buscarImagemEnquete}
+                                    className="whitespace-nowrap rounded-xl bg-amber-500 px-5 text-[10px] font-bold uppercase tracking-wider text-zinc-900 shadow-lg shadow-amber-500/20 transition-colors hover:bg-amber-400"
+                                  >
+                                    ✨ Buscar
+                                  </button>
+                                </div>
+                                <input
+                                  type="url"
+                                  placeholder="URL da Capa (Preenchimento Automático)"
+                                  value={novaOpcaoEnqueteImagem}
+                                  onChange={(e) => setNovaOpcaoEnqueteImagem(e.target.value)}
+                                  className={adminInputClass}
+                                  required
+                                />
+                                <button
+                                  type="submit"
+                                  className="mt-2 rounded-xl bg-fuchsia-600 py-3.5 text-xs font-bold uppercase tracking-wider text-white shadow-lg shadow-fuchsia-500/20 transition-colors hover:bg-fuchsia-500"
+                                >
+                                  Salvar Opção
+                                </button>
+                              </form>
+
+                              <div className="flex-1 rounded-2xl border border-zinc-800/80 bg-zinc-950/50 p-5">
+                                <div className="mb-4 flex items-center justify-between">
+                                  <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-400">
+                                    Opções Atuais
+                                  </h4>
+                                  <button
+                                    onClick={limparEnquete}
+                                    type="button"
+                                    className="rounded-lg border border-rose-500/30 bg-rose-900/30 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-rose-400 transition-colors hover:bg-rose-600 hover:text-white"
+                                  >
+                                    Limpar Enquete
+                                  </button>
+                                </div>
+                                <div className="custom-scrollbar flex max-h-[200px] flex-col gap-3 overflow-y-auto pr-2">
+                                  {enqueteOpcoes.length === 0 ? (
+                                    <p className="text-xs font-medium text-zinc-500">
+                                      Nenhuma opção cadastrada.
+                                    </p>
+                                  ) : (
+                                    enqueteOpcoes.map((op) => (
+                                      <div
+                                        key={op.id}
+                                        className="flex items-center justify-between rounded-xl border border-zinc-800 bg-zinc-900 p-3"
+                                      >
+                                        <div className="flex items-center gap-3">
+                                          <img
+                                            src={op.url_imagem}
+                                            className="h-10 w-10 rounded-lg border border-zinc-700 object-cover"
+                                            alt="capa"
+                                          />
+                                          <div className="flex flex-col">
+                                            <span className="text-xs font-bold text-white">
+                                              {op.titulo}
+                                            </span>
+                                            <span className="text-[10px] font-black text-fuchsia-400">
+                                              {op.total_votos} votos
+                                            </span>
+                                          </div>
+                                        </div>
+                                        <button
+                                          onClick={() => removerOpcaoEnquete(op.id)}
+                                          className="text-lg text-zinc-500 transition-colors hover:text-rose-400"
+                                          title="Remover"
+                                        >
+                                          🗑️
+                                        </button>
+                                      </div>
+                                    ))
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             )}
