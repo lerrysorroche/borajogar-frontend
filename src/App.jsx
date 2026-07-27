@@ -127,6 +127,8 @@ function App() {
   // Dossiê financeiro do cliente (botão 💰 Extrato na Base de Clientes)
   const [modalDossie, setModalDossie] = useState(null);
   const [carregandoDossie, setCarregandoDossie] = useState(false);
+  const [limiteTransacoesDossie, setLimiteTransacoesDossie] = useState(10);
+  const [limiteLocacoesDossie, setLimiteLocacoesDossie] = useState(10);
   const [modalWhatsappBloqueado, setModalWhatsappBloqueado] = useState(false);
   const [indiceBanner, setIndiceBanner] = useState(0);
 
@@ -1176,14 +1178,19 @@ function App() {
       });
   };
 
-  const abrirDossieCliente = (cliente) => {
+  const abrirDossieCliente = (cliente, limiteTransacoes = 10, limiteLocacoes = 10) => {
     // Abre já com os dados básicos que a lista tem, para o modal aparecer na
     // hora; o resto (extrato, locações, pendências) chega logo em seguida.
+    // Os limites também são usados pelo botão "Mostrar mais": ele rechama esta
+    // mesma função com um limite maior em vez de acumular páginas no cliente.
     setModalDossie({ cliente, dados: null });
+    setLimiteTransacoesDossie(limiteTransacoes);
+    setLimiteLocacoesDossie(limiteLocacoes);
     setCarregandoDossie(true);
-    fetch(`https://borajogar-api.onrender.com/admin/clientes/${cliente.id}/dossie`, {
-      headers: getAuthHeaders(),
-    })
+    fetch(
+      `https://borajogar-api.onrender.com/admin/clientes/${cliente.id}/dossie?limite_transacoes=${limiteTransacoes}&limite_locacoes=${limiteLocacoes}`,
+      { headers: getAuthHeaders() },
+    )
       .then(async (res) => {
         const data = await res.json();
         if (res.ok) {
@@ -2055,65 +2062,97 @@ function App() {
                   ))}
                 </div>
 
-                {/* PAGAMENTOS PRESOS EM PENDENTE */}
+                {/* PAGAMENTOS PRESOS EM PENDENTE (só do mês atual — ver /admin/clientes/{id}/dossie) */}
                 {modalDossie.dados.pedidos_pendentes.length > 0 && (
-                  <div className="rounded-2xl border border-rose-500/40 bg-rose-950/20 p-5">
-                    <h4 className="mb-3 flex items-center gap-2 text-xs font-black uppercase tracking-wider text-rose-400">
-                      ⚠️ Recargas não confirmadas ({modalDossie.dados.pedidos_pendentes.length})
-                    </h4>
-                    <p className="mb-3 text-[11px] leading-relaxed text-zinc-400">
-                      Pedidos que nunca fecharam. Normalmente é pagamento abandonado — mas se o
-                      cliente afirma ter pago, é aqui que o valor estaria parado.
-                    </p>
-                    <ul className="space-y-2">
-                      {modalDossie.dados.pedidos_pendentes.map((pd) => (
-                        <li
-                          key={pd.id}
-                          className="flex items-center justify-between gap-3 rounded-xl bg-zinc-950/70 px-4 py-2.5"
-                        >
-                          <span className="truncate font-mono-tech text-[10px] text-zinc-500">
-                            {pd.id.slice(0, 26)}…
-                          </span>
-                          <span className="shrink-0 text-xs font-black text-rose-300">
-                            R$ {pd.valor_pago.toFixed(2)}
-                          </span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
-                {/* HISTÓRICO DE LOCAÇÕES */}
-                <div>
-                  <h4 className="mb-3 text-xs font-black uppercase tracking-wider text-zinc-400">
-                    🎮 Locações ({modalDossie.dados.locacoes.length})
-                  </h4>
-                  {modalDossie.dados.locacoes.length === 0 ? (
-                    <p className="text-xs text-zinc-600">Nenhuma locação registrada.</p>
-                  ) : (
-                    <div className="custom-scrollbar max-h-52 overflow-y-auto pr-2">
+                  <details className="group overflow-hidden rounded-2xl border border-rose-500/40 bg-rose-950/20 [&_summary::-webkit-details-marker]:hidden">
+                    <summary className="flex cursor-pointer select-none items-center justify-between gap-3 p-5">
+                      <span className="flex items-center gap-2 text-xs font-black uppercase tracking-wider text-rose-400">
+                        ⚠️ Recargas não confirmadas ({modalDossie.dados.pedidos_pendentes.length})
+                      </span>
+                      <span className="flex items-center gap-3">
+                        <span className="text-xs font-black text-rose-300">
+                          R${' '}
+                          {modalDossie.dados.pedidos_pendentes
+                            .reduce((soma, pd) => soma + pd.valor_pago, 0)
+                            .toFixed(2)}
+                        </span>
+                        <span className="text-rose-500 transition duration-300 group-open:-rotate-180">
+                          ▼
+                        </span>
+                      </span>
+                    </summary>
+                    <div className="px-5 pb-5">
+                      <p className="mb-3 text-[11px] leading-relaxed text-zinc-400">
+                        Pedidos deste mês que nunca fecharam. Normalmente é pagamento abandonado —
+                        mas se o cliente afirma ter pago, é aqui que o valor estaria parado.
+                      </p>
                       <ul className="space-y-2">
-                        {modalDossie.dados.locacoes.map((l) => (
+                        {modalDossie.dados.pedidos_pendentes.map((pd) => (
                           <li
-                            key={l.id}
-                            className="flex items-center justify-between gap-3 rounded-xl border border-zinc-800/60 bg-zinc-950/50 px-4 py-2.5"
+                            key={pd.id}
+                            className="flex items-center justify-between gap-3 rounded-xl bg-zinc-950/70 px-4 py-2.5"
                           >
-                            <div className="min-w-0">
-                              <p className="truncate text-xs font-bold text-white">{l.jogo}</p>
-                              <p className="text-[10px] text-zinc-500">
-                                {l.tipo_slot} · até{' '}
-                                {new Date(l.data_fim).toLocaleDateString('pt-BR')}
-                              </p>
-                            </div>
-                            <span
-                              className={`shrink-0 rounded-md px-2 py-0.5 text-[9px] font-black uppercase ${l.status === 'ATIVA' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-zinc-800 text-zinc-500'}`}
-                            >
-                              {l.status}
+                            <span className="truncate font-mono-tech text-[10px] text-zinc-500">
+                              {pd.id.slice(0, 26)}…
+                            </span>
+                            <span className="shrink-0 text-xs font-black text-rose-300">
+                              R$ {pd.valor_pago.toFixed(2)}
                             </span>
                           </li>
                         ))}
                       </ul>
                     </div>
+                  </details>
+                )}
+
+                {/* HISTÓRICO DE LOCAÇÕES (paginado — "Mostrar mais" busca o dossiê de novo com um limite maior) */}
+                <div>
+                  <h4 className="mb-3 text-xs font-black uppercase tracking-wider text-zinc-400">
+                    🎮 Locações ({modalDossie.dados.locacoes.length} de{' '}
+                    {modalDossie.dados.locacoes_total})
+                  </h4>
+                  {modalDossie.dados.locacoes.length === 0 ? (
+                    <p className="text-xs text-zinc-600">Nenhuma locação registrada.</p>
+                  ) : (
+                    <>
+                      <div className="custom-scrollbar max-h-52 overflow-y-auto pr-2">
+                        <ul className="space-y-2">
+                          {modalDossie.dados.locacoes.map((l) => (
+                            <li
+                              key={l.id}
+                              className="flex items-center justify-between gap-3 rounded-xl border border-zinc-800/60 bg-zinc-950/50 px-4 py-2.5"
+                            >
+                              <div className="min-w-0">
+                                <p className="truncate text-xs font-bold text-white">{l.jogo}</p>
+                                <p className="text-[10px] text-zinc-500">
+                                  {l.tipo_slot} · até{' '}
+                                  {new Date(l.data_fim).toLocaleDateString('pt-BR')}
+                                </p>
+                              </div>
+                              <span
+                                className={`shrink-0 rounded-md px-2 py-0.5 text-[9px] font-black uppercase ${l.status === 'ATIVA' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-zinc-800 text-zinc-500'}`}
+                              >
+                                {l.status}
+                              </span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                      {modalDossie.dados.locacoes_total > modalDossie.dados.locacoes.length && (
+                        <button
+                          onClick={() =>
+                            abrirDossieCliente(
+                              modalDossie.cliente,
+                              limiteTransacoesDossie,
+                              limiteLocacoesDossie + 10,
+                            )
+                          }
+                          className="mt-2 w-full rounded-lg border border-zinc-700 bg-zinc-900 py-2 text-[10px] font-bold uppercase tracking-wider text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-white"
+                        >
+                          Mostrar mais 10 ▾
+                        </button>
+                      )}
+                    </>
                   )}
                 </div>
 
@@ -2139,38 +2178,55 @@ function App() {
                   </div>
                 )}
 
-                {/* EXTRATO COMPLETO */}
+                {/* EXTRATO (paginado — "Mostrar mais" busca o dossiê de novo com um limite maior) */}
                 <div>
                   <h4 className="mb-3 text-xs font-black uppercase tracking-wider text-zinc-400">
-                    🧾 Extrato ({modalDossie.dados.transacoes.length})
+                    🧾 Extrato ({modalDossie.dados.transacoes.length} de{' '}
+                    {modalDossie.dados.transacoes_total})
                   </h4>
                   {modalDossie.dados.transacoes.length === 0 ? (
                     <p className="text-xs text-zinc-600">Nenhuma movimentação.</p>
                   ) : (
-                    <div className="custom-scrollbar max-h-72 overflow-y-auto pr-2">
-                      <ul className="space-y-1.5">
-                        {modalDossie.dados.transacoes.map((t, i) => (
-                          <li
-                            key={i}
-                            className="flex items-center justify-between gap-3 rounded-lg bg-zinc-950/50 px-3 py-2"
-                          >
-                            <div className="min-w-0">
-                              <p className="truncate text-[11px] font-medium text-zinc-300">
-                                {t.descricao}
-                              </p>
-                              <p className="text-[9px] text-zinc-600">
-                                {new Date(t.data_transacao).toLocaleString('pt-BR')}
-                              </p>
-                            </div>
-                            <span
-                              className={`shrink-0 text-xs font-black ${t.tipo === 'ENTRADA' ? 'text-emerald-400' : 'text-rose-400'}`}
+                    <>
+                      <div className="custom-scrollbar max-h-72 overflow-y-auto pr-2">
+                        <ul className="space-y-1.5">
+                          {modalDossie.dados.transacoes.map((t, i) => (
+                            <li
+                              key={i}
+                              className="flex items-center justify-between gap-3 rounded-lg bg-zinc-950/50 px-3 py-2"
                             >
-                              {t.tipo === 'ENTRADA' ? '+' : '−'} R$ {t.valor.toFixed(2)}
-                            </span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
+                              <div className="min-w-0">
+                                <p className="truncate text-[11px] font-medium text-zinc-300">
+                                  {t.descricao}
+                                </p>
+                                <p className="text-[9px] text-zinc-600">
+                                  {new Date(t.data_transacao).toLocaleString('pt-BR')}
+                                </p>
+                              </div>
+                              <span
+                                className={`shrink-0 text-xs font-black ${t.tipo === 'ENTRADA' ? 'text-emerald-400' : 'text-rose-400'}`}
+                              >
+                                {t.tipo === 'ENTRADA' ? '+' : '−'} R$ {t.valor.toFixed(2)}
+                              </span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                      {modalDossie.dados.transacoes_total > modalDossie.dados.transacoes.length && (
+                        <button
+                          onClick={() =>
+                            abrirDossieCliente(
+                              modalDossie.cliente,
+                              limiteTransacoesDossie + 10,
+                              limiteLocacoesDossie,
+                            )
+                          }
+                          className="mt-2 w-full rounded-lg border border-zinc-700 bg-zinc-900 py-2 text-[10px] font-bold uppercase tracking-wider text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-white"
+                        >
+                          Mostrar mais 10 ▾
+                        </button>
+                      )}
+                    </>
                   )}
                 </div>
               </div>
