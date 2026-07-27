@@ -5662,13 +5662,13 @@ function App() {
 
                                 if (urls.length > 0) {
                                   return (
-                                    <div className="custom-scrollbar mb-4 flex w-full gap-4 overflow-x-auto rounded-2xl border border-zinc-800/50 bg-black/20 p-4 shadow-inner">
+                                    <div className="mb-4 grid w-full grid-cols-3 gap-3 rounded-2xl border border-zinc-800/50 bg-black/20 p-4 shadow-inner sm:grid-cols-4 lg:grid-cols-5">
                                       {urls.map((url, index) => (
                                         <div
                                           key={index}
-                                          className="relative flex shrink-0 flex-col transition-transform hover:scale-105"
+                                          className="relative flex flex-col transition-transform hover:scale-105"
                                         >
-                                          <div className="relative h-24 w-48 overflow-hidden rounded-xl border border-zinc-700 bg-zinc-900 shadow-md">
+                                          <div className="relative aspect-video w-full overflow-hidden rounded-xl border border-zinc-700 bg-zinc-900 shadow-md">
                                             <img
                                               src={url}
                                               alt={`Preview do Banner ${index + 1}`}
@@ -5702,7 +5702,7 @@ function App() {
                                     banners_url: e.target.value,
                                   })
                                 }
-                                className={`${adminInputClass} h-24 resize-none border-zinc-700 bg-zinc-950 text-sm focus:ring-orange-500`}
+                                className={`${adminInputClass} h-64 resize-none border-zinc-700 bg-zinc-950 text-sm focus:ring-orange-500`}
                               />
                             </div>
 
