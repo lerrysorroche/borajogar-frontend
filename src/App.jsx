@@ -72,6 +72,34 @@ const SECOES_ADMIN = [
   },
 ];
 
+// Seções da página "Meus Acessos" (mesmo padrão de SECOES_ADMIN acima).
+const SECOES_DASHBOARD = [
+  {
+    id: 'jogos',
+    icone: '🎮',
+    nome: 'Meus Jogos',
+    ativo: 'bg-emerald-600 text-white shadow-md shadow-emerald-600/20',
+  },
+  {
+    id: 'fila',
+    icone: '⏳',
+    nome: 'Fila de Espera',
+    ativo: 'bg-amber-600 text-white shadow-md shadow-amber-600/20',
+  },
+  {
+    id: 'carteira',
+    icone: '💰',
+    nome: 'Carteira',
+    ativo: 'bg-cyan-600 text-white shadow-md shadow-cyan-600/20',
+  },
+  {
+    id: 'seguranca',
+    icone: '🔐',
+    nome: 'Segurança',
+    ativo: 'bg-rose-600 text-white shadow-md shadow-rose-600/20',
+  },
+];
+
 // Detector de sessão morta (instalado uma única vez).
 // Quando o token expira — ou quando o segredo do servidor é rotacionado, o que
 // invalida todos os tokens de uma vez — as chamadas autenticadas passam a voltar
@@ -202,6 +230,8 @@ function App() {
   const [paginaClientes, setPaginaClientes] = useState(0);
   // Seção visível do Painel Admin (ver SECOES_ADMIN no topo do arquivo)
   const [secaoAdmin, setSecaoAdmin] = useState('visao-geral');
+  // Seção visível de "Meus Acessos" (ver SECOES_DASHBOARD no topo do arquivo)
+  const [secaoDashboard, setSecaoDashboard] = useState('jogos');
 
   // Admin: Filtros Internos
   const [buscaEstoque, setBuscaEstoque] = useState('');
@@ -3720,7 +3750,7 @@ function App() {
 
             {/* DASHBOARD CLIENTE */}
             {abaAtual === 'dashboard' && (
-              <div className="animate-fade-in mx-auto max-w-5xl space-y-8">
+              <div className="animate-fade-in mx-auto max-w-6xl space-y-8">
                 <div className="relative flex flex-col items-center gap-6 overflow-hidden rounded-3xl border border-purple-500/30 bg-gradient-to-r from-purple-900/20 via-zinc-900 to-zinc-900 p-6 shadow-2xl md:flex-row md:p-8">
                   <div className="pointer-events-none absolute -left-10 -top-10 h-40 w-40 rounded-full bg-purple-600/10 blur-3xl"></div>
                   <div className="relative">
@@ -3854,622 +3884,662 @@ function App() {
                   </div>
                 ))}
 
-                <div className="mb-8 grid grid-cols-1 gap-8 lg:grid-cols-2">
-                  <section className="relative flex h-auto flex-col overflow-hidden rounded-3xl border border-cyan-500/30 bg-gradient-to-br from-cyan-900/20 to-zinc-900 p-6 shadow-2xl shadow-cyan-500/10 transition-transform duration-300 hover:-translate-y-1 md:p-8 lg:h-[540px]">
-                    <div className="pointer-events-none absolute -right-8 -top-8 text-9xl opacity-5">
-                      💸
-                    </div>
-                    <h3 className="mb-2 flex items-center gap-2 text-lg font-black tracking-tight text-cyan-400">
-                      💰 Adicionar Saldo na Carteira
-                    </h3>
-                    <p className="mb-4 text-xs leading-relaxed text-zinc-400">
-                      Escolha o método de pagamento para alugar seus jogos sem filas.
-                    </p>
-                    {pixPendente ? (
-                      <div className="animate-fade-in z-10 mb-auto mt-auto flex flex-col items-center justify-center rounded-2xl border border-emerald-500/30 bg-zinc-950 p-6 shadow-inner">
-                        <img
-                          src={
-                            pixPendente.qr_code.startsWith('data:')
-                              ? pixPendente.qr_code
-                              : `data:image/png;base64,${pixPendente.qr_code}`
-                          }
-                          alt="QR Code PIX"
-                          className="mb-4 h-40 w-40 rounded-xl border border-zinc-800 bg-white p-2 shadow-lg"
-                        />
-                        <p className="mb-4 text-center text-[11px] font-medium leading-relaxed text-zinc-400">
-                          Escaneie o QR Code no app do seu banco.{' '}
-                          <strong className="mt-1 block animate-pulse text-xs font-bold text-emerald-400">
-                            Aguardando compensação automática...
-                          </strong>
-                        </p>
-                        <div className="flex w-full gap-2">
+                <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
+                  {/* MENU LATERAL DE SECOES DE MEUS ACESSOS */}
+                  <nav className="lg:w-52 lg:shrink-0">
+                    <div className="grid grid-cols-2 gap-2 rounded-2xl border border-zinc-800/80 bg-zinc-950 p-2 shadow-inner sm:grid-cols-4 lg:sticky lg:top-6 lg:flex lg:flex-col">
+                      {SECOES_DASHBOARD.map((s) => {
+                        const ativa = secaoDashboard === s.id;
+                        return (
                           <button
+                            key={s.id}
                             onClick={() => {
-                              navigator.clipboard.writeText(pixPendente.copia_cola);
-                              mostrarToast('PIX Copiado!', 'sucesso');
+                              setSecaoDashboard(s.id);
+                              window.scrollTo(0, 0);
                             }}
-                            className="flex-1 rounded-xl border border-zinc-700 bg-zinc-800 py-3 text-[10px] font-bold uppercase tracking-wide text-white transition-colors hover:bg-zinc-700"
+                            className={`flex w-full items-center gap-2.5 whitespace-nowrap rounded-xl px-3.5 py-2.5 text-left text-[11px] font-bold uppercase tracking-wider transition-all ${ativa ? s.ativo : 'text-zinc-400 hover:bg-zinc-900 hover:text-white'}`}
                           >
-                            📋 Copiar Linha Digitável
+                            <span className="text-base leading-none">{s.icone}</span>
+                            <span className="flex-1">{s.nome}</span>
                           </button>
-                          <button
-                            onClick={() => setPixPendente(null)}
-                            className="rounded-xl border border-rose-500/30 bg-rose-900/30 px-4 text-[10px] font-bold uppercase tracking-wide text-rose-400 transition-colors hover:bg-rose-900/80"
-                          >
-                            Cancelar
-                          </button>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="relative z-10 mt-auto flex flex-col gap-3">
-                        <div>
-                          <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-wider text-zinc-500">
-                            Valor da Recarga (R$)
-                          </label>
-                          <div className="relative">
-                            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-base font-black text-zinc-400">
-                              R$
-                            </span>
-                            <input
-                              type="number"
-                              min="30"
-                              step="1"
-                              value={valorRecarga}
-                              onChange={(e) => setValorRecarga(e.target.value)}
-                              className="w-full rounded-xl border border-zinc-800 bg-zinc-950 py-3 pl-12 pr-4 text-base font-black text-white outline-none transition-all focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500"
-                              disabled={carregandoGateway}
-                            />
-                          </div>
-                        </div>
-                        <div>
-                          <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-wider text-zinc-500">
-                            Seu CPF (Exigido pelo Banco Central)
-                          </label>
-                          <input
-                            type="text"
-                            placeholder="Apenas números..."
-                            value={cpfRecarga}
-                            onChange={(e) => setCpfRecarga(e.target.value)}
-                            maxLength="14"
-                            className="w-full rounded-xl border border-zinc-800 bg-zinc-950 px-4 py-3 text-sm font-bold text-white placeholder-zinc-600 outline-none transition-all focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500"
-                            disabled={carregandoGateway}
-                          />
-                        </div>
-                        <div>
-                          <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-wider text-zinc-500">
-                            Cupom Promocional
-                          </label>
-                          <input
-                            type="text"
-                            placeholder="Opcional"
-                            value={cupomRecarga}
-                            onChange={(e) => setCupomRecarga(e.target.value.toUpperCase())}
-                            className="w-full rounded-xl border border-zinc-800 bg-zinc-950 px-4 py-3 text-sm font-bold uppercase text-white placeholder-zinc-600 outline-none transition-all focus:border-purple-500"
-                            disabled={carregandoGateway}
-                          />
-                        </div>
-                        <div className="mt-2 flex flex-col gap-3 sm:flex-row">
-                          <button
-                            onClick={solicitarRecargaCartao}
-                            disabled={carregandoGateway}
-                            className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-3.5 text-[11px] font-black uppercase tracking-wider text-white shadow-lg shadow-blue-600/20 transition-all hover:bg-blue-500 disabled:opacity-50"
-                          >
-                            💳 Pagar com Cartão
-                          </button>
-                          <button
-                            onClick={solicitarRecargaPix}
-                            disabled={carregandoGateway}
-                            className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-3.5 text-[11px] font-black uppercase tracking-wider text-white shadow-lg shadow-emerald-600/20 transition-all hover:bg-emerald-500 disabled:opacity-50"
-                          >
-                            ⚡ Pagar com Pix
-                          </button>
-                        </div>
-                        <div className="mt-3 flex flex-col items-center gap-1 border-t border-zinc-800/50 pt-3 opacity-80">
-                          <div className="flex items-center gap-2 text-[9px] font-bold uppercase tracking-widest text-zinc-400">
-                            <span>🔒 Transação Blindada</span>
-                          </div>
-                          <div className="flex items-center gap-1 text-center text-[9px] font-medium text-zinc-500">
-                            Infraestrutura de alta disponibilidade gerida por Stripe & Efí S.A.
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </section>
-                  <section className="flex h-[400px] flex-col rounded-3xl border border-zinc-700/30 bg-gradient-to-br from-zinc-800/20 to-zinc-900 p-8 shadow-2xl transition-transform duration-300 hover:-translate-y-1 lg:h-[540px]">
-                    <h3 className="mb-8 flex items-center gap-2 text-lg font-black tracking-tight text-white">
-                      🧾 Extrato da Conta
-                    </h3>
-                    {extrato.length === 0 ? (
-                      <div className="flex flex-1 flex-col items-center justify-center text-zinc-500">
-                        <span className="mb-4 text-5xl opacity-30">💳</span>
-                        <p className="text-xs font-medium">Nenhuma transação encontrada.</p>
-                      </div>
-                    ) : (
-                      <div className="scrollbar-thin scrollbar-thumb-zinc-700 scrollbar-track-transparent flex-1 space-y-4 overflow-y-auto pr-3">
-                        {extrato.map((t, i) => (
-                          <div
-                            key={i}
-                            className="flex items-center justify-between rounded-2xl border border-zinc-800/50 bg-zinc-950/50 p-5 transition-colors hover:border-zinc-700"
-                          >
-                            <div className="min-w-0 pr-4">
-                              <p
-                                className="truncate text-xs font-bold text-zinc-200 md:text-sm"
-                                title={t.descricao}
-                              >
-                                {t.descricao}
-                              </p>
-                              <p className="mt-1 text-[10px] font-bold uppercase tracking-wider text-zinc-500">
-                                {new Date(t.data_transacao).toLocaleString()}
-                              </p>
-                            </div>
-                            <span
-                              className={`shrink-0 text-base font-black tracking-tight md:text-lg ${t.tipo === 'ENTRADA' ? 'text-emerald-400' : 'text-rose-400'}`}
-                            >
-                              {t.tipo === 'ENTRADA' ? '+' : '-'} R$ {parseFloat(t.valor).toFixed(2)}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </section>
-                </div>
-
-                <details className="group overflow-hidden rounded-3xl border border-rose-500/30 bg-gradient-to-r from-rose-900/20 to-zinc-900 shadow-2xl shadow-rose-500/10 [&_summary::-webkit-details-marker]:hidden">
-                  <summary className="relative flex cursor-pointer select-none items-center justify-between p-6 font-bold text-white transition-colors hover:bg-rose-900/10 md:p-8">
-                    <span className="relative z-10 flex items-center gap-3 text-lg font-black tracking-tight text-rose-400">
-                      🔐 Segurança da Conta
-                    </span>
-                    <span className="relative z-10 text-lg text-rose-500 transition duration-300 group-open:-rotate-180">
-                      ▼
-                    </span>
-                  </summary>
-                  <div className="animate-fade-in relative z-10 border-t border-rose-500/20 px-6 pb-6 pt-8 md:px-8 md:pb-8">
-                    <p className="mb-8 max-w-2xl text-xs leading-relaxed text-zinc-400">
-                      Mantenha sua conta segura alterando sua senha regularmente ou troque a senha
-                      temporária que enviamos por e-mail.
-                    </p>
-                    <form
-                      onSubmit={alterarMinhaSenha}
-                      className="flex max-w-4xl flex-col items-end gap-5"
-                    >
-                      <div className="grid w-full grid-cols-1 gap-5 sm:grid-cols-3">
-                        <div className="relative w-full">
-                          <label className="mb-2 block text-[10px] font-bold uppercase tracking-wider text-zinc-500">
-                            Senha Atual (Provisória)
-                          </label>
-                          <div className="relative">
-                            <input
-                              type={verSenhaAtual ? 'text' : 'password'}
-                              placeholder="Sua senha atual"
-                              value={mudarSenhaAtual}
-                              onChange={(e) => setMudarSenhaAtual(e.target.value)}
-                              className={`${adminInputClass} pr-12`}
-                              required
-                            />
-                            <button
-                              type="button"
-                              onClick={() => setVerSenhaAtual(!verSenhaAtual)}
-                              className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 transition-colors hover:text-white"
-                            >
-                              {verSenhaAtual ? '🙈' : '👁️'}
-                            </button>
-                          </div>
-                        </div>
-                        <div className="relative w-full">
-                          <label className="mb-2 block text-[10px] font-bold uppercase tracking-wider text-zinc-500">
-                            Nova Senha
-                          </label>
-                          <div className="relative">
-                            <input
-                              type={verSenhaNova ? 'text' : 'password'}
-                              placeholder="Sua nova senha"
-                              value={mudarSenhaNova}
-                              onChange={(e) => setMudarSenhaNova(e.target.value)}
-                              className={`${adminInputClass} pr-12`}
-                              required
-                            />
-                            <button
-                              type="button"
-                              onClick={() => setVerSenhaNova(!verSenhaNova)}
-                              className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 transition-colors hover:text-white"
-                            >
-                              {verSenhaNova ? '🙈' : '👁️'}
-                            </button>
-                          </div>
-                        </div>
-                        <div className="relative w-full">
-                          <label className="mb-2 block text-[10px] font-bold uppercase tracking-wider text-zinc-500">
-                            Confirme a Nova Senha
-                          </label>
-                          <div className="relative">
-                            <input
-                              type={verSenhaNovaConf ? 'text' : 'password'}
-                              placeholder="Confirme a senha"
-                              value={mudarSenhaNovaConfirmacao}
-                              onChange={(e) => setMudarSenhaNovaConfirmacao(e.target.value)}
-                              className={`${adminInputClass} pr-12`}
-                              required
-                            />
-                            <button
-                              type="button"
-                              onClick={() => setVerSenhaNovaConf(!verSenhaNovaConf)}
-                              className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 transition-colors hover:text-white"
-                            >
-                              {verSenhaNovaConf ? '🙈' : '👁️'}
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                      <button
-                        type="submit"
-                        className="mt-2 w-full whitespace-nowrap rounded-2xl border border-rose-500/50 bg-rose-600 px-8 py-3.5 text-xs font-bold uppercase tracking-wider text-white shadow-lg shadow-rose-600/20 transition-colors hover:bg-rose-500 sm:w-auto"
-                      >
-                        Atualizar Senha
-                      </button>
-                    </form>
-                  </div>
-                </details>
-
-                {usuarioLogado && usuarioLogado.codigo_indicacao && (
-                  <details className="group overflow-hidden rounded-3xl border border-purple-500/30 bg-gradient-to-r from-purple-900/30 to-blue-900/20 shadow-2xl shadow-purple-500/10 [&_summary::-webkit-details-marker]:hidden">
-                    <summary className="relative flex cursor-pointer select-none items-center justify-between p-6 transition-colors hover:bg-purple-900/10 md:p-8">
-                      <span className="relative z-10 bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-lg font-black tracking-tight text-transparent">
-                        🎁 Indique um Amigo e Ganhe Bônus!
-                      </span>
-                      <span className="relative z-10 text-lg text-purple-400 transition duration-300 group-open:-rotate-180">
-                        ▼
-                      </span>
-                    </summary>
-                    <div className="animate-fade-in relative z-10 border-t border-purple-500/20 px-6 pb-6 pt-8 md:px-8 md:pb-8">
-                      <p className="mb-8 max-w-3xl text-xs leading-relaxed text-zinc-300">
-                        Mande o seu código para um amigo. Quando ele criar uma conta nova e fizer a{' '}
-                        <strong className="text-emerald-400">primeira recarga</strong>, nós daremos{' '}
-                        <strong>10% do valor</strong> da recarga dele de presente para você gastar
-                        em jogos!
-                      </p>
-                      <div className="flex flex-col items-center gap-5 sm:flex-row">
-                        <div className="flex w-full items-center justify-center gap-5 rounded-2xl border border-zinc-800 bg-zinc-950 px-8 py-3.5 shadow-inner sm:w-auto">
-                          <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">
-                            Seu Código:
-                          </span>
-                          <span className="select-all text-2xl font-black tracking-widest text-white">
-                            {usuarioLogado.codigo_indicacao}
-                          </span>
-                        </div>
-                        <button
-                          onClick={() => {
-                            navigator.clipboard.writeText(usuarioLogado.codigo_indicacao);
-                            mostrarToast('Código copiado! Envie para seus amigos.', 'sucesso');
-                          }}
-                          className="w-full rounded-2xl bg-purple-600 px-8 py-4 text-xs font-bold uppercase tracking-wider text-white shadow-lg shadow-purple-600/20 transition-colors hover:bg-purple-500 sm:w-auto"
-                        >
-                          📋 Copiar Código
-                        </button>
-                      </div>
+                        );
+                      })}
                     </div>
-                  </details>
-                )}
+                  </nav>
 
-                <details
-                  className="group overflow-hidden rounded-3xl border border-l-4 border-emerald-500/30 border-l-emerald-500 bg-gradient-to-r from-emerald-900/20 to-zinc-900 shadow-2xl shadow-emerald-500/10 [&_summary::-webkit-details-marker]:hidden"
-                  open
-                >
-                  <summary className="flex cursor-pointer select-none items-center justify-between p-6 transition-colors hover:bg-emerald-900/10 md:p-8">
-                    <span className="flex items-center gap-3 text-lg font-black tracking-tight text-emerald-400">
-                      🔑 Chaves de Acesso Ativas
-                    </span>
-                    <span className="text-lg text-emerald-500 transition duration-300 group-open:-rotate-180">
-                      ▼
-                    </span>
-                  </summary>
-                  <div className="animate-fade-in border-t border-emerald-500/20 px-6 pb-6 pt-8 md:px-8 md:pb-8">
-                    {alugueisAtivos.length > 0 && (
-                      <div className="mb-8 flex items-start gap-4 rounded-2xl border border-rose-500/50 bg-rose-950/40 p-5 shadow-inner">
-                        <span className="animate-pulse text-2xl">🚨</span>
-                        <div>
-                          <h4 className="mb-2 text-xs font-bold uppercase tracking-wider text-rose-400">
-                            Evite Bloqueio e Multa de R$ 50,00
-                          </h4>
-                          <p className="text-xs font-medium leading-relaxed text-zinc-300">
-                            É <strong>obrigatório</strong> desativar o "Compartilhamento de Console"
-                            ou "PS4 Principal" na sua conta ANTES do tempo de aluguel expirar. O
-                            descumprimento gera uma multa automática e deixa seu saldo negativo.
-                          </p>
-                        </div>
-                      </div>
-                    )}
-                    {alugueisAtivos.length === 0 ? (
-                      <p className="text-sm font-medium text-zinc-500">
-                        Nenhum jogo ativo no momento.
-                      </p>
-                    ) : (
-                      <div className="grid grid-cols-1 gap-6">
-                        {alugueisAtivos.map((item) => (
-                          <div
-                            key={`aluguel-${item.locacao_id}`}
-                            className="flex flex-col gap-6 rounded-3xl border border-emerald-500/30 bg-zinc-950/60 p-6 shadow-xl transition-colors hover:border-emerald-400/50 md:p-8"
-                          >
-                            {/* CABEÇALHO DO CARD: Título na esquerda, Expiração na direita */}
-                            <div className="flex flex-col items-start justify-between gap-4 sm:flex-row">
-                              <div>
-                                <span
-                                  className={`mb-2 inline-block rounded-lg px-2 py-1 text-[9px] font-black uppercase tracking-wider ${item.tipo_slot === 'PRIMARIA' ? 'border border-blue-500/30 bg-blue-500/20 text-blue-400' : 'border border-fuchsia-500/30 bg-fuchsia-500/20 text-fuchsia-400'}`}
-                                >
-                                  🕹️ Vaga {item.tipo_slot}
-                                </span>
-                                <h4 className="text-xl font-black leading-tight tracking-tight text-white">
-                                  {item.jogo}
-                                </h4>
-                              </div>
-
-                              {/* BLOCO DOURADO: Expiração */}
-                              <div className="flex w-max items-center justify-center gap-2 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-2.5 text-[10px] font-bold uppercase tracking-wider text-amber-400 shadow-inner">
-                                <span>⏳ Expira em:</span>
-                                <span className="text-xs font-black">
-                                  {new Date(item.data_fim).toLocaleString('pt-BR', {
-                                    dateStyle: 'short',
-                                    timeStyle: 'short',
-                                  })}
-                                </span>
-                              </div>
-                            </div>
-
-                            <div className="flex flex-col gap-3 rounded-2xl border border-zinc-800/80 bg-black/50 p-5 shadow-inner">
-                              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
-                                <span className="w-14 text-[10px] font-bold uppercase tracking-wider text-zinc-500">
-                                  Login
-                                </span>
-                                <span className="select-all break-all text-sm font-bold tracking-wide text-emerald-400 md:text-base">
-                                  {item.email_login}
-                                </span>
-                              </div>
-                              <div className="my-1 h-px w-full bg-zinc-800/80"></div>
-                              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
-                                <span className="w-14 text-[10px] font-bold uppercase tracking-wider text-zinc-500">
-                                  Senha
-                                </span>
-                                <div className="flex items-center gap-2">
-                                  <span className="inline-block w-max select-all rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-1 font-mono text-sm font-bold tracking-widest text-zinc-200 md:text-base">
-                                    {item.senha_revelada ? item.senha_login : '••••••••'}
-                                  </span>
-                                  {!item.senha_revelada && (
-                                    <button
-                                      onClick={() => setModalCredenciaisAviso(item)}
-                                      className="rounded bg-blue-600 px-3 py-1 text-[10px] font-bold uppercase text-white transition-colors hover:bg-blue-500"
-                                    >
-                                      Ver Senha
-                                    </button>
-                                  )}
+                  {/* CONTEUDO DA SECAO SELECIONADA */}
+                  <div className="min-w-0 flex-1 space-y-8">
+                    {secaoDashboard === 'jogos' && (
+                      <div className="animate-fade-in flex flex-col gap-8">
+                        <div className="group overflow-hidden rounded-3xl border border-l-4 border-emerald-500/30 border-l-emerald-500 bg-gradient-to-r from-emerald-900/20 to-zinc-900 shadow-2xl shadow-emerald-500/10">
+                          <div className="flex items-center justify-between p-6 md:p-8">
+                            <span className="flex items-center gap-3 text-lg font-black tracking-tight text-emerald-400">
+                              🔑 Chaves de Acesso Ativas
+                            </span>
+                          </div>
+                          <div className="animate-fade-in border-t border-emerald-500/20 px-6 pb-6 pt-8 md:px-8 md:pb-8">
+                            {alugueisAtivos.length > 0 && (
+                              <div className="mb-8 flex items-start gap-4 rounded-2xl border border-rose-500/50 bg-rose-950/40 p-5 shadow-inner">
+                                <span className="animate-pulse text-2xl">🚨</span>
+                                <div>
+                                  <h4 className="mb-2 text-xs font-bold uppercase tracking-wider text-rose-400">
+                                    Evite Bloqueio e Multa de R$ 50,00
+                                  </h4>
+                                  <p className="text-xs font-medium leading-relaxed text-zinc-300">
+                                    É <strong>obrigatório</strong> desativar o "Compartilhamento de
+                                    Console" ou "PS4 Principal" na sua conta ANTES do tempo de
+                                    aluguel expirar. O descumprimento gera uma multa automática e
+                                    deixa seu saldo negativo.
+                                  </p>
                                 </div>
                               </div>
-                            </div>
-
-                            <div className="w-full">
-                              {codigosGerados2FA[item.locacao_id] ? (
-                                <div className="select-all rounded-2xl border border-emerald-500/50 bg-zinc-950 py-4 text-center font-mono text-2xl font-black tracking-widest text-emerald-400 shadow-inner">
-                                  {codigosGerados2FA[item.locacao_id]}
-                                </div>
-                              ) : (
-                                <div className="flex flex-col gap-2">
-                                  <button
-                                    onClick={() => {
-                                      if (item.tipo_slot === 'SECUNDARIA') {
-                                        setModalConfirmacao2FA({
-                                          visivel: true,
-                                          locacaoId: item.locacao_id,
-                                        });
-                                      } else {
-                                        gerarCodigo2FA(item.locacao_id);
-                                      }
-                                    }}
-                                    className="flex w-full items-center justify-center gap-3 rounded-2xl border border-emerald-400 bg-emerald-600 py-4 text-xs font-bold uppercase tracking-wider text-white shadow-[0_0_15px_rgba(16,185,129,0.4)] transition-all hover:bg-emerald-500 hover:shadow-[0_0_25px_rgba(16,185,129,0.6)]"
+                            )}
+                            {alugueisAtivos.length === 0 ? (
+                              <p className="text-sm font-medium text-zinc-500">
+                                Nenhum jogo ativo no momento.
+                              </p>
+                            ) : (
+                              <div className="grid grid-cols-1 gap-6">
+                                {alugueisAtivos.map((item) => (
+                                  <div
+                                    key={`aluguel-${item.locacao_id}`}
+                                    className="flex flex-col gap-6 rounded-3xl border border-emerald-500/30 bg-zinc-950/60 p-6 shadow-xl transition-colors hover:border-emerald-400/50 md:p-8"
                                   >
-                                    🔐 Gerar Código de Acesso (2FA)
-                                  </button>
-                                  {item.tipo_slot === 'SECUNDARIA' && (
-                                    <p className="text-center text-[10px] font-bold text-rose-400">
-                                      O código 2FA da vaga Secundária só pode ser gerado uma única
-                                      vez!
-                                    </p>
-                                  )}
-                                </div>
-                              )}
-                            </div>
+                                    {/* CABEÇALHO DO CARD: Título na esquerda, Expiração na direita */}
+                                    <div className="flex flex-col items-start justify-between gap-4 sm:flex-row">
+                                      <div>
+                                        <span
+                                          className={`mb-2 inline-block rounded-lg px-2 py-1 text-[9px] font-black uppercase tracking-wider ${item.tipo_slot === 'PRIMARIA' ? 'border border-blue-500/30 bg-blue-500/20 text-blue-400' : 'border border-fuchsia-500/30 bg-fuchsia-500/20 text-fuchsia-400'}`}
+                                        >
+                                          🕹️ Vaga {item.tipo_slot}
+                                        </span>
+                                        <h4 className="text-xl font-black leading-tight tracking-tight text-white">
+                                          {item.jogo}
+                                        </h4>
+                                      </div>
 
-                            {/* BOTÃO GIGANTE DE DEVOLUÇÃO */}
-                            <div className="mt-2 w-full">
-                              <button
-                                onClick={() =>
-                                  abrirModalDevolucao(
-                                    item.locacao_id,
-                                    item.data_fim,
-                                    item.tipo_slot,
-                                  )
+                                      {/* BLOCO DOURADO: Expiração */}
+                                      <div className="flex w-max items-center justify-center gap-2 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-2.5 text-[10px] font-bold uppercase tracking-wider text-amber-400 shadow-inner">
+                                        <span>⏳ Expira em:</span>
+                                        <span className="text-xs font-black">
+                                          {new Date(item.data_fim).toLocaleString('pt-BR', {
+                                            dateStyle: 'short',
+                                            timeStyle: 'short',
+                                          })}
+                                        </span>
+                                      </div>
+                                    </div>
+
+                                    <div className="flex flex-col gap-3 rounded-2xl border border-zinc-800/80 bg-black/50 p-5 shadow-inner">
+                                      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
+                                        <span className="w-14 text-[10px] font-bold uppercase tracking-wider text-zinc-500">
+                                          Login
+                                        </span>
+                                        <span className="select-all break-all text-sm font-bold tracking-wide text-emerald-400 md:text-base">
+                                          {item.email_login}
+                                        </span>
+                                      </div>
+                                      <div className="my-1 h-px w-full bg-zinc-800/80"></div>
+                                      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
+                                        <span className="w-14 text-[10px] font-bold uppercase tracking-wider text-zinc-500">
+                                          Senha
+                                        </span>
+                                        <div className="flex items-center gap-2">
+                                          <span className="inline-block w-max select-all rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-1 font-mono text-sm font-bold tracking-widest text-zinc-200 md:text-base">
+                                            {item.senha_revelada ? item.senha_login : '••••••••'}
+                                          </span>
+                                          {!item.senha_revelada && (
+                                            <button
+                                              onClick={() => setModalCredenciaisAviso(item)}
+                                              className="rounded bg-blue-600 px-3 py-1 text-[10px] font-bold uppercase text-white transition-colors hover:bg-blue-500"
+                                            >
+                                              Ver Senha
+                                            </button>
+                                          )}
+                                        </div>
+                                      </div>
+                                    </div>
+
+                                    <div className="w-full">
+                                      {codigosGerados2FA[item.locacao_id] ? (
+                                        <div className="select-all rounded-2xl border border-emerald-500/50 bg-zinc-950 py-4 text-center font-mono text-2xl font-black tracking-widest text-emerald-400 shadow-inner">
+                                          {codigosGerados2FA[item.locacao_id]}
+                                        </div>
+                                      ) : (
+                                        <div className="flex flex-col gap-2">
+                                          <button
+                                            onClick={() => {
+                                              if (item.tipo_slot === 'SECUNDARIA') {
+                                                setModalConfirmacao2FA({
+                                                  visivel: true,
+                                                  locacaoId: item.locacao_id,
+                                                });
+                                              } else {
+                                                gerarCodigo2FA(item.locacao_id);
+                                              }
+                                            }}
+                                            className="flex w-full items-center justify-center gap-3 rounded-2xl border border-emerald-400 bg-emerald-600 py-4 text-xs font-bold uppercase tracking-wider text-white shadow-[0_0_15px_rgba(16,185,129,0.4)] transition-all hover:bg-emerald-500 hover:shadow-[0_0_25px_rgba(16,185,129,0.6)]"
+                                          >
+                                            🔐 Gerar Código de Acesso (2FA)
+                                          </button>
+                                          {item.tipo_slot === 'SECUNDARIA' && (
+                                            <p className="text-center text-[10px] font-bold text-rose-400">
+                                              O código 2FA da vaga Secundária só pode ser gerado uma
+                                              única vez!
+                                            </p>
+                                          )}
+                                        </div>
+                                      )}
+                                    </div>
+
+                                    {/* BOTÃO GIGANTE DE DEVOLUÇÃO */}
+                                    <div className="mt-2 w-full">
+                                      <button
+                                        onClick={() =>
+                                          abrirModalDevolucao(
+                                            item.locacao_id,
+                                            item.data_fim,
+                                            item.tipo_slot,
+                                          )
+                                        }
+                                        className="animate-fade-in flex w-full items-center justify-center gap-2 rounded-2xl border border-fuchsia-400/50 bg-gradient-to-r from-fuchsia-600 to-purple-600 py-4 text-xs font-bold uppercase tracking-wider text-white shadow-[0_0_15px_rgba(192,38,211,0.4)] transition-all hover:scale-[1.02] hover:shadow-[0_0_25px_rgba(192,38,211,0.6)]"
+                                      >
+                                        ♻️ Devolver e ganhar Cashback
+                                      </button>
+                                    </div>
+
+                                    <details className="group/tut mt-6 overflow-hidden rounded-2xl border border-zinc-700/50 bg-zinc-900/50 transition-all duration-300 hover:border-zinc-600 [&_summary::-webkit-details-marker]:hidden">
+                                      <summary className="flex cursor-pointer select-none items-center justify-between p-5 text-xs font-black uppercase tracking-wider text-zinc-300 transition-colors hover:bg-zinc-800/50 md:text-sm">
+                                        <span className="flex items-center gap-2">
+                                          📖 TUTORIAL: Passo a passo de como entrar na conta e jogar
+                                          (PS4/PS5)
+                                        </span>
+                                        <span className="transition duration-300 group-open/tut:-rotate-180">
+                                          ▼
+                                        </span>
+                                      </summary>
+                                      <div className="space-y-5 border-t border-zinc-700/50 bg-black/40 p-5 text-xs text-zinc-300 md:p-8">
+                                        <p className="mb-4 flex items-center gap-3 border-b border-rose-500/30 pb-4 text-sm font-black uppercase tracking-wider text-rose-400">
+                                          <span className="animate-pulse text-xl">⚠️</span> ATENÇÃO:
+                                          NUNCA ENTRE COMO CONVIDADO!
+                                        </p>
+                                        <ol className="list-decimal space-y-4 pl-6 font-medium leading-relaxed">
+                                          <li>
+                                            Ligue o console. Selecione{' '}
+                                            <strong className="text-white">
+                                              ADICIONAR USUÁRIO
+                                            </strong>{' '}
+                                            (na tela de boas vindas dos usuários).
+                                          </li>
+                                          <li>
+                                            Do lado esquerdo da tela, selecione{' '}
+                                            <strong className="text-white">VAMOS COMEÇAR</strong>.
+                                          </li>
+                                          <li>
+                                            Aceite os termos e selecione{' '}
+                                            <strong className="text-white">CONFIRMAR</strong>.
+                                          </li>
+                                          <li>
+                                            Na tela com o QR Code, selecione{' '}
+                                            <strong className="text-white">
+                                              INICIAR SESSÃO MANUALMENTE
+                                            </strong>{' '}
+                                            (canto esquerdo embaixo).
+                                          </li>
+                                          <li>
+                                            Insira o E-mail e Senha da conta que estão disponíveis
+                                            acima.
+                                          </li>
+                                          <li>
+                                            Quando o console pedir o código (2FA), clique no botão
+                                            verde{' '}
+                                            <strong className="text-emerald-400">
+                                              "Gerar Código de Acesso (2FA)"
+                                            </strong>{' '}
+                                            aqui no site.
+                                          </li>
+                                          <li>
+                                            Digite o código 2FA (6 dígitos) rapidamente, ele fica
+                                            ativo por 30 segundos.
+                                          </li>
+                                          <li>
+                                            <strong className="text-rose-400">
+                                              NÃO ATIVE MAIS NADA
+                                            </strong>
+                                            . Somente selecione OK.
+                                          </li>
+                                          <li>
+                                            Para jogar na sua conta pessoal e ganhar os troféus, é
+                                            OBRIGATÓRIO habilitar o compartilhamento:
+                                            <ul className="ml-1 mt-3 list-disc space-y-3 border-l-2 border-zinc-700 pl-5 text-zinc-400">
+                                              <li>
+                                                <strong>No PS5:</strong> Vá em Configurações &gt;
+                                                Usuários e contas &gt; Outros &gt; Compartilhamento
+                                                do console... &gt;{' '}
+                                                <strong className="text-white">Habilitar</strong>.
+                                                (Se não estiver habilitado)
+                                              </li>
+                                              <li>
+                                                <strong>No PS4:</strong> Vá em Configurações &gt;
+                                                Gerenciamento da conta &gt;{' '}
+                                                <strong className="text-white">
+                                                  Ativar como seu PS4 principal
+                                                </strong>
+                                                . (Se não estiver habilitado)
+                                              </li>
+                                              <li className="mt-3 flex items-center gap-3 rounded-xl border border-rose-500/20 bg-rose-950/30 p-3.5 font-bold text-rose-400">
+                                                <span className="text-lg">⚠️</span> É aqui também,
+                                                que no final do seu aluguel, você vai DESABILITAR o
+                                                compartilhamento.
+                                              </li>
+                                            </ul>
+                                          </li>
+                                          <li className="mt-6 rounded-xl border border-emerald-500/40 bg-emerald-950/40 p-5 text-sm font-black text-emerald-400 shadow-inner">
+                                            Vá na Biblioteca da conta, coloque o jogo para baixar,
+                                            volte para o seu perfil pessoal (a sua conta oficial) e
+                                            divirta-se!
+                                          </li>
+                                        </ol>
+                                      </div>
+                                    </details>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        {historicoAlugueis.length > 0 && (
+                          <div className="group overflow-hidden rounded-3xl border border-l-4 border-zinc-800 border-l-blue-500 bg-zinc-900/80 shadow-2xl shadow-blue-500/10">
+                            <div className="flex items-center justify-between p-6 md:p-8">
+                              <span className="flex items-center gap-3 text-lg font-black tracking-tight text-blue-400">
+                                🕰️ Últimos 5 Aluguéis
+                              </span>
+                            </div>
+                            <div className="animate-fade-in flex flex-wrap gap-3 border-t border-zinc-800/50 px-6 pb-6 pt-6 md:px-8 md:pb-8">
+                              {historicoAlugueis.map((item) => (
+                                <span
+                                  key={`hist-${item.locacao_id}`}
+                                  className="rounded-xl border border-zinc-800 bg-zinc-950 px-5 py-2 text-[10px] font-bold uppercase tracking-wide text-zinc-400"
+                                >
+                                  {item.jogo}{' '}
+                                  <span className="ml-1 opacity-50">
+                                    ({new Date(item.data_fim).toLocaleDateString()})
+                                  </span>
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {secaoDashboard === 'fila' && (
+                      <div className="animate-fade-in flex flex-col gap-8">
+                        <div className="group overflow-hidden rounded-3xl border border-l-4 border-zinc-800 border-l-amber-500 bg-zinc-900/80 shadow-2xl shadow-amber-500/10">
+                          <div className="flex items-center justify-between p-6 md:p-8">
+                            <span className="flex items-center gap-3 text-lg font-black tracking-tight text-amber-400">
+                              ⏳ Minhas Reservas (Fila de Espera)
+                            </span>
+                          </div>
+                          <div className="animate-fade-in border-t border-amber-500/20 px-6 pb-6 pt-8 md:px-8 md:pb-8">
+                            {minhasReservas.length === 0 ? (
+                              <p className="text-sm font-medium text-zinc-500">
+                                Você não possui reservas ativas na fila.
+                              </p>
+                            ) : (
+                              <div className="grid grid-cols-1 gap-6">
+                                {minhasReservas.map((item) => (
+                                  <div
+                                    key={`res-${item.reserva_id}`}
+                                    className="flex flex-col gap-5 rounded-3xl border border-amber-500/30 bg-zinc-950/60 p-6 shadow-xl transition-colors hover:border-amber-400/50 md:p-8"
+                                  >
+                                    <div className="flex flex-col gap-2">
+                                      <span
+                                        className={`w-max rounded-lg border px-2 py-1 text-[9px] font-black uppercase tracking-wider ${item.tipo_slot === 'PRIMARIA' ? 'border-blue-500/30 bg-blue-500/20 text-blue-400' : 'border-fuchsia-500/30 bg-fuchsia-500/20 text-fuchsia-400'}`}
+                                      >
+                                        🕹️ Fila {item.tipo_slot}
+                                      </span>
+                                      <h4 className="text-xl font-black leading-tight tracking-tight text-white">
+                                        {item.jogo}
+                                      </h4>
+                                      <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">
+                                        Reservado em:{' '}
+                                        {new Date(item.data_solicitacao).toLocaleString()}
+                                      </span>
+                                    </div>
+                                    <div className="mt-2 flex flex-col gap-3 rounded-2xl border border-zinc-800/80 bg-black/50 p-5 shadow-inner">
+                                      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
+                                        <span className="w-20 text-[10px] font-bold uppercase tracking-wider text-zinc-500">
+                                          Status
+                                        </span>
+                                        <span className="w-max rounded-lg border border-amber-500/20 bg-amber-400/10 px-3 py-1 text-[10px] font-black uppercase tracking-wider text-amber-400">
+                                          Aguardando Fila
+                                        </span>
+                                      </div>
+                                      <div className="my-1 h-px w-full bg-zinc-800/80"></div>
+                                      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
+                                        <span className="w-20 text-[10px] font-bold uppercase tracking-wider text-zinc-500">
+                                          Liberação
+                                        </span>
+                                        <span className="text-sm font-bold tracking-wide text-blue-400 md:text-base">
+                                          {item.data_estimada_str}
+                                        </span>
+                                      </div>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {secaoDashboard === 'carteira' && (
+                      <div className="animate-fade-in flex flex-col gap-8">
+                        <section className="relative flex h-auto flex-col overflow-hidden rounded-3xl border border-cyan-500/30 bg-gradient-to-br from-cyan-900/20 to-zinc-900 p-6 shadow-2xl shadow-cyan-500/10 transition-transform duration-300 hover:-translate-y-1 md:p-8 lg:h-[540px]">
+                          <div className="pointer-events-none absolute -right-8 -top-8 text-9xl opacity-5">
+                            💸
+                          </div>
+                          <h3 className="mb-2 flex items-center gap-2 text-lg font-black tracking-tight text-cyan-400">
+                            💰 Adicionar Saldo na Carteira
+                          </h3>
+                          <p className="mb-4 text-xs leading-relaxed text-zinc-400">
+                            Escolha o método de pagamento para alugar seus jogos sem filas.
+                          </p>
+                          {pixPendente ? (
+                            <div className="animate-fade-in z-10 mb-auto mt-auto flex flex-col items-center justify-center rounded-2xl border border-emerald-500/30 bg-zinc-950 p-6 shadow-inner">
+                              <img
+                                src={
+                                  pixPendente.qr_code.startsWith('data:')
+                                    ? pixPendente.qr_code
+                                    : `data:image/png;base64,${pixPendente.qr_code}`
                                 }
-                                className="animate-fade-in flex w-full items-center justify-center gap-2 rounded-2xl border border-fuchsia-400/50 bg-gradient-to-r from-fuchsia-600 to-purple-600 py-4 text-xs font-bold uppercase tracking-wider text-white shadow-[0_0_15px_rgba(192,38,211,0.4)] transition-all hover:scale-[1.02] hover:shadow-[0_0_25px_rgba(192,38,211,0.6)]"
+                                alt="QR Code PIX"
+                                className="mb-4 h-40 w-40 rounded-xl border border-zinc-800 bg-white p-2 shadow-lg"
+                              />
+                              <p className="mb-4 text-center text-[11px] font-medium leading-relaxed text-zinc-400">
+                                Escaneie o QR Code no app do seu banco.{' '}
+                                <strong className="mt-1 block animate-pulse text-xs font-bold text-emerald-400">
+                                  Aguardando compensação automática...
+                                </strong>
+                              </p>
+                              <div className="flex w-full gap-2">
+                                <button
+                                  onClick={() => {
+                                    navigator.clipboard.writeText(pixPendente.copia_cola);
+                                    mostrarToast('PIX Copiado!', 'sucesso');
+                                  }}
+                                  className="flex-1 rounded-xl border border-zinc-700 bg-zinc-800 py-3 text-[10px] font-bold uppercase tracking-wide text-white transition-colors hover:bg-zinc-700"
+                                >
+                                  📋 Copiar Linha Digitável
+                                </button>
+                                <button
+                                  onClick={() => setPixPendente(null)}
+                                  className="rounded-xl border border-rose-500/30 bg-rose-900/30 px-4 text-[10px] font-bold uppercase tracking-wide text-rose-400 transition-colors hover:bg-rose-900/80"
+                                >
+                                  Cancelar
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="relative z-10 mt-auto flex flex-col gap-3">
+                              <div>
+                                <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-wider text-zinc-500">
+                                  Valor da Recarga (R$)
+                                </label>
+                                <div className="relative">
+                                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-base font-black text-zinc-400">
+                                    R$
+                                  </span>
+                                  <input
+                                    type="number"
+                                    min="30"
+                                    step="1"
+                                    value={valorRecarga}
+                                    onChange={(e) => setValorRecarga(e.target.value)}
+                                    className="w-full rounded-xl border border-zinc-800 bg-zinc-950 py-3 pl-12 pr-4 text-base font-black text-white outline-none transition-all focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500"
+                                    disabled={carregandoGateway}
+                                  />
+                                </div>
+                              </div>
+                              <div>
+                                <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-wider text-zinc-500">
+                                  Seu CPF (Exigido pelo Banco Central)
+                                </label>
+                                <input
+                                  type="text"
+                                  placeholder="Apenas números..."
+                                  value={cpfRecarga}
+                                  onChange={(e) => setCpfRecarga(e.target.value)}
+                                  maxLength="14"
+                                  className="w-full rounded-xl border border-zinc-800 bg-zinc-950 px-4 py-3 text-sm font-bold text-white placeholder-zinc-600 outline-none transition-all focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500"
+                                  disabled={carregandoGateway}
+                                />
+                              </div>
+                              <div>
+                                <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-wider text-zinc-500">
+                                  Cupom Promocional
+                                </label>
+                                <input
+                                  type="text"
+                                  placeholder="Opcional"
+                                  value={cupomRecarga}
+                                  onChange={(e) => setCupomRecarga(e.target.value.toUpperCase())}
+                                  className="w-full rounded-xl border border-zinc-800 bg-zinc-950 px-4 py-3 text-sm font-bold uppercase text-white placeholder-zinc-600 outline-none transition-all focus:border-purple-500"
+                                  disabled={carregandoGateway}
+                                />
+                              </div>
+                              <div className="mt-2 flex flex-col gap-3 sm:flex-row">
+                                <button
+                                  onClick={solicitarRecargaCartao}
+                                  disabled={carregandoGateway}
+                                  className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-3.5 text-[11px] font-black uppercase tracking-wider text-white shadow-lg shadow-blue-600/20 transition-all hover:bg-blue-500 disabled:opacity-50"
+                                >
+                                  💳 Pagar com Cartão
+                                </button>
+                                <button
+                                  onClick={solicitarRecargaPix}
+                                  disabled={carregandoGateway}
+                                  className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-3.5 text-[11px] font-black uppercase tracking-wider text-white shadow-lg shadow-emerald-600/20 transition-all hover:bg-emerald-500 disabled:opacity-50"
+                                >
+                                  ⚡ Pagar com Pix
+                                </button>
+                              </div>
+                              <div className="mt-3 flex flex-col items-center gap-1 border-t border-zinc-800/50 pt-3 opacity-80">
+                                <div className="flex items-center gap-2 text-[9px] font-bold uppercase tracking-widest text-zinc-400">
+                                  <span>🔒 Transação Blindada</span>
+                                </div>
+                                <div className="flex items-center gap-1 text-center text-[9px] font-medium text-zinc-500">
+                                  Infraestrutura de alta disponibilidade gerida por Stripe & Efí
+                                  S.A.
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </section>
+                        <section className="flex h-[400px] flex-col rounded-3xl border border-zinc-700/30 bg-gradient-to-br from-zinc-800/20 to-zinc-900 p-8 shadow-2xl transition-transform duration-300 hover:-translate-y-1 lg:h-[540px]">
+                          <h3 className="mb-8 flex items-center gap-2 text-lg font-black tracking-tight text-white">
+                            🧾 Extrato da Conta
+                          </h3>
+                          {extrato.length === 0 ? (
+                            <div className="flex flex-1 flex-col items-center justify-center text-zinc-500">
+                              <span className="mb-4 text-5xl opacity-30">💳</span>
+                              <p className="text-xs font-medium">Nenhuma transação encontrada.</p>
+                            </div>
+                          ) : (
+                            <div className="scrollbar-thin scrollbar-thumb-zinc-700 scrollbar-track-transparent flex-1 space-y-4 overflow-y-auto pr-3">
+                              {extrato.map((t, i) => (
+                                <div
+                                  key={i}
+                                  className="flex items-center justify-between rounded-2xl border border-zinc-800/50 bg-zinc-950/50 p-5 transition-colors hover:border-zinc-700"
+                                >
+                                  <div className="min-w-0 pr-4">
+                                    <p
+                                      className="truncate text-xs font-bold text-zinc-200 md:text-sm"
+                                      title={t.descricao}
+                                    >
+                                      {t.descricao}
+                                    </p>
+                                    <p className="mt-1 text-[10px] font-bold uppercase tracking-wider text-zinc-500">
+                                      {new Date(t.data_transacao).toLocaleString()}
+                                    </p>
+                                  </div>
+                                  <span
+                                    className={`shrink-0 text-base font-black tracking-tight md:text-lg ${t.tipo === 'ENTRADA' ? 'text-emerald-400' : 'text-rose-400'}`}
+                                  >
+                                    {t.tipo === 'ENTRADA' ? '+' : '-'} R${' '}
+                                    {parseFloat(t.valor).toFixed(2)}
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </section>
+                        {usuarioLogado && usuarioLogado.codigo_indicacao && (
+                          <div className="group overflow-hidden rounded-3xl border border-purple-500/30 bg-gradient-to-r from-purple-900/30 to-blue-900/20 shadow-2xl shadow-purple-500/10">
+                            <div className="flex items-center justify-between p-6 md:p-8">
+                              <span className="relative z-10 bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-lg font-black tracking-tight text-transparent">
+                                🎁 Indique um Amigo e Ganhe Bônus!
+                              </span>
+                              <span className="relative z-10 text-lg text-purple-400 transition duration-300 group-open:-rotate-180">
+                                ▼
+                              </span>
+                            </div>
+                            <div className="animate-fade-in relative z-10 border-t border-purple-500/20 px-6 pb-6 pt-8 md:px-8 md:pb-8">
+                              <p className="mb-8 max-w-3xl text-xs leading-relaxed text-zinc-300">
+                                Mande o seu código para um amigo. Quando ele criar uma conta nova e
+                                fizer a{' '}
+                                <strong className="text-emerald-400">primeira recarga</strong>, nós
+                                daremos <strong>10% do valor</strong> da recarga dele de presente
+                                para você gastar em jogos!
+                              </p>
+                              <div className="flex flex-col items-center gap-5 sm:flex-row">
+                                <div className="flex w-full items-center justify-center gap-5 rounded-2xl border border-zinc-800 bg-zinc-950 px-8 py-3.5 shadow-inner sm:w-auto">
+                                  <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">
+                                    Seu Código:
+                                  </span>
+                                  <span className="select-all text-2xl font-black tracking-widest text-white">
+                                    {usuarioLogado.codigo_indicacao}
+                                  </span>
+                                </div>
+                                <button
+                                  onClick={() => {
+                                    navigator.clipboard.writeText(usuarioLogado.codigo_indicacao);
+                                    mostrarToast(
+                                      'Código copiado! Envie para seus amigos.',
+                                      'sucesso',
+                                    );
+                                  }}
+                                  className="w-full rounded-2xl bg-purple-600 px-8 py-4 text-xs font-bold uppercase tracking-wider text-white shadow-lg shadow-purple-600/20 transition-colors hover:bg-purple-500 sm:w-auto"
+                                >
+                                  📋 Copiar Código
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {secaoDashboard === 'seguranca' && (
+                      <div className="animate-fade-in flex flex-col gap-8">
+                        <div className="group overflow-hidden rounded-3xl border border-rose-500/30 bg-gradient-to-r from-rose-900/20 to-zinc-900 shadow-2xl shadow-rose-500/10">
+                          <div className="flex items-center justify-between p-6 md:p-8">
+                            <span className="relative z-10 flex items-center gap-3 text-lg font-black tracking-tight text-rose-400">
+                              🔐 Segurança da Conta
+                            </span>
+                          </div>
+                          <div className="animate-fade-in relative z-10 border-t border-rose-500/20 px-6 pb-6 pt-8 md:px-8 md:pb-8">
+                            <p className="mb-8 max-w-2xl text-xs leading-relaxed text-zinc-400">
+                              Mantenha sua conta segura alterando sua senha regularmente ou troque a
+                              senha temporária que enviamos por e-mail.
+                            </p>
+                            <form
+                              onSubmit={alterarMinhaSenha}
+                              className="flex max-w-4xl flex-col items-end gap-5"
+                            >
+                              <div className="grid w-full grid-cols-1 gap-5 sm:grid-cols-3">
+                                <div className="relative w-full">
+                                  <label className="mb-2 block text-[10px] font-bold uppercase tracking-wider text-zinc-500">
+                                    Senha Atual (Provisória)
+                                  </label>
+                                  <div className="relative">
+                                    <input
+                                      type={verSenhaAtual ? 'text' : 'password'}
+                                      placeholder="Sua senha atual"
+                                      value={mudarSenhaAtual}
+                                      onChange={(e) => setMudarSenhaAtual(e.target.value)}
+                                      className={`${adminInputClass} pr-12`}
+                                      required
+                                    />
+                                    <button
+                                      type="button"
+                                      onClick={() => setVerSenhaAtual(!verSenhaAtual)}
+                                      className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 transition-colors hover:text-white"
+                                    >
+                                      {verSenhaAtual ? '🙈' : '👁️'}
+                                    </button>
+                                  </div>
+                                </div>
+                                <div className="relative w-full">
+                                  <label className="mb-2 block text-[10px] font-bold uppercase tracking-wider text-zinc-500">
+                                    Nova Senha
+                                  </label>
+                                  <div className="relative">
+                                    <input
+                                      type={verSenhaNova ? 'text' : 'password'}
+                                      placeholder="Sua nova senha"
+                                      value={mudarSenhaNova}
+                                      onChange={(e) => setMudarSenhaNova(e.target.value)}
+                                      className={`${adminInputClass} pr-12`}
+                                      required
+                                    />
+                                    <button
+                                      type="button"
+                                      onClick={() => setVerSenhaNova(!verSenhaNova)}
+                                      className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 transition-colors hover:text-white"
+                                    >
+                                      {verSenhaNova ? '🙈' : '👁️'}
+                                    </button>
+                                  </div>
+                                </div>
+                                <div className="relative w-full">
+                                  <label className="mb-2 block text-[10px] font-bold uppercase tracking-wider text-zinc-500">
+                                    Confirme a Nova Senha
+                                  </label>
+                                  <div className="relative">
+                                    <input
+                                      type={verSenhaNovaConf ? 'text' : 'password'}
+                                      placeholder="Confirme a senha"
+                                      value={mudarSenhaNovaConfirmacao}
+                                      onChange={(e) => setMudarSenhaNovaConfirmacao(e.target.value)}
+                                      className={`${adminInputClass} pr-12`}
+                                      required
+                                    />
+                                    <button
+                                      type="button"
+                                      onClick={() => setVerSenhaNovaConf(!verSenhaNovaConf)}
+                                      className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 transition-colors hover:text-white"
+                                    >
+                                      {verSenhaNovaConf ? '🙈' : '👁️'}
+                                    </button>
+                                  </div>
+                                </div>
+                              </div>
+                              <button
+                                type="submit"
+                                className="mt-2 w-full whitespace-nowrap rounded-2xl border border-rose-500/50 bg-rose-600 px-8 py-3.5 text-xs font-bold uppercase tracking-wider text-white shadow-lg shadow-rose-600/20 transition-colors hover:bg-rose-500 sm:w-auto"
                               >
-                                ♻️ Devolver e ganhar Cashback
+                                Atualizar Senha
                               </button>
-                            </div>
-
-                            <details className="group/tut mt-6 overflow-hidden rounded-2xl border border-zinc-700/50 bg-zinc-900/50 transition-all duration-300 hover:border-zinc-600 [&_summary::-webkit-details-marker]:hidden">
-                              <summary className="flex cursor-pointer select-none items-center justify-between p-5 text-xs font-black uppercase tracking-wider text-zinc-300 transition-colors hover:bg-zinc-800/50 md:text-sm">
-                                <span className="flex items-center gap-2">
-                                  📖 TUTORIAL: Passo a passo de como entrar na conta e jogar
-                                  (PS4/PS5)
-                                </span>
-                                <span className="transition duration-300 group-open/tut:-rotate-180">
-                                  ▼
-                                </span>
-                              </summary>
-                              <div className="space-y-5 border-t border-zinc-700/50 bg-black/40 p-5 text-xs text-zinc-300 md:p-8">
-                                <p className="mb-4 flex items-center gap-3 border-b border-rose-500/30 pb-4 text-sm font-black uppercase tracking-wider text-rose-400">
-                                  <span className="animate-pulse text-xl">⚠️</span> ATENÇÃO: NUNCA
-                                  ENTRE COMO CONVIDADO!
-                                </p>
-                                <ol className="list-decimal space-y-4 pl-6 font-medium leading-relaxed">
-                                  <li>
-                                    Ligue o console. Selecione{' '}
-                                    <strong className="text-white">ADICIONAR USUÁRIO</strong> (na
-                                    tela de boas vindas dos usuários).
-                                  </li>
-                                  <li>
-                                    Do lado esquerdo da tela, selecione{' '}
-                                    <strong className="text-white">VAMOS COMEÇAR</strong>.
-                                  </li>
-                                  <li>
-                                    Aceite os termos e selecione{' '}
-                                    <strong className="text-white">CONFIRMAR</strong>.
-                                  </li>
-                                  <li>
-                                    Na tela com o QR Code, selecione{' '}
-                                    <strong className="text-white">
-                                      INICIAR SESSÃO MANUALMENTE
-                                    </strong>{' '}
-                                    (canto esquerdo embaixo).
-                                  </li>
-                                  <li>
-                                    Insira o E-mail e Senha da conta que estão disponíveis acima.
-                                  </li>
-                                  <li>
-                                    Quando o console pedir o código (2FA), clique no botão verde{' '}
-                                    <strong className="text-emerald-400">
-                                      "Gerar Código de Acesso (2FA)"
-                                    </strong>{' '}
-                                    aqui no site.
-                                  </li>
-                                  <li>
-                                    Digite o código 2FA (6 dígitos) rapidamente, ele fica ativo por
-                                    30 segundos.
-                                  </li>
-                                  <li>
-                                    <strong className="text-rose-400">NÃO ATIVE MAIS NADA</strong>.
-                                    Somente selecione OK.
-                                  </li>
-                                  <li>
-                                    Para jogar na sua conta pessoal e ganhar os troféus, é
-                                    OBRIGATÓRIO habilitar o compartilhamento:
-                                    <ul className="ml-1 mt-3 list-disc space-y-3 border-l-2 border-zinc-700 pl-5 text-zinc-400">
-                                      <li>
-                                        <strong>No PS5:</strong> Vá em Configurações &gt; Usuários e
-                                        contas &gt; Outros &gt; Compartilhamento do console... &gt;{' '}
-                                        <strong className="text-white">Habilitar</strong>. (Se não
-                                        estiver habilitado)
-                                      </li>
-                                      <li>
-                                        <strong>No PS4:</strong> Vá em Configurações &gt;
-                                        Gerenciamento da conta &gt;{' '}
-                                        <strong className="text-white">
-                                          Ativar como seu PS4 principal
-                                        </strong>
-                                        . (Se não estiver habilitado)
-                                      </li>
-                                      <li className="mt-3 flex items-center gap-3 rounded-xl border border-rose-500/20 bg-rose-950/30 p-3.5 font-bold text-rose-400">
-                                        <span className="text-lg">⚠️</span> É aqui também, que no
-                                        final do seu aluguel, você vai DESABILITAR o
-                                        compartilhamento.
-                                      </li>
-                                    </ul>
-                                  </li>
-                                  <li className="mt-6 rounded-xl border border-emerald-500/40 bg-emerald-950/40 p-5 text-sm font-black text-emerald-400 shadow-inner">
-                                    Vá na Biblioteca da conta, coloque o jogo para baixar, volte
-                                    para o seu perfil pessoal (a sua conta oficial) e divirta-se!
-                                  </li>
-                                </ol>
-                              </div>
-                            </details>
+                            </form>
                           </div>
-                        ))}
+                        </div>
                       </div>
                     )}
                   </div>
-                </details>
-
-                <details className="group overflow-hidden rounded-3xl border border-l-4 border-zinc-800 border-l-amber-500 bg-zinc-900/80 shadow-2xl shadow-amber-500/10 [&_summary::-webkit-details-marker]:hidden">
-                  <summary className="flex cursor-pointer select-none items-center justify-between p-6 transition-colors hover:bg-amber-900/10 md:p-8">
-                    <span className="flex items-center gap-3 text-lg font-black tracking-tight text-amber-400">
-                      ⏳ Minhas Reservas (Fila de Espera)
-                    </span>
-                    <span className="text-lg text-amber-500 transition duration-300 group-open:-rotate-180">
-                      ▼
-                    </span>
-                  </summary>
-                  <div className="animate-fade-in border-t border-amber-500/20 px-6 pb-6 pt-8 md:px-8 md:pb-8">
-                    {minhasReservas.length === 0 ? (
-                      <p className="text-sm font-medium text-zinc-500">
-                        Você não possui reservas ativas na fila.
-                      </p>
-                    ) : (
-                      <div className="grid grid-cols-1 gap-6">
-                        {minhasReservas.map((item) => (
-                          <div
-                            key={`res-${item.reserva_id}`}
-                            className="flex flex-col gap-5 rounded-3xl border border-amber-500/30 bg-zinc-950/60 p-6 shadow-xl transition-colors hover:border-amber-400/50 md:p-8"
-                          >
-                            <div className="flex flex-col gap-2">
-                              <span
-                                className={`w-max rounded-lg border px-2 py-1 text-[9px] font-black uppercase tracking-wider ${item.tipo_slot === 'PRIMARIA' ? 'border-blue-500/30 bg-blue-500/20 text-blue-400' : 'border-fuchsia-500/30 bg-fuchsia-500/20 text-fuchsia-400'}`}
-                              >
-                                🕹️ Fila {item.tipo_slot}
-                              </span>
-                              <h4 className="text-xl font-black leading-tight tracking-tight text-white">
-                                {item.jogo}
-                              </h4>
-                              <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">
-                                Reservado em: {new Date(item.data_solicitacao).toLocaleString()}
-                              </span>
-                            </div>
-                            <div className="mt-2 flex flex-col gap-3 rounded-2xl border border-zinc-800/80 bg-black/50 p-5 shadow-inner">
-                              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
-                                <span className="w-20 text-[10px] font-bold uppercase tracking-wider text-zinc-500">
-                                  Status
-                                </span>
-                                <span className="w-max rounded-lg border border-amber-500/20 bg-amber-400/10 px-3 py-1 text-[10px] font-black uppercase tracking-wider text-amber-400">
-                                  Aguardando Fila
-                                </span>
-                              </div>
-                              <div className="my-1 h-px w-full bg-zinc-800/80"></div>
-                              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
-                                <span className="w-20 text-[10px] font-bold uppercase tracking-wider text-zinc-500">
-                                  Liberação
-                                </span>
-                                <span className="text-sm font-bold tracking-wide text-blue-400 md:text-base">
-                                  {item.data_estimada_str}
-                                </span>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </details>
-
-                {historicoAlugueis.length > 0 && (
-                  <details className="group overflow-hidden rounded-3xl border border-l-4 border-zinc-800 border-l-blue-500 bg-zinc-900/80 shadow-2xl shadow-blue-500/10 [&_summary::-webkit-details-marker]:hidden">
-                    <summary className="flex cursor-pointer select-none items-center justify-between p-6 transition-colors hover:bg-blue-900/10 md:p-8">
-                      <span className="flex items-center gap-3 text-lg font-black tracking-tight text-blue-400">
-                        🕰️ Últimos 5 Aluguéis
-                      </span>
-                      <span className="text-lg text-blue-500 transition duration-300 group-open:-rotate-180">
-                        ▼
-                      </span>
-                    </summary>
-                    <div className="animate-fade-in flex flex-wrap gap-3 border-t border-zinc-800/50 px-6 pb-6 pt-6 md:px-8 md:pb-8">
-                      {historicoAlugueis.map((item) => (
-                        <span
-                          key={`hist-${item.locacao_id}`}
-                          className="rounded-xl border border-zinc-800 bg-zinc-950 px-5 py-2 text-[10px] font-bold uppercase tracking-wide text-zinc-400"
-                        >
-                          {item.jogo}{' '}
-                          <span className="ml-1 opacity-50">
-                            ({new Date(item.data_fim).toLocaleDateString()})
-                          </span>
-                        </span>
-                      ))}
-                    </div>
-                  </details>
-                )}
+                </div>
               </div>
             )}
 
@@ -4489,7 +4559,7 @@ function App() {
                 <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
                   {/* MENU LATERAL DE SECOES DO PAINEL */}
                   <nav className="lg:w-56 lg:shrink-0">
-                    <div className="custom-scrollbar flex gap-2 overflow-x-auto rounded-2xl border border-zinc-800/80 bg-zinc-950 p-2 shadow-inner lg:sticky lg:top-6 lg:flex-col lg:overflow-visible">
+                    <div className="grid grid-cols-3 gap-2 rounded-2xl border border-zinc-800/80 bg-zinc-950 p-2 shadow-inner sm:grid-cols-4 lg:sticky lg:top-6 lg:flex lg:flex-col">
                       {SECOES_ADMIN.map((s) => {
                         const contador =
                           s.id === 'jogos'
@@ -4511,7 +4581,7 @@ function App() {
                               setSecaoAdmin(s.id);
                               window.scrollTo(0, 0);
                             }}
-                            className={`flex shrink-0 items-center gap-2.5 whitespace-nowrap rounded-xl px-3.5 py-2.5 text-left text-[11px] font-bold uppercase tracking-wider transition-all lg:w-full ${ativa ? s.ativo : 'text-zinc-400 hover:bg-zinc-900 hover:text-white'}`}
+                            className={`flex w-full items-center gap-2.5 whitespace-nowrap rounded-xl px-3.5 py-2.5 text-left text-[11px] font-bold uppercase tracking-wider transition-all ${ativa ? s.ativo : 'text-zinc-400 hover:bg-zinc-900 hover:text-white'}`}
                           >
                             <span className="text-base leading-none">{s.icone}</span>
                             <span className="flex-1">{s.nome}</span>
