@@ -11,6 +11,30 @@ export default function Faq({ configSistema }) {
       </div>
 
       <div className="space-y-5">
+        <details className="group rounded-3xl border border-blue-800/50 bg-zinc-900 shadow-xl transition-transform duration-300 hover:-translate-y-1 [&_summary::-webkit-details-marker]:hidden">
+          <summary className="flex cursor-pointer items-center justify-between p-6 text-blue-400 transition-colors hover:text-blue-300 md:p-8">
+            <span className="text-base font-bold tracking-tight md:text-lg">
+              ⚡ O site é mesmo 100% automático? Preciso esperar alguém aprovar?
+            </span>
+            <span className="text-lg text-blue-500 transition duration-300 group-open:-rotate-180">
+              ▼
+            </span>
+          </summary>
+          <div className="border-t border-blue-800/50 px-6 pb-6 pt-6 text-xs leading-relaxed text-zinc-400 md:px-8 md:pb-8 md:text-sm">
+            Sim! Não tem ninguém do outro lado aprovando manualmente o seu pagamento nem liberando o
+            acesso na mão. Assim que o Pix ou o cartão é confirmado, o saldo cai na sua carteira na
+            hora, e o aluguel é liberado imediatamente — sem fila de espera humana, sem depender de
+            horário comercial.
+            <br />
+            <br />
+            Isso significa que o site funciona{' '}
+            <strong className="text-white">24 horas por dia</strong>, todos os dias da semana. Pagou
+            de madrugada? O jogo já está disponível na aba{' '}
+            <strong className="text-emerald-400">🔑 MEUS ACESSOS</strong> pra você jogar na mesma
+            hora.
+          </div>
+        </details>
+
         <details className="group rounded-3xl border border-zinc-800 bg-zinc-900 shadow-xl transition-transform duration-300 hover:-translate-y-1 [&_summary::-webkit-details-marker]:hidden">
           <summary className="flex cursor-pointer items-center justify-between p-6 text-white transition-colors hover:text-purple-400 md:p-8">
             <span className="text-base font-bold tracking-tight md:text-lg">
@@ -109,23 +133,22 @@ export default function Faq({ configSistema }) {
             <br />
             <br />
             Ao clicar, selecione <strong className="text-amber-400">"ENTRAR NA FILA"</strong>. O
-            valor do jogo será descontado do seu saldo como uma reserva para garantir o seu lugar.
+            valor do jogo será descontado do seu saldo como uma reserva para garantir o seu lugar,
+            sempre por ordem de chegada — quem entrou primeiro, sai primeiro.
             <br />
             <br />
-            Lembre-se que nós temos o sistema de "Devolução Antecipada", então as pessoas costumam
-            devolver o jogo antes da data limite para ganharem Cashback. Se isso acontecer, você é
-            avisado e{' '}
-            <strong className="text-emerald-400">
-              fura a fila, pegando o jogo antes do previsto!
-            </strong>{' '}
-            (Sempre mais cedo, nunca mais tarde).
+            Lembre-se que nós temos o sistema de{' '}
+            <strong className="text-emerald-400">Devolução Premium</strong>, então boa parte das
+            pessoas devolve o jogo antes da data limite para ganhar Cashback. Isso faz a fila andar
+            bem mais rápido do que a data máxima mostrada — assim que chegar a sua vez, você é
+            avisado na hora (sino, e-mail e WhatsApp).
           </div>
         </details>
 
         <details className="group rounded-3xl border border-zinc-800 bg-zinc-900 shadow-xl transition-transform duration-300 hover:-translate-y-1 [&_summary::-webkit-details-marker]:hidden">
           <summary className="flex cursor-pointer items-center justify-between p-6 text-white transition-colors hover:text-purple-400 md:p-8">
             <span className="text-base font-bold tracking-tight md:text-lg">
-              🏅 Como funciona o Sistema de Ranks e a Prioridade VIP?
+              🏅 Como funciona o Sistema de Ranks?
             </span>
             <span className="text-lg text-purple-500 transition duration-300 group-open:-rotate-180">
               ▼
@@ -190,12 +213,6 @@ export default function Faq({ configSistema }) {
                 <strong className="text-blue-400">ACESSO ANTECIPADO:</strong> As reservas de jogos
                 em <strong>PRÉ-VENDA</strong> são exclusivas para clientes a partir do Rank{' '}
                 <strong>MEMBRO</strong> (Basta ter concluído 1 aluguel com sucesso).
-              </li>
-              <li>
-                <strong className="text-amber-400">PRIORIDADE NA FILA (FURA-FILA):</strong> Se você
-                tiver um Rank maior que outro cliente que já estava na fila de um lançamento, o
-                sistema automaticamente te coloca <strong>na frente dele</strong> na entrega da
-                conta.
               </li>
             </ul>
           </div>
