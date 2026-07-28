@@ -3867,18 +3867,12 @@ function App() {
                         </p>
                       </div>
                     </div>
-                    <div className="mt-2 flex flex-col gap-3 pl-0 sm:flex-row sm:pl-12">
+                    <div className="mt-2 pl-0 sm:pl-12">
                       <button
                         onClick={() => manterReserva(notif.id)}
-                        className="flex-1 rounded-xl bg-orange-600 px-6 py-3 text-xs font-bold uppercase tracking-wider text-white shadow-lg shadow-orange-600/20 transition-colors hover:bg-orange-500"
+                        className="w-full rounded-xl bg-orange-600 px-6 py-3 text-xs font-bold uppercase tracking-wider text-white shadow-lg shadow-orange-600/20 transition-colors hover:bg-orange-500 sm:w-auto"
                       >
-                        👍 Entendi, manter reserva
-                      </button>
-                      <button
-                        onClick={() => cancelarReservaComEstorno(notif.reserva_id, notif.id)}
-                        className="flex-1 rounded-xl border border-zinc-700 bg-zinc-900 px-6 py-3 text-xs font-bold uppercase tracking-wider text-zinc-300 transition-colors hover:bg-zinc-800"
-                      >
-                        💸 Cancelar e Estornar Crédito
+                        👍 Entendi
                       </button>
                     </div>
                   </div>
@@ -4226,6 +4220,12 @@ function App() {
                                         </span>
                                       </div>
                                     </div>
+                                    <button
+                                      onClick={() => cancelarReservaComEstorno(item.reserva_id, 0)}
+                                      className="w-full rounded-xl border border-zinc-700 bg-zinc-900 px-6 py-3 text-xs font-bold uppercase tracking-wider text-zinc-300 transition-colors hover:bg-rose-900/40 hover:text-rose-300 sm:w-auto"
+                                    >
+                                      💸 Cancelar e Estornar Crédito
+                                    </button>
                                   </div>
                                 ))}
                               </div>
