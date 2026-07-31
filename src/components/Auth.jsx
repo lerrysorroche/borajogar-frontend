@@ -30,6 +30,7 @@ export default function Auth({
   const [cadSenha, setCadSenha] = useState('');
   const [cadSenhaConfirmacao, setCadSenhaConfirmacao] = useState('');
   const [cadTelefone, setCadTelefone] = useState('');
+  const [cadQuerGrupoWhats, setCadQuerGrupoWhats] = useState(false);
   const [cadCodigoConvite, setCadCodigoConvite] = useState('');
   const [verSenhaCad, setVerSenhaCad] = useState(false);
   const [verSenhaCadConf, setVerSenhaCadConf] = useState(false);
@@ -47,6 +48,7 @@ export default function Auth({
   const [pedindoTelefoneGoogle, setPedindoTelefoneGoogle] = useState(false);
   const [dadosGoogleTemp, setDadosGoogleTemp] = useState(null);
   const [telefoneGoogle, setTelefoneGoogle] = useState('');
+  const [querGrupoWhatsGoogle, setQuerGrupoWhatsGoogle] = useState(false);
 
   // --- Classes CSS Padrão ---
   const inputClass =
@@ -73,12 +75,17 @@ export default function Auth({
   // FLUXO DO GOOGLE LOGIN
   // ==========================================================================
 
-  const enviarGoogleParaBackend = async (email, nome, telefone) => {
+  const enviarGoogleParaBackend = async (email, nome, telefone, querGrupoWhatsapp = false) => {
     try {
       const res = await fetch('https://borajogar-api.onrender.com/login/google', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, nome, telefone }),
+        body: JSON.stringify({
+          email,
+          nome,
+          telefone,
+          quer_grupo_whatsapp: querGrupoWhatsapp,
+        }),
       });
       const data = await res.json();
 
@@ -135,7 +142,12 @@ export default function Auth({
       return;
     }
 
-    enviarGoogleParaBackend(dadosGoogleTemp.email, dadosGoogleTemp.nome, telLimpo);
+    enviarGoogleParaBackend(
+      dadosGoogleTemp.email,
+      dadosGoogleTemp.nome,
+      telLimpo,
+      querGrupoWhatsGoogle,
+    );
   };
 
   // ==========================================================================
@@ -171,6 +183,7 @@ export default function Auth({
         senha: cadSenha,
         telefone: telefoneLimpo,
         codigo_indicacao: cadCodigoConvite,
+        quer_grupo_whatsapp: cadQuerGrupoWhats,
       }),
     }).then(async (res) => {
       const data = await res.json();
@@ -345,6 +358,15 @@ export default function Auth({
               className={inputClass}
               required
             />
+            <label className="flex items-start gap-3 rounded-xl border border-zinc-700 bg-zinc-900/60 p-3 text-xs font-medium text-zinc-300">
+              <input
+                type="checkbox"
+                checked={querGrupoWhatsGoogle}
+                onChange={(e) => setQuerGrupoWhatsGoogle(e.target.checked)}
+                className="mt-0.5 h-4 w-4 shrink-0 accent-emerald-500"
+              />
+              Gostaria de ser adicionado ao grupo de Whatsapp para ganhar cupons de desconto?
+            </label>
             <button
               type="button"
               onClick={finalizarCadastroGoogle}
@@ -486,6 +508,15 @@ export default function Auth({
               className={inputClass}
               required
             />
+            <label className="flex items-start gap-3 rounded-xl border border-zinc-700 bg-zinc-900/60 p-3 text-xs font-medium text-zinc-300">
+              <input
+                type="checkbox"
+                checked={cadQuerGrupoWhats}
+                onChange={(e) => setCadQuerGrupoWhats(e.target.checked)}
+                className="mt-0.5 h-4 w-4 shrink-0 accent-emerald-500"
+              />
+              Gostaria de ser adicionado ao grupo de Whatsapp para ganhar cupons de desconto?
+            </label>
 
             <div className="relative">
               <input
