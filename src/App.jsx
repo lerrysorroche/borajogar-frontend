@@ -46,6 +46,12 @@ const SECOES_ADMIN = [
     ativo: 'bg-amber-600 text-white shadow-md shadow-amber-600/20',
   },
   {
+    id: 'grupo-whatsapp',
+    icone: '💬',
+    nome: 'Grupo WhatsApp',
+    ativo: 'bg-green-600 text-white shadow-md shadow-green-600/20',
+  },
+  {
     id: 'clientes',
     icone: '👥',
     nome: 'Clientes',
@@ -225,6 +231,12 @@ function App() {
   const [todasReservas, setTodasReservas] = useState([]);
   const [todosUsuarios, setTodosUsuarios] = useState([]);
   const [contasManutencao, setContasManutencao] = useState([]);
+  const [interessadosGrupoWhats, setInteressadosGrupoWhats] = useState([]);
+  const [mensagemBroadcastGrupo, setMensagemBroadcastGrupo] = useState(
+    'Oi! Agora temos um Grupo oficial do WhatsApp só para avisos de cupons de desconto 🎁. ' +
+      'Quer entrar? É só chamar aqui que a gente te adiciona: ' +
+      'https://wa.me/5541995948532',
+  );
   const [listaCupons, setListaCupons] = useState([]);
   const [paginaCatalogo, setPaginaCatalogo] = useState(0);
   const [paginaClientes, setPaginaClientes] = useState(0);
@@ -537,6 +549,11 @@ function App() {
       fetch('https://borajogar-api.onrender.com/admin/cupons', { headers: getAuthHeaders() })
         .then((res) => (res.ok ? res.json() : []))
         .then((dados) => setListaCupons(Array.isArray(dados) ? dados : []));
+      fetch('https://borajogar-api.onrender.com/admin/grupo-whatsapp/pendentes', {
+        headers: getAuthHeaders(),
+      })
+        .then((res) => (res.ok ? res.json() : []))
+        .then((dados) => setInteressadosGrupoWhats(Array.isArray(dados) ? dados : []));
     }
 
     // Dados Pessoais do Cliente
@@ -1437,14 +1454,53 @@ function App() {
   };
 
   // Utilitários de Comunicação
-  const manterReserva = (notificacaoId) => {
+  const manterReserva = (
+    notificacaoId,
+    mensagemToast = 'Perfeito! Acompanhe a nova data em Minhas Reservas.',
+  ) => {
     fetch('https://borajogar-api.onrender.com/notificacoes/ler', {
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify({ notificacao_id: notificacaoId }),
     }).then(() => {
-      mostrarToast('Perfeito! Acompanhe a nova data em Minhas Reservas.', 'sucesso');
+      mostrarToast(mensagemToast, 'sucesso');
       carregarDados();
+    });
+  };
+  const marcarAdicionadoGrupoWhats = (usuarioId) => {
+    fetch(
+      `https://borajogar-api.onrender.com/admin/grupo-whatsapp/${usuarioId}/marcar-adicionado`,
+      { method: 'PUT', headers: getAuthHeaders() },
+    ).then((res) => {
+      if (res.ok) {
+        mostrarToast('Cliente marcado como adicionado!', 'sucesso');
+        carregarDados();
+      }
+    });
+  };
+  const enviarBroadcastGrupoWhats = () => {
+    if (!mensagemBroadcastGrupo.trim()) {
+      mostrarToast('Escreva uma mensagem antes de enviar.', 'erro');
+      return;
+    }
+    if (
+      !window.confirm(
+        'Isso vai enviar uma notificação para TODOS os clientes cadastrados de uma vez. Essa ação não pode ser desfeita. Confirma o envio?',
+      )
+    ) {
+      return;
+    }
+    fetch('https://borajogar-api.onrender.com/admin/grupo-whatsapp/notificar-todos', {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ mensagem: mensagemBroadcastGrupo, tipo: 'GRUPO_WHATSAPP' }),
+    }).then(async (res) => {
+      const data = await res.json();
+      if (res.ok) {
+        mostrarToast(data.mensagem || 'Notificação enviada!', 'sucesso');
+      } else {
+        mostrarToast(data.detail || 'Erro ao enviar notificação.', 'erro');
+      }
     });
   };
   const cobrarNoWhatsApp = (nome, telefone, jogo) => {
@@ -3847,33 +3903,71 @@ function App() {
                   </div>
                 )}
 
-                {notificacoes.map((notif) => (
-                  <div
-                    key={notif.id}
-                    className="animate-fade-in relative mb-4 flex flex-col gap-4 overflow-hidden rounded-3xl border border-orange-500/40 bg-orange-950/30 p-6 shadow-[0_0_20px_rgba(249,115,22,0.1)] md:p-8"
-                  >
-                    <div className="absolute left-0 top-0 h-full w-1 bg-orange-500"></div>
-                    <div className="flex items-start gap-4">
-                      <span className="animate-bounce text-3xl">⚠️</span>
-                      <div>
-                        <h3 className="mb-1 text-lg font-black uppercase tracking-tight text-orange-400">
-                          Atualização na sua Reserva
-                        </h3>
-                        <p className="text-sm font-medium leading-relaxed text-zinc-300">
-                          {notif.mensagem}
-                        </p>
+                {notificacoes.map((notif) =>
+                  notif.tipo === 'GRUPO_WHATSAPP' ? (
+                    <div
+                      key={notif.id}
+                      className="animate-fade-in relative mb-4 flex flex-col gap-4 overflow-hidden rounded-3xl border border-emerald-500/40 bg-emerald-950/30 p-6 shadow-[0_0_20px_rgba(16,185,129,0.1)] md:p-8"
+                    >
+                      <div className="absolute left-0 top-0 h-full w-1 bg-emerald-500"></div>
+                      <div className="flex items-start gap-4">
+                        <span className="animate-bounce text-3xl">💬</span>
+                        <div>
+                          <h3 className="mb-1 text-lg font-black uppercase tracking-tight text-emerald-400">
+                            Grupo do WhatsApp
+                          </h3>
+                          <p className="text-sm font-medium leading-relaxed text-zinc-300">
+                            {notif.mensagem}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="mt-2 flex flex-col gap-3 pl-0 sm:flex-row sm:pl-12">
+                        <a
+                          href={`https://wa.me/5541995948532?text=${encodeURIComponent(
+                            'Oi! Vi o aviso no site e quero entrar no Grupo do WhatsApp de cupons de desconto 🎁',
+                          )}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="rounded-xl bg-emerald-600 px-6 py-3 text-center text-xs font-bold uppercase tracking-wider text-white shadow-lg shadow-emerald-600/20 transition-colors hover:bg-emerald-500"
+                        >
+                          💬 Entrar em contato
+                        </a>
+                        <button
+                          onClick={() => manterReserva(notif.id, 'Notificação removida.')}
+                          className="rounded-xl border border-zinc-700 bg-zinc-800 px-6 py-3 text-xs font-bold uppercase tracking-wider text-zinc-300 transition-colors hover:bg-zinc-700"
+                        >
+                          🗑️ Apagar
+                        </button>
                       </div>
                     </div>
-                    <div className="mt-2 pl-0 sm:pl-12">
-                      <button
-                        onClick={() => manterReserva(notif.id)}
-                        className="w-full rounded-xl bg-orange-600 px-6 py-3 text-xs font-bold uppercase tracking-wider text-white shadow-lg shadow-orange-600/20 transition-colors hover:bg-orange-500 sm:w-auto"
-                      >
-                        👍 Entendi
-                      </button>
+                  ) : (
+                    <div
+                      key={notif.id}
+                      className="animate-fade-in relative mb-4 flex flex-col gap-4 overflow-hidden rounded-3xl border border-orange-500/40 bg-orange-950/30 p-6 shadow-[0_0_20px_rgba(249,115,22,0.1)] md:p-8"
+                    >
+                      <div className="absolute left-0 top-0 h-full w-1 bg-orange-500"></div>
+                      <div className="flex items-start gap-4">
+                        <span className="animate-bounce text-3xl">⚠️</span>
+                        <div>
+                          <h3 className="mb-1 text-lg font-black uppercase tracking-tight text-orange-400">
+                            Atualização na sua Reserva
+                          </h3>
+                          <p className="text-sm font-medium leading-relaxed text-zinc-300">
+                            {notif.mensagem}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="mt-2 pl-0 sm:pl-12">
+                        <button
+                          onClick={() => manterReserva(notif.id)}
+                          className="w-full rounded-xl bg-orange-600 px-6 py-3 text-xs font-bold uppercase tracking-wider text-white shadow-lg shadow-orange-600/20 transition-colors hover:bg-orange-500 sm:w-auto"
+                        >
+                          👍 Entendi
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ),
+                )}
 
                 <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
                   {/* MENU LATERAL DE SECOES DE MEUS ACESSOS */}
@@ -4558,11 +4652,13 @@ function App() {
                               ? locacoesAtivasFiltradas.length
                               : s.id === 'fila'
                                 ? reservasAdminFiltradas.length
-                                : s.id === 'clientes'
-                                  ? todosUsuarios.length
-                                  : s.id === 'manutencao'
-                                    ? contasManutencao.length
-                                    : 0;
+                                : s.id === 'grupo-whatsapp'
+                                  ? interessadosGrupoWhats.length
+                                  : s.id === 'clientes'
+                                    ? todosUsuarios.length
+                                    : s.id === 'manutencao'
+                                      ? contasManutencao.length
+                                      : 0;
                         const ativa = secaoAdmin === s.id;
                         return (
                           <button
@@ -5208,6 +5304,98 @@ function App() {
                                             className="rounded-lg border border-rose-500/30 bg-rose-900/30 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-rose-400 shadow transition-colors hover:bg-rose-600 hover:text-white"
                                           >
                                             Cancelar e Estornar
+                                          </button>
+                                        </td>
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                </table>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {secaoAdmin === 'grupo-whatsapp' && (
+                      <div className="animate-fade-in flex flex-col gap-8">
+                        {/* 📣 BROADCAST PARA CLIENTES ANTIGOS */}
+                        <div className="overflow-hidden rounded-3xl border border-l-4 border-zinc-800 border-l-green-500 bg-zinc-900/80 shadow-2xl shadow-green-500/10">
+                          <div className="flex items-center justify-between p-6 md:p-8">
+                            <span className="flex items-center gap-3 text-lg font-black tracking-tight text-green-400">
+                              📣 Avisar Todos os Clientes
+                            </span>
+                          </div>
+                          <div className="border-t border-zinc-800/50 px-6 pb-6 pt-8 md:px-8 md:pb-8">
+                            <p className="mb-4 text-xs font-medium text-zinc-400">
+                              Dispara uma notificação (sininho) única para todos os clientes já
+                              cadastrados, avisando que o Grupo do WhatsApp existe. Use uma vez
+                              só — novos cadastros já veem a opção direto na tela de criação de
+                              conta.
+                            </p>
+                            <textarea
+                              value={mensagemBroadcastGrupo}
+                              onChange={(e) => setMensagemBroadcastGrupo(e.target.value)}
+                              rows={4}
+                              className="w-full rounded-xl border border-zinc-700 bg-zinc-900 p-3 text-sm font-medium text-white outline-none focus:ring-2 focus:ring-green-500"
+                            />
+                            <button
+                              onClick={enviarBroadcastGrupoWhats}
+                              className="mt-4 rounded-xl bg-green-600 px-6 py-3 text-xs font-bold uppercase tracking-wider text-white shadow-lg shadow-green-600/20 transition-colors hover:bg-green-500"
+                            >
+                              📣 Enviar para Todos os Clientes
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* 💬 PENDENTES DE ADIÇÃO MANUAL */}
+                        <div className="overflow-hidden rounded-3xl border border-l-4 border-zinc-800 border-l-green-500 bg-zinc-900/80 shadow-2xl shadow-green-500/10">
+                          <div className="flex items-center justify-between p-6 md:p-8">
+                            <span className="flex items-center gap-3 text-lg font-black tracking-tight text-green-400">
+                              💬 Interessados no Grupo ({interessadosGrupoWhats.length})
+                            </span>
+                          </div>
+                          <div className="border-t border-zinc-800/50 px-6 pb-6 pt-8 md:px-8 md:pb-8">
+                            <div className="custom-scrollbar max-h-[600px] overflow-y-auto pr-3">
+                              {interessadosGrupoWhats.length === 0 ? (
+                                <p className="text-sm font-medium text-zinc-500">
+                                  Nenhum cliente pendente.
+                                </p>
+                              ) : (
+                                <table className="w-full whitespace-nowrap text-left text-sm">
+                                  <thead>
+                                    <tr className="border-b border-zinc-800 text-zinc-500">
+                                      <th className="pb-3 text-[10px] font-bold uppercase tracking-wider">
+                                        Cliente
+                                      </th>
+                                      <th className="pb-3 text-[10px] font-bold uppercase tracking-wider">
+                                        WhatsApp
+                                      </th>
+                                      <th className="pb-3 text-right text-[10px] font-bold uppercase tracking-wider">
+                                        Ações
+                                      </th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    {interessadosGrupoWhats.map((cliente) => (
+                                      <tr
+                                        key={`interessado-${cliente.id}`}
+                                        className="border-b border-zinc-800/50 transition-colors hover:bg-zinc-800/30"
+                                      >
+                                        <td className="py-4 text-xs font-medium text-zinc-300">
+                                          {cliente.nome}
+                                        </td>
+                                        <td className="py-4 text-xs font-bold text-green-400">
+                                          {cliente.telefone}
+                                        </td>
+                                        <td className="py-4 text-right">
+                                          <button
+                                            onClick={() =>
+                                              marcarAdicionadoGrupoWhats(cliente.id)
+                                            }
+                                            className="rounded-lg border border-green-500/30 bg-green-900/30 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-green-400 shadow transition-colors hover:bg-green-600 hover:text-white"
+                                          >
+                                            ✅ Já Adicionei
                                           </button>
                                         </td>
                                       </tr>
