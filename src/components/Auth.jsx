@@ -8,6 +8,7 @@ import { useState } from 'react';
 import ReactGA from 'react-ga4';
 import { auth, provider } from '../firebase';
 import { signInWithPopup } from 'firebase/auth';
+import { API_BASE } from '../config';
 
 export default function Auth({
   setUsuarioLogado,
@@ -77,7 +78,7 @@ export default function Auth({
 
   const enviarGoogleParaBackend = async (email, nome, telefone, querGrupoWhatsapp = false) => {
     try {
-      const res = await fetch('https://borajogar-api.onrender.com/login/google', {
+      const res = await fetch(`${API_BASE}/login/google`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -174,7 +175,7 @@ export default function Auth({
       return;
     }
 
-    fetch('https://borajogar-api.onrender.com/usuarios', {
+    fetch(`${API_BASE}/usuarios`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -202,7 +203,7 @@ export default function Auth({
 
   const entrarNoSistema = (e) => {
     e.preventDefault();
-    fetch('https://borajogar-api.onrender.com/login', {
+    fetch(`${API_BASE}/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email: formEmail, senha: formSenha }),
@@ -241,7 +242,7 @@ export default function Auth({
     }
 
     try {
-      const res = await fetch('https://borajogar-api.onrender.com/verificar-email', {
+      const res = await fetch(`${API_BASE}/verificar-email`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: emailParaVerificar, codigo: codigoVerificacao }),
@@ -270,7 +271,7 @@ export default function Auth({
   const reenviarCodigo = async () => {
     setCarregandoReenvio(true);
     try {
-      const res = await fetch('https://borajogar-api.onrender.com/reenviar-codigo', {
+      const res = await fetch(`${API_BASE}/reenviar-codigo`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: emailParaVerificar }),
@@ -300,7 +301,7 @@ export default function Auth({
     if (!esqueciEmail) return;
     mostrarToast('Enviando solicitação...', 'aviso');
 
-    fetch('https://borajogar-api.onrender.com/esqueci-senha', {
+    fetch(`${API_BASE}/esqueci-senha`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email: esqueciEmail }),
