@@ -4549,7 +4549,7 @@ function App() {
                 <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
                   {/* MENU LATERAL DE SECOES DO PAINEL */}
                   <nav className="lg:w-56 lg:shrink-0">
-                    <div className="grid grid-cols-3 gap-2 rounded-2xl border border-zinc-800/80 bg-zinc-950 p-2 shadow-inner sm:grid-cols-4 lg:sticky lg:top-6 lg:flex lg:flex-col">
+                    <div className="grid grid-cols-4 gap-2 rounded-2xl border border-zinc-800/80 bg-zinc-950 p-2 shadow-inner lg:sticky lg:top-6 lg:flex lg:flex-col">
                       {SECOES_ADMIN.map((s) => {
                         const contador =
                           s.id === 'jogos'
@@ -4567,17 +4567,20 @@ function App() {
                         return (
                           <button
                             key={s.id}
+                            title={s.nome}
                             onClick={() => {
                               setSecaoAdmin(s.id);
                               window.scrollTo(0, 0);
                             }}
-                            className={`flex w-full items-center gap-2.5 whitespace-nowrap rounded-xl px-3.5 py-2.5 text-left text-[11px] font-bold uppercase tracking-wider transition-all ${ativa ? s.ativo : 'text-zinc-400 hover:bg-zinc-900 hover:text-white'}`}
+                            className={`flex w-full flex-col items-center justify-center gap-1 rounded-xl py-4 text-[11px] font-bold uppercase tracking-wider transition-all lg:flex-row lg:justify-start lg:gap-2.5 lg:px-3.5 lg:py-2.5 lg:text-left ${ativa ? s.ativo : 'text-zinc-400 hover:bg-zinc-900 hover:text-white'}`}
                           >
-                            <span className="text-base leading-none">{s.icone}</span>
-                            <span className="flex-1">{s.nome}</span>
+                            <span className="text-2xl leading-none lg:text-base">{s.icone}</span>
+                            <span className="hidden whitespace-nowrap lg:inline lg:flex-1">
+                              {s.nome}
+                            </span>
                             {contador > 0 && (
                               <span
-                                className={`rounded-md px-1.5 py-0.5 text-[9px] font-black leading-none ${s.alerta && !ativa ? 'bg-rose-500 text-white' : ativa ? 'bg-black/25 text-white' : 'bg-zinc-800 text-zinc-400'}`}
+                                className={`hidden rounded-md px-1.5 py-0.5 text-[9px] font-black leading-none lg:inline-flex ${s.alerta && !ativa ? 'bg-rose-500 text-white' : ativa ? 'bg-black/25 text-white' : 'bg-zinc-800 text-zinc-400'}`}
                               >
                                 {contador}
                               </span>
