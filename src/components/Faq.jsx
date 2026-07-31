@@ -237,7 +237,10 @@ export default function Faq({ configSistema }) {
             {(() => {
               // Puxa o valor do banco de dados (ou usa 2.00 como fallback)
               const valorBase = configSistema?.valor_por_dia || 2.0;
-              const valorVezesTres = 3 * valorBase;
+              // Valor por dia antecipado é fixo em R$ 1,00 (não vem do banco) —
+              // ver rota /devolver no backend, cashback_recompensa = valor_base + dias_restantes * 1.0
+              const valorPorDiaAntecipado = 1.0;
+              const valorVezesTres = 3 * valorPorDiaAntecipado;
               const totalExemplo = valorBase + valorVezesTres;
 
               return (
@@ -248,7 +251,7 @@ export default function Faq({ configSistema }) {
                   <strong className="text-emerald-400">R$ {valorBase.toFixed(2)} fixos</strong> por
                   apertar o botão de devolução + (Mais){' '}
                   <strong className="text-emerald-400">
-                    R$ {valorBase.toFixed(2)} de Cashback Diário
+                    R$ {valorPorDiaAntecipado.toFixed(2)} de Cashback Diário
                   </strong>{' '}
                   por cada 24 horas que ainda restavam no seu prazo original.
                   <br />
@@ -256,7 +259,7 @@ export default function Faq({ configSistema }) {
                   <em className="block rounded-xl border border-zinc-800 bg-zinc-950 p-4">
                     EXEMPLO PRIMÁRIA: Você alugou por 7 dias. Jogou 4 dias e decidiu devolver
                     (sobraram 3 dias). Você recebe R$ {valorBase.toFixed(2)} fixos + R${' '}
-                    {valorVezesTres.toFixed(2)} (que é 3 x R$ {valorBase.toFixed(2)}).{' '}
+                    {valorVezesTres.toFixed(2)} (que é 3 x R$ {valorPorDiaAntecipado.toFixed(2)}).{' '}
                     <strong className="text-white">TOTAL = R$ {totalExemplo.toFixed(2)}!</strong>
                   </em>
                   <br />
