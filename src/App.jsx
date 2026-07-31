@@ -2795,17 +2795,23 @@ function App() {
               🚨 Atenção Máxima
             </h3>
             <p className="mb-6 text-sm leading-relaxed text-zinc-300">
-              O código da vaga <strong className="text-fuchsia-400">SECUNDÁRIA</strong> só pode ser
-              gerado{' '}
-              <strong className="border-b border-rose-400 text-rose-400">UMA ÚNICA VEZ</strong>.
+              O código de acesso 2FA só pode ser gerado{' '}
+              <strong className="border-b border-rose-400 text-rose-400">UMA ÚNICA VEZ</strong>!
             </p>
 
             <div className="mb-8 rounded-2xl border border-rose-500/20 bg-rose-950/30 p-5">
-              <p className="text-xs font-medium text-zinc-400">
-                Certifique-se de que o seu PlayStation já está ligado, conectado à internet e
-                <strong className="text-white"> exatamente na tela pedindo os 6 dígitos</strong>. Se
-                você gerar agora e demorar para digitar, o código vai expirar e você perderá o
-                acesso.
+              <p className="text-xs font-medium leading-relaxed text-zinc-400">
+                Por uma questão de segurança, o código 2FA só pode ser gerado{' '}
+                <strong className="text-white">UMA VEZ</strong>. Certifique-se de que o seu
+                PlayStation já está ligado, conectado à internet e{' '}
+                <strong className="text-white">exatamente na tela pedindo os 6 dígitos</strong>.
+                Você tem <strong className="text-white">30 segundos</strong> para digitar o código.
+                <br />
+                <br />
+                Caso você cometa algum erro, você precisará entrar em contato com o{' '}
+                <strong className="text-rose-400">SUPORTE</strong> para poder gerar um novo. Iremos
+                fazer todas as confirmações antes, e você será atendido quando possível, e perderá
+                tempo esperando. Portanto, tenha cuidado e não erre.
               </p>
             </div>
 
@@ -3993,26 +3999,19 @@ function App() {
                                       ) : (
                                         <div className="flex flex-col gap-2">
                                           <button
-                                            onClick={() => {
-                                              if (item.tipo_slot === 'SECUNDARIA') {
-                                                setModalConfirmacao2FA({
-                                                  visivel: true,
-                                                  locacaoId: item.locacao_id,
-                                                });
-                                              } else {
-                                                gerarCodigo2FA(item.locacao_id);
-                                              }
-                                            }}
+                                            onClick={() =>
+                                              setModalConfirmacao2FA({
+                                                visivel: true,
+                                                locacaoId: item.locacao_id,
+                                              })
+                                            }
                                             className="flex w-full items-center justify-center gap-3 rounded-2xl border border-emerald-400 bg-emerald-600 py-4 text-xs font-bold uppercase tracking-wider text-white shadow-[0_0_15px_rgba(16,185,129,0.4)] transition-all hover:bg-emerald-500 hover:shadow-[0_0_25px_rgba(16,185,129,0.6)]"
                                           >
                                             🔐 Gerar Código de Acesso (2FA)
                                           </button>
-                                          {item.tipo_slot === 'SECUNDARIA' && (
-                                            <p className="text-center text-[10px] font-bold text-rose-400">
-                                              O código 2FA da vaga Secundária só pode ser gerado uma
-                                              única vez!
-                                            </p>
-                                          )}
+                                          <p className="text-center text-[10px] font-bold text-rose-400">
+                                            O código 2FA só pode ser gerado uma única vez!
+                                          </p>
                                         </div>
                                       )}
                                     </div>
@@ -5080,16 +5079,14 @@ function App() {
                                         </td>
                                         <td className="py-4">
                                           <div className="flex justify-end gap-2">
-                                            {/* [INFO] Botão de socorro Admin para falha de 2FA */}
-                                            {loc.tipo_slot === 'SECUNDARIA' && (
-                                              <button
-                                                onClick={() => resetar2FAAdmin(loc.id)}
-                                                className="rounded-lg border border-fuchsia-500/30 bg-fuchsia-900/30 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-fuchsia-400 shadow transition-colors hover:bg-fuchsia-600 hover:text-white"
-                                                title="Permitir que o cliente gere o 2FA de novo"
-                                              >
-                                                🔄 2FA
-                                              </button>
-                                            )}
+                                            {/* [INFO] Botão de socorro Admin para falha de 2FA (agora vale pras duas vagas, já que a trava de "uma única vez" passou a valer pra Primária também) */}
+                                            <button
+                                              onClick={() => resetar2FAAdmin(loc.id)}
+                                              className="rounded-lg border border-fuchsia-500/30 bg-fuchsia-900/30 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-fuchsia-400 shadow transition-colors hover:bg-fuchsia-600 hover:text-white"
+                                              title="Permitir que o cliente gere o 2FA de novo"
+                                            >
+                                              🔄 2FA
+                                            </button>
                                             <button
                                               onClick={() => avisarLiberacao(loc.cliente, loc.jogo)}
                                               className="flex items-center gap-1.5 rounded-lg border border-emerald-500/30 bg-emerald-900/30 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-emerald-400 shadow transition-colors hover:bg-emerald-600 hover:text-white"
