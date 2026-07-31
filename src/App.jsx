@@ -10,11 +10,10 @@ import Privacidade from './components/Privacidade';
 import Faq from './components/Faq';
 import Footer from './components/Footer';
 import Auth from './components/Auth';
+import { API_BASE } from './config';
 
 // Inicialização do Google Analytics
 ReactGA.initialize('G-QGNBJ6L7JZ');
-
-const API_BASE = 'https://borajogar-api.onrender.com';
 
 // Seções do Painel Admin, na ordem em que aparecem no menu lateral.
 // A classe de "ativo" vai escrita inteira porque o Tailwind varre o código-fonte
@@ -380,7 +379,7 @@ function App() {
     let intervalId;
     if (pixPendente) {
       intervalId = setInterval(() => {
-        fetch(`https://borajogar-api.onrender.com/recarga/status/${pixPendente.payment_id}`, {
+        fetch(`${API_BASE}/recarga/status/${pixPendente.payment_id}`, {
           headers: getAuthHeaders(),
         })
           .then((res) => res.json())
@@ -416,7 +415,7 @@ function App() {
     let intervalId;
     if (aguardandoConfirmacaoWhats && usuarioLogado?.id) {
       intervalId = setInterval(() => {
-        fetch(`https://borajogar-api.onrender.com/usuarios/${usuarioLogado.id}/status-whatsapp`, {
+        fetch(`${API_BASE}/usuarios/${usuarioLogado.id}/status-whatsapp`, {
           headers: getAuthHeaders(),
         })
           .then((res) => res.json())
@@ -458,7 +457,7 @@ function App() {
     if (stripeCancelado) mostrarToast('Operação de pagamento com cartão cancelada.', 'aviso');
     if (stripeSession) {
       mostrarToast('Verificando seu pagamento na Stripe...', 'aviso');
-      fetch(`https://borajogar-api.onrender.com/recarga/status-stripe/${stripeSession}`, {
+      fetch(`${API_BASE}/recarga/status-stripe/${stripeSession}`, {
         headers: getAuthHeaders(),
       })
         .then((res) => res.json())
@@ -480,7 +479,7 @@ function App() {
 
   const carregarDados = () => {
     // 1. Vitrine (AGORA COM INTELIGÊNCIA VIP)
-    let urlJogos = 'https://borajogar-api.onrender.com/jogos';
+    let urlJogos = `${API_BASE}/jogos`;
     if (usuarioLogado && usuarioLogado.id) {
       urlJogos += `?usuario_id=${usuarioLogado.id}`;
     }
@@ -504,16 +503,16 @@ function App() {
       });
 
     // Configurações e Novidades
-    fetch('https://borajogar-api.onrender.com/configuracoes', { cache: 'no-store' })
+    fetch(`${API_BASE}/configuracoes`, { cache: 'no-store' })
       .then((res) => (res.ok ? res.json() : {}))
       .then((dados) => setConfigSistema(dados));
 
-    fetch('https://borajogar-api.onrender.com/jogos/novidades')
+    fetch(`${API_BASE}/jogos/novidades`)
       .then((res) => (res.ok ? res.json() : []))
       .then((dados) => setNovidades(Array.isArray(dados) ? dados : []));
 
     // Enquete
-    let urlEnquete = 'https://borajogar-api.onrender.com/enquete';
+    let urlEnquete = `${API_BASE}/enquete`;
     if (usuarioLogado && usuarioLogado.id) urlEnquete += `?usuario_id=${usuarioLogado.id}`;
     fetch(urlEnquete)
       .then((res) => (res.ok ? res.json() : { opcoes: [] }))
@@ -526,30 +525,30 @@ function App() {
 
     // Dados do Admin
     if (usuarioLogado.is_admin) {
-      fetch('https://borajogar-api.onrender.com/admin/locacoes', { headers: getAuthHeaders() })
+      fetch(`${API_BASE}/admin/locacoes`, { headers: getAuthHeaders() })
         .then((res) => (res.ok ? res.json() : []))
         .then((dados) => setTodasLocacoes(Array.isArray(dados) ? dados : []));
-      fetch('https://borajogar-api.onrender.com/admin/reservas', { headers: getAuthHeaders() })
+      fetch(`${API_BASE}/admin/reservas`, { headers: getAuthHeaders() })
         .then((res) => (res.ok ? res.json() : []))
         .then((dados) => setTodasReservas(Array.isArray(dados) ? dados : []));
       fetch(
-        `https://borajogar-api.onrender.com/admin/estatisticas?periodo=${periodoFiltroEstatisticas}`,
+        `${API_BASE}/admin/estatisticas?periodo=${periodoFiltroEstatisticas}`,
         { headers: getAuthHeaders() },
       )
         .then((res) =>
           res.ok ? res.json() : { faturamento: 0, total_clientes: 0, locacoes_ativas: 0 },
         )
         .then((dados) => setEstatisticasAdmin(dados));
-      fetch('https://borajogar-api.onrender.com/usuarios', { headers: getAuthHeaders() })
+      fetch(`${API_BASE}/usuarios`, { headers: getAuthHeaders() })
         .then((res) => (res.ok ? res.json() : []))
         .then((dados) => setTodosUsuarios(Array.isArray(dados) ? dados : []));
-      fetch('https://borajogar-api.onrender.com/admin/manutencao', { headers: getAuthHeaders() })
+      fetch(`${API_BASE}/admin/manutencao`, { headers: getAuthHeaders() })
         .then((res) => (res.ok ? res.json() : []))
         .then((dados) => setContasManutencao(Array.isArray(dados) ? dados : []));
-      fetch('https://borajogar-api.onrender.com/admin/cupons', { headers: getAuthHeaders() })
+      fetch(`${API_BASE}/admin/cupons`, { headers: getAuthHeaders() })
         .then((res) => (res.ok ? res.json() : []))
         .then((dados) => setListaCupons(Array.isArray(dados) ? dados : []));
-      fetch('https://borajogar-api.onrender.com/admin/grupo-whatsapp/pendentes', {
+      fetch(`${API_BASE}/admin/grupo-whatsapp/pendentes`, {
         headers: getAuthHeaders(),
       })
         .then((res) => (res.ok ? res.json() : []))
@@ -559,22 +558,22 @@ function App() {
     // Dados Pessoais do Cliente
     // Todas exigem token: o backend identifica o cliente pelo token, não pelo
     // id da URL (que qualquer um podia trocar pelo de outra pessoa).
-    fetch(`https://borajogar-api.onrender.com/meus-alugueis/${usuarioLogado.id}`, {
+    fetch(`${API_BASE}/meus-alugueis/${usuarioLogado.id}`, {
       headers: getAuthHeaders(),
     })
       .then((res) => (res.ok ? res.json() : []))
       .then((dados) => setMeusAlugueis(Array.isArray(dados) ? dados : []));
-    fetch(`https://borajogar-api.onrender.com/minhas-reservas/${usuarioLogado.id}`, {
+    fetch(`${API_BASE}/minhas-reservas/${usuarioLogado.id}`, {
       headers: getAuthHeaders(),
     })
       .then((res) => (res.ok ? res.json() : []))
       .then((dados) => setMinhasReservas(Array.isArray(dados) ? dados : []));
-    fetch(`https://borajogar-api.onrender.com/extrato/${usuarioLogado.id}`, {
+    fetch(`${API_BASE}/extrato/${usuarioLogado.id}`, {
       headers: getAuthHeaders(),
     })
       .then((res) => (res.ok ? res.json() : []))
       .then((dados) => setExtrato(Array.isArray(dados) ? dados : []));
-    fetch(`https://borajogar-api.onrender.com/notificacoes/${usuarioLogado.id}`, {
+    fetch(`${API_BASE}/notificacoes/${usuarioLogado.id}`, {
       headers: getAuthHeaders(),
     })
       .then((res) => (res.ok ? res.json() : []))
@@ -582,12 +581,12 @@ function App() {
 
     // [INFO] Reconciliação Financeira Passiva (Lazy Sync)
     // O backend tira o id do cliente do token; a rota não recebe mais id na URL.
-    fetch('https://borajogar-api.onrender.com/recarga/sincronizar', {
+    fetch(`${API_BASE}/recarga/sincronizar`, {
       method: 'POST',
       headers: getAuthHeaders(),
     })
       .then(() => {
-        fetch(`https://borajogar-api.onrender.com/usuarios/${usuarioLogado.id}/saldo`, {
+        fetch(`${API_BASE}/usuarios/${usuarioLogado.id}/saldo`, {
           headers: getAuthHeaders(),
         })
           .then((res) => (res.ok ? res.json() : null))
@@ -695,7 +694,7 @@ function App() {
   };
 
   const executarAluguel = (jogoId, precoJogo, dias, tipoSlot) => {
-    fetch('https://borajogar-api.onrender.com/locacoes', {
+    fetch(`${API_BASE}/locacoes`, {
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify({
@@ -718,7 +717,7 @@ function App() {
   };
 
   const executarReserva = (jogoId, precoJogo, dias, tipoSlot) => {
-    fetch('https://borajogar-api.onrender.com/reservas', {
+    fetch(`${API_BASE}/reservas`, {
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify({
@@ -745,7 +744,7 @@ function App() {
 
   const confirmarDevolucao = () => {
     if (!modalDevolucao) return;
-    fetch('https://borajogar-api.onrender.com/devolver', {
+    fetch(`${API_BASE}/devolver`, {
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify({
@@ -774,7 +773,7 @@ function App() {
       )
     )
       return;
-    fetch('https://borajogar-api.onrender.com/reservas/cancelar', {
+    fetch(`${API_BASE}/reservas/cancelar`, {
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify({
@@ -809,7 +808,7 @@ function App() {
     ReactGA.event({ category: 'Checkout', action: 'Click_Stripe_Card', value: valorReal });
 
     try {
-      const res = await fetch('https://borajogar-api.onrender.com/recarga/cartao', {
+      const res = await fetch(`${API_BASE}/recarga/cartao`, {
         method: 'POST',
         headers: getAuthHeaders(),
         body: JSON.stringify({
@@ -849,7 +848,7 @@ function App() {
     ReactGA.event({ category: 'Checkout', action: 'Click_Efi_Pix', value: valorReal });
 
     try {
-      const res = await fetch('https://borajogar-api.onrender.com/recarga/pix', {
+      const res = await fetch(`${API_BASE}/recarga/pix`, {
         method: 'POST',
         headers: getAuthHeaders(),
         body: JSON.stringify({
@@ -891,7 +890,7 @@ function App() {
     mostrarToast('Solicitando QR Code dinâmico ao banco...', 'aviso');
 
     try {
-      const res = await fetch('https://borajogar-api.onrender.com/recarga/pix', {
+      const res = await fetch(`${API_BASE}/recarga/pix`, {
         method: 'POST',
         headers: getAuthHeaders(),
         body: JSON.stringify({
@@ -924,7 +923,7 @@ function App() {
   const gerarCodigo2FA = async (locacaoId) => {
     try {
       const res = await fetch(
-        `https://borajogar-api.onrender.com/gerar-2fa/${locacaoId}/${usuarioLogado.id}`,
+        `${API_BASE}/gerar-2fa/${locacaoId}/${usuarioLogado.id}`,
         { headers: getAuthHeaders() },
       );
       const data = await res.json();
@@ -1023,7 +1022,7 @@ function App() {
   // ==========================================================================
 
   const salvarConfiguracoesDireto = (novaConfig, msgSucesso) => {
-    fetch('https://borajogar-api.onrender.com/admin/configuracoes', {
+    fetch(`${API_BASE}/admin/configuracoes`, {
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify(novaConfig),
@@ -1047,7 +1046,7 @@ function App() {
 
   const cadastrarJogo = (e) => {
     e.preventDefault();
-    fetch('https://borajogar-api.onrender.com/jogos', {
+    fetch(`${API_BASE}/jogos`, {
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify({
@@ -1086,7 +1085,7 @@ function App() {
   const salvarEdicaoJogo = (e) => {
     e.preventDefault();
     if (!modalEdicaoJogo) return;
-    fetch(`https://borajogar-api.onrender.com/jogos/${modalEdicaoJogo.id}`, {
+    fetch(`${API_BASE}/jogos/${modalEdicaoJogo.id}`, {
       method: 'PUT',
       headers: getAuthHeaders(),
       body: JSON.stringify({
@@ -1119,7 +1118,7 @@ function App() {
   const salvarEdicaoCliente = (e) => {
     e.preventDefault();
     if (!modalEdicaoCliente) return;
-    fetch(`https://borajogar-api.onrender.com/usuarios/${modalEdicaoCliente.id}`, {
+    fetch(`${API_BASE}/usuarios/${modalEdicaoCliente.id}`, {
       method: 'PUT',
       headers: getAuthHeaders(),
       body: JSON.stringify({
@@ -1145,7 +1144,7 @@ function App() {
 
   const cadastrarConta = (e) => {
     e.preventDefault();
-    fetch('https://borajogar-api.onrender.com/admin/contas', {
+    fetch(`${API_BASE}/admin/contas`, {
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify({
@@ -1170,7 +1169,7 @@ function App() {
 
   const cadastrarCupom = (e) => {
     e.preventDefault();
-    fetch('https://borajogar-api.onrender.com/admin/cupons', {
+    fetch(`${API_BASE}/admin/cupons`, {
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify({
@@ -1193,7 +1192,7 @@ function App() {
 
   const removerCupom = (id) => {
     if (window.confirm('Apagar este cupom?'))
-      fetch(`https://borajogar-api.onrender.com/admin/cupons/${id}`, {
+      fetch(`${API_BASE}/admin/cupons/${id}`, {
         method: 'DELETE',
         headers: getAuthHeaders(),
       }).then((res) => {
@@ -1202,7 +1201,7 @@ function App() {
   };
   const removerJogo = (id) => {
     if (window.confirm('Apagar este jogo?'))
-      fetch(`https://borajogar-api.onrender.com/jogos/${id}`, {
+      fetch(`${API_BASE}/jogos/${id}`, {
         method: 'DELETE',
         headers: getAuthHeaders(),
       }).then((res) => {
@@ -1214,7 +1213,7 @@ function App() {
   };
   const removerUsuario = (id) => {
     if (window.confirm('Remover cliente?'))
-      fetch(`https://borajogar-api.onrender.com/usuarios/${id}`, {
+      fetch(`${API_BASE}/usuarios/${id}`, {
         method: 'DELETE',
         headers: getAuthHeaders(),
       }).then((res) => {
@@ -1235,7 +1234,7 @@ function App() {
     setLimiteLocacoesDossie(limiteLocacoes);
     setCarregandoDossie(true);
     fetch(
-      `https://borajogar-api.onrender.com/admin/clientes/${cliente.id}/dossie?limite_transacoes=${limiteTransacoes}&limite_locacoes=${limiteLocacoes}`,
+      `${API_BASE}/admin/clientes/${cliente.id}/dossie?limite_transacoes=${limiteTransacoes}&limite_locacoes=${limiteLocacoes}`,
       { headers: getAuthHeaders() },
     )
       .then(async (res) => {
@@ -1261,7 +1260,7 @@ function App() {
       )
     )
       return;
-    fetch('https://borajogar-api.onrender.com/admin/whatsapp/verificar', {
+    fetch(`${API_BASE}/admin/whatsapp/verificar`, {
       method: 'PUT',
       headers: getAuthHeaders(),
       body: JSON.stringify({ utilizador_id: idUsuario }),
@@ -1282,7 +1281,7 @@ function App() {
       mostrarToast('Digite a nova senha antes de liberar a conta!', 'aviso');
       return;
     }
-    fetch('https://borajogar-api.onrender.com/admin/reset-senha', {
+    fetch(`${API_BASE}/admin/reset-senha`, {
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify({ conta_psn_id: contaId, nova_senha: senha }),
@@ -1299,7 +1298,7 @@ function App() {
 
   const resetar2FAAdmin = (locacaoId) => {
     if (window.confirm('Liberar uma nova tentativa de gerar o código 2FA para este cliente?')) {
-      fetch(`https://borajogar-api.onrender.com/admin/reset-2fa/${locacaoId}`, {
+      fetch(`${API_BASE}/admin/reset-2fa/${locacaoId}`, {
         method: 'POST',
         headers: getAuthHeaders(),
       }).then(async (res) => {
@@ -1321,7 +1320,7 @@ function App() {
         `Deseja aplicar uma multa de R$ 50,00 em ${nomeUsuario} por não desativar o console? O saldo dele ficará negativo e o cashback será cancelado.`,
       )
     ) {
-      fetch('https://borajogar-api.onrender.com/admin/multar', {
+      fetch(`${API_BASE}/admin/multar`, {
         method: 'POST',
         headers: getAuthHeaders(),
         body: JSON.stringify({ utilizador_id: idUsuario, valor: 50.0 }),
@@ -1343,7 +1342,7 @@ function App() {
         '🚨 ATENÇÃO: Tem certeza que deseja REVOGAR este aluguel imediatamente? A conta irá para a tela de Manutenção para você trocar a senha.',
       )
     ) {
-      fetch(`https://borajogar-api.onrender.com/admin/locacoes/${locacaoId}/revogar`, {
+      fetch(`${API_BASE}/admin/locacoes/${locacaoId}/revogar`, {
         method: 'POST',
         headers: getAuthHeaders(),
       })
@@ -1367,7 +1366,7 @@ function App() {
         `Tem certeza que deseja CANCELAR a reserva de ${tituloJogo} do cliente ${nomeCliente}? O valor será devolvido à carteira dele.`,
       )
     ) {
-      fetch(`https://borajogar-api.onrender.com/admin/reservas/${reservaId}/cancelar`, {
+      fetch(`${API_BASE}/admin/reservas/${reservaId}/cancelar`, {
         method: 'POST',
         headers: getAuthHeaders(),
       })
@@ -1394,7 +1393,7 @@ function App() {
       window.scrollTo(0, 0);
       return;
     }
-    fetch('https://borajogar-api.onrender.com/enquete/votar', {
+    fetch(`${API_BASE}/enquete/votar`, {
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify({ utilizador_id: usuarioLogado.id, opcao_id: opcaoId }),
@@ -1412,7 +1411,7 @@ function App() {
 
   const adicionarOpcaoEnquete = (e) => {
     e.preventDefault();
-    fetch('https://borajogar-api.onrender.com/admin/enquete', {
+    fetch(`${API_BASE}/admin/enquete`, {
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify({ titulo: novaOpcaoEnqueteTitulo, url_imagem: novaOpcaoEnqueteImagem }),
@@ -1430,7 +1429,7 @@ function App() {
 
   const removerOpcaoEnquete = (id) => {
     if (window.confirm('Remover esta opção da enquete?')) {
-      fetch(`https://borajogar-api.onrender.com/admin/enquete/${id}`, {
+      fetch(`${API_BASE}/admin/enquete/${id}`, {
         method: 'DELETE',
         headers: getAuthHeaders(),
       }).then((res) => {
@@ -1444,7 +1443,7 @@ function App() {
         'ATENÇÃO: Isso apagará TODOS os jogos da enquete e zerará TODOS os votos. Tem certeza?',
       )
     ) {
-      fetch('https://borajogar-api.onrender.com/admin/enquete', {
+      fetch(`${API_BASE}/admin/enquete`, {
         method: 'DELETE',
         headers: getAuthHeaders(),
       }).then((res) => {
@@ -1458,7 +1457,7 @@ function App() {
     notificacaoId,
     mensagemToast = 'Perfeito! Acompanhe a nova data em Minhas Reservas.',
   ) => {
-    fetch('https://borajogar-api.onrender.com/notificacoes/ler', {
+    fetch(`${API_BASE}/notificacoes/ler`, {
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify({ notificacao_id: notificacaoId }),
@@ -1469,7 +1468,7 @@ function App() {
   };
   const marcarAdicionadoGrupoWhats = (usuarioId) => {
     fetch(
-      `https://borajogar-api.onrender.com/admin/grupo-whatsapp/${usuarioId}/marcar-adicionado`,
+      `${API_BASE}/admin/grupo-whatsapp/${usuarioId}/marcar-adicionado`,
       { method: 'PUT', headers: getAuthHeaders() },
     ).then((res) => {
       if (res.ok) {
@@ -1490,7 +1489,7 @@ function App() {
     ) {
       return;
     }
-    fetch('https://borajogar-api.onrender.com/admin/grupo-whatsapp/notificar-todos', {
+    fetch(`${API_BASE}/admin/grupo-whatsapp/notificar-todos`, {
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify({ mensagem: mensagemBroadcastGrupo, tipo: 'GRUPO_WHATSAPP' }),
@@ -1535,7 +1534,7 @@ function App() {
       );
       return;
     }
-    fetch('https://borajogar-api.onrender.com/mudar-senha', {
+    fetch(`${API_BASE}/mudar-senha`, {
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify({
@@ -1565,7 +1564,7 @@ function App() {
       return;
     }
     setSalvandoTelefone(true);
-    fetch(`https://borajogar-api.onrender.com/usuarios/${usuarioLogado.id}/telefone`, {
+    fetch(`${API_BASE}/usuarios/${usuarioLogado.id}/telefone`, {
       method: 'PUT',
       headers: getAuthHeaders(),
       body: JSON.stringify({ telefone: telefoneEditavel }),
@@ -4699,7 +4698,7 @@ function App() {
                               const novoPeriodo = e.target.value;
                               setPeriodoFiltroEstatisticas(novoPeriodo);
                               fetch(
-                                `https://borajogar-api.onrender.com/admin/estatisticas?periodo=${novoPeriodo}`,
+                                `${API_BASE}/admin/estatisticas?periodo=${novoPeriodo}`,
                                 { headers: getAuthHeaders() },
                               )
                                 .then((res) =>
