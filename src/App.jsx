@@ -433,6 +433,7 @@ function App() {
   const [novoJogoNota, setNovoJogoNota] = useState('');
   const [novoJogoDataLancamento, setNovoJogoDataLancamento] = useState('');
   const [novoJogoRecomendacao, setNovoJogoRecomendacao] = useState(false);
+  const [novoJogoMetaFaturamento, setNovoJogoMetaFaturamento] = useState('350');
   const [novaContaJogoId, setNovaContaJogoId] = useState('');
   const [novaContaEmail, setNovaContaEmail] = useState('');
   const [novaContaSenha, setNovaContaSenha] = useState('');
@@ -1232,6 +1233,7 @@ function App() {
         nota: parseFloat(novoJogoNota) || 0,
         data_lancamento: novoJogoDataLancamento || null,
         recomendacao_cliente: novoJogoRecomendacao,
+        meta_faturamento: parseFloat(novoJogoMetaFaturamento) || 350.0,
       }),
     }).then((res) => {
       if (res.ok) {
@@ -1248,6 +1250,7 @@ function App() {
         setNovoJogoNota('');
         setNovoJogoDataLancamento('');
         setNovoJogoRecomendacao(false);
+        setNovoJogoMetaFaturamento('350');
       } else mostrarToast('Erro ao cadastrar.', 'erro');
     });
   };
@@ -1270,6 +1273,7 @@ function App() {
         tempo_jogo: modalEdicaoJogo.tempo_jogo,
         nota: parseFloat(modalEdicaoJogo.nota) || 0,
         data_lancamento: modalEdicaoJogo.data_lancamento || null,
+        meta_faturamento: parseFloat(modalEdicaoJogo.meta_faturamento) || 350.0,
       }),
     })
       .then(async (res) => {
@@ -2089,6 +2093,21 @@ function App() {
                     className={`${adminInputClass} border-fuchsia-500/30 focus:ring-fuchsia-500`}
                   />
                 </div>
+              </div>
+
+              <div className="relative w-full">
+                <label className="mb-1 block text-xs font-bold uppercase tracking-wider text-yellow-500">
+                  Meta de Faturamento — "jogo pago" (R$)
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  value={modalEdicaoJogo.meta_faturamento}
+                  onChange={(e) =>
+                    setModalEdicaoJogo({ ...modalEdicaoJogo, meta_faturamento: e.target.value })
+                  }
+                  className={`${adminInputClass} border-yellow-500/30 focus:ring-yellow-500`}
+                />
               </div>
 
               <div>
@@ -3778,19 +3797,19 @@ function App() {
                               <div className="absolute bottom-4 left-4 z-20">
                                 <div
                                   className={`flex items-center gap-1.5 rounded-lg border px-2 py-1 shadow-lg backdrop-blur-md ${
-                                    jogo.faturamento_total >= 350
+                                    jogo.faturamento_total >= (jogo.meta_faturamento || 350)
                                       ? 'border-yellow-500/50 bg-yellow-950/80'
                                       : 'border-emerald-500/50 bg-emerald-950/80'
                                   }`}
                                 >
                                   <span
                                     className={`text-[9px] font-black uppercase tracking-wider ${
-                                      jogo.faturamento_total >= 350
+                                      jogo.faturamento_total >= (jogo.meta_faturamento || 350)
                                         ? 'text-yellow-400'
                                         : 'text-emerald-400'
                                     } [text-shadow:1px_1px_0px_black,-1px_-1px_0px_black,1px_-1px_0px_black,-1px_1px_0px_black]`}
                                   >
-                                    {jogo.faturamento_total >= 350 && (
+                                    {jogo.faturamento_total >= (jogo.meta_faturamento || 350) && (
                                       <span className="mr-1 animate-pulse">👑</span>
                                     )}
                                     💰 R$ {jogo.faturamento_total?.toFixed(2) || '0.00'}
@@ -5150,6 +5169,22 @@ function App() {
                                     className={`${adminInputClass} border-fuchsia-500/30 focus:ring-fuchsia-500`}
                                   />
                                 </div>
+                              </div>
+
+                              {/* Meta de Faturamento: valor real gasto no jogo. Quando o
+                                  faturamento (badge da vitrine) ultrapassa esse valor, o
+                                  admin vê o número virar dourado com a coroa 👑. */}
+                              <div className="relative w-full">
+                                <label className="mb-1 block text-xs font-bold uppercase tracking-wider text-yellow-500">
+                                  Meta de Faturamento — "jogo pago" (R$)
+                                </label>
+                                <input
+                                  type="number"
+                                  step="0.01"
+                                  value={novoJogoMetaFaturamento}
+                                  onChange={(e) => setNovoJogoMetaFaturamento(e.target.value)}
+                                  className={`${adminInputClass} border-yellow-500/30 focus:ring-yellow-500`}
+                                />
                               </div>
 
                               <textarea
