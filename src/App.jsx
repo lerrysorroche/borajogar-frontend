@@ -77,6 +77,23 @@ const SECOES_ADMIN = [
   },
 ];
 
+// Valor padrão dos cards da Visão Geral — evita undefined/NaN antes do
+// primeiro fetch e serve de fallback quando a API responde erro.
+const ESTATISTICAS_ADMIN_PADRAO = {
+  faturamento: 0,
+  total_clientes: 0,
+  locacoes_ativas: 0,
+  ticket_medio: 0,
+  taxa_conversao_pix: 0,
+  alugueis_iniciados: 0,
+  devolucoes_periodo: 0,
+  clientes_ativos_periodo: 0,
+  novos_clientes: 0,
+  contas_manutencao: 0,
+  clientes_na_fila: 0,
+  taxa_ocupacao: 0,
+};
+
 // Seções da página "Meus Acessos" (mesmo padrão de SECOES_ADMIN acima).
 const SECOES_DASHBOARD = [
   {
@@ -124,6 +141,155 @@ if (!window.__interceptador401) {
     }
     return resposta;
   };
+}
+
+// Rótulo de eixo/tooltip do gráfico de tendência: 'YYYY-MM-DD' (granularidade
+// diária) vira 'dd/mm'; 'YYYY-MM' (granularidade mensal) vira 'mm/yyyy'.
+function formatarRotuloTendencia(dataStr) {
+  const partes = dataStr.split('-');
+  if (partes.length === 3) return `${partes[2]}/${partes[1]}`;
+  return `${partes[1]}/${partes[0]}`;
+}
+
+// Série única (contagem de novos clientes ao longo do tempo) → forma de
+// linha/área, cor sequencial (um hue só), sem legenda (o título já diz o que é).
+function GraficoTendenciaClientes({ dados }) {
+  const [hoverIdx, setHoverIdx] = useState(null);
+
+  if (!dados || dados.length < 2) {
+    return (
+      <div className="flex h-56 flex-col items-center justify-center gap-2 rounded-3xl border border-zinc-800 bg-zinc-900/60 text-center">
+        <span className="text-xs font-bold uppercase tracking-widest text-zinc-600">
+          Dados insuficientes para desenhar uma tendência
+        </span>
+        {dados && dados.length === 1 && (
+          <span className="text-[10px] text-zinc-700">
+            {dados[0].novos_clientes} novo(s) cliente(s) em {formatarRotuloTendencia(dados[0].data)}
+          </span>
+        )}
+      </div>
+    );
+  }
+
+  const W = 800;
+  const H = 260;
+  const PAD_LEFT = 36;
+  const PAD_RIGHT = 20;
+  const PAD_TOP = 24;
+  const PAD_BOTTOM = 32;
+  const larguraUtil = W - PAD_LEFT - PAD_RIGHT;
+  const alturaUtil = H - PAD_TOP - PAD_BOTTOM;
+
+  const maxValor = Math.max(...dados.map((d) => d.novos_clientes), 1);
+  const n = dados.length;
+  const x = (i) => PAD_LEFT + (i / (n - 1)) * larguraUtil;
+  const y = (v) => PAD_TOP + (alturaUtil - (v / maxValor) * alturaUtil);
+
+  const pontosLinha = dados.map((d, i) => `${x(i)},${y(d.novos_clientes)}`).join(' L ');
+  const caminhoLinha = `M ${pontosLinha}`;
+  const caminhoArea = `M ${x(0)},${PAD_TOP + alturaUtil} L ${pontosLinha} L ${x(n - 1)},${PAD_TOP + alturaUtil} Z`;
+
+  const passoRotulo = Math.max(1, Math.ceil(n / 8));
+  const ultimo = dados[n - 1];
+  const hoverAtivo = hoverIdx !== null ? dados[hoverIdx] : null;
+
+  const aoMoverMouse = (e) => {
+    const svg = e.currentTarget;
+    const rect = svg.getBoundingClientRect();
+    const xRelativo = ((e.clientX - rect.left) / rect.width) * W;
+    const posicaoRelativa = (xRelativo - PAD_LEFT) / larguraUtil;
+    const idx = Math.round(posicaoRelativa * (n - 1));
+    setHoverIdx(Math.min(n - 1, Math.max(0, idx)));
+  };
+
+  return (
+    <div className="relative rounded-3xl border border-zinc-800 bg-zinc-900/60 p-6">
+      <h4 className="mb-4 text-[10px] font-bold uppercase tracking-widest text-zinc-400">
+        📈 Novos Clientes ao Longo do Tempo
+      </h4>
+      <svg
+        viewBox={`0 0 ${W} ${H}`}
+        className="w-full cursor-crosshair"
+        role="img"
+        aria-label="Gráfico de linha: novos clientes cadastrados ao longo do período selecionado"
+        onMouseMove={aoMoverMouse}
+        onMouseLeave={() => setHoverIdx(null)}
+      >
+        {[0, 0.5, 1].map((f) => (
+          <line
+            key={f}
+            x1={PAD_LEFT}
+            x2={W - PAD_RIGHT}
+            y1={PAD_TOP + alturaUtil * (1 - f)}
+            y2={PAD_TOP + alturaUtil * (1 - f)}
+            stroke="#27272a"
+            strokeWidth="1"
+          />
+        ))}
+
+        <path d={caminhoArea} fill="#10b981" fillOpacity="0.1" stroke="none" />
+        <path d={caminhoLinha} fill="none" stroke="#10b981" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
+
+        {dados.map(
+          (d, i) =>
+            i % passoRotulo === 0 && (
+              <text
+                key={d.data}
+                x={x(i)}
+                y={H - PAD_BOTTOM + 18}
+                textAnchor="middle"
+                fontSize="9"
+                fill="#71717a"
+              >
+                {formatarRotuloTendencia(d.data)}
+              </text>
+            ),
+        )}
+
+        {/* Marcador do último ponto (fim da linha), com o valor rotulado ao lado */}
+        <circle cx={x(n - 1)} cy={y(ultimo.novos_clientes)} r="6" fill="#0c0908" />
+        <circle cx={x(n - 1)} cy={y(ultimo.novos_clientes)} r="4" fill="#10b981" />
+        <text
+          x={x(n - 1)}
+          y={y(ultimo.novos_clientes) - 12}
+          textAnchor="end"
+          fontSize="11"
+          fontWeight="700"
+          fill="#e4e4e7"
+        >
+          {ultimo.novos_clientes}
+        </text>
+
+        {hoverAtivo && (
+          <>
+            <line
+              x1={x(hoverIdx)}
+              x2={x(hoverIdx)}
+              y1={PAD_TOP}
+              y2={PAD_TOP + alturaUtil}
+              stroke="#52525b"
+              strokeWidth="1"
+            />
+            <circle cx={x(hoverIdx)} cy={y(hoverAtivo.novos_clientes)} r="6" fill="#0c0908" />
+            <circle cx={x(hoverIdx)} cy={y(hoverAtivo.novos_clientes)} r="4" fill="#34d399" />
+          </>
+        )}
+      </svg>
+      {hoverAtivo && (
+        <div
+          className="pointer-events-none absolute rounded-lg border border-emerald-500/40 bg-zinc-950 px-3 py-2 text-xs shadow-xl"
+          style={{
+            left: `${(hoverIdx / (n - 1)) * 100}%`,
+            top: 10,
+            transform: 'translateX(-50%)',
+          }}
+        >
+          <div className="font-bold text-zinc-100">{hoverAtivo.novos_clientes} novo(s)</div>
+          <div className="text-zinc-500">{formatarRotuloTendencia(hoverAtivo.data)}</div>
+        </div>
+      )}
+    </div>
+  );
 }
 
 function App() {
@@ -218,11 +384,8 @@ function App() {
     enquete_subtitulo:
       'Vote no jogo que você mais quer ver no catálogo e ajude a BORA JOGAR! a crescer.',
   });
-  const [estatisticasAdmin, setEstatisticasAdmin] = useState({
-    faturamento: 0,
-    total_clientes: 0,
-    locacoes_ativas: 0,
-  });
+  const [estatisticasAdmin, setEstatisticasAdmin] = useState(ESTATISTICAS_ADMIN_PADRAO);
+  const [tendenciaClientes, setTendenciaClientes] = useState([]);
   const [periodoFiltroEstatisticas, setPeriodoFiltroEstatisticas] = useState('mes');
 
   // Admin: Gestão de Clientes e Locações
@@ -477,6 +640,20 @@ function App() {
   // 4. COMUNICAÇÃO COM O BACKEND (FETCH DE DADOS)
   // ==========================================================================
 
+  const carregarEstatisticasAdmin = (periodo) => {
+    fetch(`${API_BASE}/admin/estatisticas?periodo=${periodo}`, {
+      headers: getAuthHeaders(),
+    })
+      .then((res) => (res.ok ? res.json() : ESTATISTICAS_ADMIN_PADRAO))
+      .then((dados) => setEstatisticasAdmin(dados));
+
+    fetch(`${API_BASE}/admin/estatisticas/tendencia?periodo=${periodo}`, {
+      headers: getAuthHeaders(),
+    })
+      .then((res) => (res.ok ? res.json() : []))
+      .then((dados) => setTendenciaClientes(Array.isArray(dados) ? dados : []));
+  };
+
   const carregarDados = () => {
     // 1. Vitrine (AGORA COM INTELIGÊNCIA VIP)
     let urlJogos = `${API_BASE}/jogos`;
@@ -531,14 +708,7 @@ function App() {
       fetch(`${API_BASE}/admin/reservas`, { headers: getAuthHeaders() })
         .then((res) => (res.ok ? res.json() : []))
         .then((dados) => setTodasReservas(Array.isArray(dados) ? dados : []));
-      fetch(
-        `${API_BASE}/admin/estatisticas?periodo=${periodoFiltroEstatisticas}`,
-        { headers: getAuthHeaders() },
-      )
-        .then((res) =>
-          res.ok ? res.json() : { faturamento: 0, total_clientes: 0, locacoes_ativas: 0 },
-        )
-        .then((dados) => setEstatisticasAdmin(dados));
+      carregarEstatisticasAdmin(periodoFiltroEstatisticas);
       fetch(`${API_BASE}/usuarios`, { headers: getAuthHeaders() })
         .then((res) => (res.ok ? res.json() : []))
         .then((dados) => setTodosUsuarios(Array.isArray(dados) ? dados : []));
@@ -4689,24 +4859,14 @@ function App() {
                   {/* CONTEUDO DA SECAO SELECIONADA */}
                   <div className="min-w-0 flex-1">
                     {secaoAdmin === 'visao-geral' && (
-                      <div className="animate-fade-in flex flex-col gap-8">
-                        {/* 📊 BLOCOS ESTATISTICAS DO SISTEMA */}
-                        <div className="mb-4 flex justify-end">
+                      <div className="animate-fade-in flex flex-col gap-10">
+                        <div className="flex justify-end">
                           <select
                             value={periodoFiltroEstatisticas}
                             onChange={(e) => {
                               const novoPeriodo = e.target.value;
                               setPeriodoFiltroEstatisticas(novoPeriodo);
-                              fetch(
-                                `${API_BASE}/admin/estatisticas?periodo=${novoPeriodo}`,
-                                { headers: getAuthHeaders() },
-                              )
-                                .then((res) =>
-                                  res.ok
-                                    ? res.json()
-                                    : { faturamento: 0, total_clientes: 0, locacoes_ativas: 0 },
-                                )
-                                .then((dados) => setEstatisticasAdmin(dados));
+                              carregarEstatisticasAdmin(novoPeriodo);
                             }}
                             className="cursor-pointer rounded-xl border border-zinc-800 bg-zinc-900 px-4 py-2 text-[10px] font-black uppercase tracking-widest text-zinc-400 shadow-lg outline-none transition-all hover:border-emerald-500/50"
                           >
@@ -4716,35 +4876,143 @@ function App() {
                             <option value="tudo">♾️ Todo o Período</option>
                           </select>
                         </div>
-                        <section className="mb-10 grid grid-cols-1 gap-6 md:grid-cols-3">
-                          <div className="relative overflow-hidden rounded-3xl border border-emerald-500/30 bg-gradient-to-br from-emerald-900/40 to-zinc-900 p-8 shadow-xl shadow-emerald-500/10 transition-transform duration-300 hover:-translate-y-1">
-                            <div className="absolute -right-4 -top-4 text-8xl opacity-5">💰</div>
-                            <h4 className="mb-3 text-[10px] font-bold uppercase tracking-widest text-zinc-400">
-                              Faturamento Total
-                            </h4>
-                            <span className="text-3xl font-black tracking-tighter text-emerald-400 md:text-4xl">
-                              R$ {estatisticasAdmin.faturamento.toFixed(2)}
-                            </span>
-                          </div>
-                          <div className="relative overflow-hidden rounded-3xl border border-blue-500/30 bg-gradient-to-br from-blue-900/40 to-zinc-900 p-8 shadow-xl shadow-blue-500/10 transition-transform duration-300 hover:-translate-y-1">
-                            <div className="absolute -right-4 -top-4 text-8xl opacity-5">👥</div>
-                            <h4 className="mb-3 text-[10px] font-bold uppercase tracking-widest text-zinc-400">
-                              Clientes Cadastrados
-                            </h4>
-                            <span className="text-3xl font-black tracking-tighter text-blue-400 md:text-4xl">
-                              {estatisticasAdmin.total_clientes}
-                            </span>
-                          </div>
-                          <div className="relative overflow-hidden rounded-3xl border border-amber-500/30 bg-gradient-to-br from-amber-900/40 to-zinc-900 p-8 shadow-xl shadow-amber-500/10 transition-transform duration-300 hover:-translate-y-1">
-                            <div className="absolute -right-4 -top-4 text-8xl opacity-5">🎮</div>
-                            <h4 className="mb-3 text-[10px] font-bold uppercase tracking-widest text-zinc-400">
-                              Locações Ativas
-                            </h4>
-                            <span className="text-3xl font-black tracking-tighter text-amber-400 md:text-4xl">
-                              {estatisticasAdmin.locacoes_ativas || 0}
-                            </span>
+
+                        {/* GRUPO 1: FINANCEIRO */}
+                        <section className="flex flex-col gap-4">
+                          <h3 className="text-[11px] font-black uppercase tracking-widest text-zinc-500">
+                            💰 Financeiro
+                          </h3>
+                          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+                            <div className="relative overflow-hidden rounded-3xl border border-emerald-500/30 bg-gradient-to-br from-emerald-900/40 to-zinc-900 p-8 shadow-xl shadow-emerald-500/10 transition-transform duration-300 hover:-translate-y-1">
+                              <div className="absolute -right-4 -top-4 text-8xl opacity-5">💰</div>
+                              <h4 className="mb-3 text-[10px] font-bold uppercase tracking-widest text-zinc-400">
+                                Faturamento Total
+                              </h4>
+                              <span className="text-3xl font-black tracking-tighter text-emerald-400 md:text-4xl">
+                                R$ {estatisticasAdmin.faturamento.toFixed(2)}
+                              </span>
+                            </div>
+                            <div className="relative overflow-hidden rounded-3xl border border-cyan-500/30 bg-gradient-to-br from-cyan-900/40 to-zinc-900 p-8 shadow-xl shadow-cyan-500/10 transition-transform duration-300 hover:-translate-y-1">
+                              <div className="absolute -right-4 -top-4 text-8xl opacity-5">🎟️</div>
+                              <h4 className="mb-3 text-[10px] font-bold uppercase tracking-widest text-zinc-400">
+                                Ticket Médio por Aluguel
+                              </h4>
+                              <span className="text-3xl font-black tracking-tighter text-cyan-400 md:text-4xl">
+                                R$ {(estatisticasAdmin.ticket_medio || 0).toFixed(2)}
+                              </span>
+                            </div>
+                            <div className="relative overflow-hidden rounded-3xl border border-green-500/30 bg-gradient-to-br from-green-900/40 to-zinc-900 p-8 shadow-xl shadow-green-500/10 transition-transform duration-300 hover:-translate-y-1">
+                              <div className="absolute -right-4 -top-4 text-8xl opacity-5">📈</div>
+                              <h4 className="mb-3 text-[10px] font-bold uppercase tracking-widest text-zinc-400">
+                                Taxa de Conversão do Pix
+                              </h4>
+                              <span className="text-3xl font-black tracking-tighter text-green-400 md:text-4xl">
+                                {(estatisticasAdmin.taxa_conversao_pix || 0).toFixed(1)}%
+                              </span>
+                            </div>
                           </div>
                         </section>
+
+                        {/* GRUPO 2: ATIVIDADE NO PERÍODO */}
+                        <section className="flex flex-col gap-4">
+                          <h3 className="text-[11px] font-black uppercase tracking-widest text-zinc-500">
+                            🗓️ Atividade no Período
+                          </h3>
+                          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
+                            <div className="relative overflow-hidden rounded-3xl border border-orange-500/30 bg-gradient-to-br from-orange-900/40 to-zinc-900 p-8 shadow-xl shadow-orange-500/10 transition-transform duration-300 hover:-translate-y-1">
+                              <div className="absolute -right-4 -top-4 text-8xl opacity-5">🕹️</div>
+                              <h4 className="mb-3 text-[10px] font-bold uppercase tracking-widest text-zinc-400">
+                                Aluguéis Iniciados
+                              </h4>
+                              <span className="text-3xl font-black tracking-tighter text-orange-400 md:text-4xl">
+                                {estatisticasAdmin.alugueis_iniciados || 0}
+                              </span>
+                            </div>
+                            <div className="relative overflow-hidden rounded-3xl border border-green-500/30 bg-gradient-to-br from-green-900/40 to-zinc-900 p-8 shadow-xl shadow-green-500/10 transition-transform duration-300 hover:-translate-y-1">
+                              <div className="absolute -right-4 -top-4 text-8xl opacity-5">↩️</div>
+                              <h4 className="mb-3 text-[10px] font-bold uppercase tracking-widest text-zinc-400">
+                                Devoluções no Período
+                              </h4>
+                              <span className="text-3xl font-black tracking-tighter text-green-400 md:text-4xl">
+                                {estatisticasAdmin.devolucoes_periodo || 0}
+                              </span>
+                            </div>
+                            <div className="relative overflow-hidden rounded-3xl border border-purple-500/30 bg-gradient-to-br from-purple-900/40 to-zinc-900 p-8 shadow-xl shadow-purple-500/10 transition-transform duration-300 hover:-translate-y-1">
+                              <div className="absolute -right-4 -top-4 text-8xl opacity-5">👤</div>
+                              <h4 className="mb-3 text-[10px] font-bold uppercase tracking-widest text-zinc-400">
+                                Clientes Ativos no Período
+                              </h4>
+                              <span className="text-3xl font-black tracking-tighter text-purple-400 md:text-4xl">
+                                {estatisticasAdmin.clientes_ativos_periodo || 0}
+                              </span>
+                            </div>
+                            <div className="relative overflow-hidden rounded-3xl border border-fuchsia-500/30 bg-gradient-to-br from-fuchsia-900/40 to-zinc-900 p-8 shadow-xl shadow-fuchsia-500/10 transition-transform duration-300 hover:-translate-y-1">
+                              <div className="absolute -right-4 -top-4 text-8xl opacity-5">🆕</div>
+                              <h4 className="mb-3 text-[10px] font-bold uppercase tracking-widest text-zinc-400">
+                                Novos Clientes
+                              </h4>
+                              <span className="text-3xl font-black tracking-tighter text-fuchsia-400 md:text-4xl">
+                                {estatisticasAdmin.novos_clientes || 0}
+                              </span>
+                            </div>
+                          </div>
+                        </section>
+
+                        {/* GRUPO 3: OPERAÇÃO (TEMPO REAL) */}
+                        <section className="flex flex-col gap-4">
+                          <h3 className="text-[11px] font-black uppercase tracking-widest text-zinc-500">
+                            ⚙️ Operação (Tempo Real)
+                          </h3>
+                          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-5">
+                            <div className="relative overflow-hidden rounded-3xl border border-blue-500/30 bg-gradient-to-br from-blue-900/40 to-zinc-900 p-8 shadow-xl shadow-blue-500/10 transition-transform duration-300 hover:-translate-y-1">
+                              <div className="absolute -right-4 -top-4 text-8xl opacity-5">👥</div>
+                              <h4 className="mb-3 text-[10px] font-bold uppercase tracking-widest text-zinc-400">
+                                Clientes Cadastrados
+                              </h4>
+                              <span className="text-3xl font-black tracking-tighter text-blue-400 md:text-4xl">
+                                {estatisticasAdmin.total_clientes}
+                              </span>
+                            </div>
+                            <div className="relative overflow-hidden rounded-3xl border border-amber-500/30 bg-gradient-to-br from-amber-900/40 to-zinc-900 p-8 shadow-xl shadow-amber-500/10 transition-transform duration-300 hover:-translate-y-1">
+                              <div className="absolute -right-4 -top-4 text-8xl opacity-5">🎮</div>
+                              <h4 className="mb-3 text-[10px] font-bold uppercase tracking-widest text-zinc-400">
+                                Locações Ativas
+                              </h4>
+                              <span className="text-3xl font-black tracking-tighter text-amber-400 md:text-4xl">
+                                {estatisticasAdmin.locacoes_ativas || 0}
+                              </span>
+                            </div>
+                            <div className="relative overflow-hidden rounded-3xl border border-rose-500/30 bg-gradient-to-br from-rose-900/40 to-zinc-900 p-8 shadow-xl shadow-rose-500/10 transition-transform duration-300 hover:-translate-y-1">
+                              <div className="absolute -right-4 -top-4 text-8xl opacity-5">🚨</div>
+                              <h4 className="mb-3 text-[10px] font-bold uppercase tracking-widest text-zinc-400">
+                                Contas em Manutenção
+                              </h4>
+                              <span className="text-3xl font-black tracking-tighter text-rose-400 md:text-4xl">
+                                {estatisticasAdmin.contas_manutencao || 0}
+                              </span>
+                            </div>
+                            <div className="relative overflow-hidden rounded-3xl border border-cyan-500/30 bg-gradient-to-br from-cyan-900/40 to-zinc-900 p-8 shadow-xl shadow-cyan-500/10 transition-transform duration-300 hover:-translate-y-1">
+                              <div className="absolute -right-4 -top-4 text-8xl opacity-5">⏳</div>
+                              <h4 className="mb-3 text-[10px] font-bold uppercase tracking-widest text-zinc-400">
+                                Clientes na Fila de Espera
+                              </h4>
+                              <span className="text-3xl font-black tracking-tighter text-cyan-400 md:text-4xl">
+                                {estatisticasAdmin.clientes_na_fila || 0}
+                              </span>
+                            </div>
+                            <div className="relative overflow-hidden rounded-3xl border border-fuchsia-500/30 bg-gradient-to-br from-fuchsia-900/40 to-zinc-900 p-8 shadow-xl shadow-fuchsia-500/10 transition-transform duration-300 hover:-translate-y-1">
+                              <div className="absolute -right-4 -top-4 text-8xl opacity-5">🎯</div>
+                              <h4 className="mb-3 text-[10px] font-bold uppercase tracking-widest text-zinc-400">
+                                Taxa de Ocupação
+                              </h4>
+                              <span className="text-3xl font-black tracking-tighter text-fuchsia-400 md:text-4xl">
+                                {(estatisticasAdmin.taxa_ocupacao || 0).toFixed(1)}%
+                              </span>
+                            </div>
+                          </div>
+                        </section>
+
+                        <GraficoTendenciaClientes dados={tendenciaClientes} />
                       </div>
                     )}
 
