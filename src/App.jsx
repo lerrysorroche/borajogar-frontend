@@ -1264,10 +1264,10 @@ function App() {
       body: JSON.stringify({
         titulo: modalEdicaoJogo.titulo,
         plataforma: modalEdicaoJogo.plataforma,
-        preco_aluguel: parseFloat(modalEdicaoJogo.preco_aluguel),
-        preco_aluguel_14: parseFloat(modalEdicaoJogo.preco_aluguel_14) || 0.0,
-        preco_secundaria: parseFloat(modalEdicaoJogo.preco_secundaria) || 0.0,
-        preco_secundaria_14: parseFloat(modalEdicaoJogo.preco_secundaria_14) || 0.0,
+        preco_aluguel: parseFloat(modalEdicaoJogo.preco_aluguel_base),
+        preco_aluguel_14: parseFloat(modalEdicaoJogo.preco_aluguel_14_base) || 0.0,
+        preco_secundaria: parseFloat(modalEdicaoJogo.preco_secundaria_base) || 0.0,
+        preco_secundaria_14: parseFloat(modalEdicaoJogo.preco_secundaria_14_base) || 0.0,
         descricao: modalEdicaoJogo.descricao,
         url_imagem: modalEdicaoJogo.url_imagem,
         tempo_jogo: modalEdicaoJogo.tempo_jogo,
@@ -2036,9 +2036,12 @@ function App() {
                   <input
                     type="number"
                     step="0.01"
-                    value={modalEdicaoJogo.preco_aluguel}
+                    value={modalEdicaoJogo.preco_aluguel_base}
                     onChange={(e) =>
-                      setModalEdicaoJogo({ ...modalEdicaoJogo, preco_aluguel: e.target.value })
+                      setModalEdicaoJogo({
+                        ...modalEdicaoJogo,
+                        preco_aluguel_base: e.target.value,
+                      })
                     }
                     className={adminInputClass}
                     required
@@ -2051,9 +2054,12 @@ function App() {
                   <input
                     type="number"
                     step="0.01"
-                    value={modalEdicaoJogo.preco_aluguel_14}
+                    value={modalEdicaoJogo.preco_aluguel_14_base}
                     onChange={(e) =>
-                      setModalEdicaoJogo({ ...modalEdicaoJogo, preco_aluguel_14: e.target.value })
+                      setModalEdicaoJogo({
+                        ...modalEdicaoJogo,
+                        preco_aluguel_14_base: e.target.value,
+                      })
                     }
                     className={adminInputClass}
                   />
@@ -2069,9 +2075,12 @@ function App() {
                   <input
                     type="number"
                     step="0.01"
-                    value={modalEdicaoJogo.preco_secundaria}
+                    value={modalEdicaoJogo.preco_secundaria_base}
                     onChange={(e) =>
-                      setModalEdicaoJogo({ ...modalEdicaoJogo, preco_secundaria: e.target.value })
+                      setModalEdicaoJogo({
+                        ...modalEdicaoJogo,
+                        preco_secundaria_base: e.target.value,
+                      })
                     }
                     className={`${adminInputClass} border-fuchsia-500/30 focus:ring-fuchsia-500`}
                   />
@@ -2083,11 +2092,11 @@ function App() {
                   <input
                     type="number"
                     step="0.01"
-                    value={modalEdicaoJogo.preco_secundaria_14}
+                    value={modalEdicaoJogo.preco_secundaria_14_base}
                     onChange={(e) =>
                       setModalEdicaoJogo({
                         ...modalEdicaoJogo,
-                        preco_secundaria_14: e.target.value,
+                        preco_secundaria_14_base: e.target.value,
                       })
                     }
                     className={`${adminInputClass} border-fuchsia-500/30 focus:ring-fuchsia-500`}
@@ -5341,10 +5350,10 @@ function App() {
                                           </span>
                                           <div className="flex items-center gap-3">
                                             <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">
-                                              7D: R$ {jogo.preco_aluguel.toFixed(2)}
+                                              7D: R$ {jogo.preco_aluguel_base.toFixed(2)}
                                             </span>
                                             <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">
-                                              14D: R$ {jogo.preco_aluguel_14.toFixed(2)}
+                                              14D: R$ {jogo.preco_aluguel_14_base.toFixed(2)}
                                             </span>
                                           </div>
                                           {jogo.estoque_primaria > 0 ||
