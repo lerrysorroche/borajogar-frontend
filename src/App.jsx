@@ -45,9 +45,9 @@ const SECOES_ADMIN = [
     ativo: 'bg-amber-600 text-white shadow-md shadow-amber-600/20',
   },
   {
-    id: 'grupo-whatsapp',
-    icone: '💬',
-    nome: 'Grupo WhatsApp',
+    id: 'avisos',
+    icone: '📣',
+    nome: 'Avisos',
     ativo: 'bg-green-600 text-white shadow-md shadow-green-600/20',
   },
   {
@@ -393,12 +393,9 @@ function App() {
   const [todasReservas, setTodasReservas] = useState([]);
   const [todosUsuarios, setTodosUsuarios] = useState([]);
   const [contasManutencao, setContasManutencao] = useState([]);
-  const [interessadosGrupoWhats, setInteressadosGrupoWhats] = useState([]);
-  const [mensagemBroadcastGrupo, setMensagemBroadcastGrupo] = useState(
-    'Oi! Agora temos um Grupo oficial do WhatsApp só para avisos de cupons de desconto 🎁. ' +
-      'Quer entrar? É só chamar aqui que a gente te adiciona: ' +
-      'https://wa.me/5541995948532',
-  );
+  const [mensagemBroadcast, setMensagemBroadcast] = useState('');
+  const [urlBroadcast, setUrlBroadcast] = useState('');
+  const [historicoBroadcasts, setHistoricoBroadcasts] = useState([]);
   const [listaCupons, setListaCupons] = useState([]);
   const [paginaCatalogo, setPaginaCatalogo] = useState(0);
   const [paginaClientes, setPaginaClientes] = useState(0);
@@ -719,11 +716,11 @@ function App() {
       fetch(`${API_BASE}/admin/cupons`, { headers: getAuthHeaders() })
         .then((res) => (res.ok ? res.json() : []))
         .then((dados) => setListaCupons(Array.isArray(dados) ? dados : []));
-      fetch(`${API_BASE}/admin/grupo-whatsapp/pendentes`, {
+      fetch(`${API_BASE}/admin/notificacoes/broadcast/historico`, {
         headers: getAuthHeaders(),
       })
         .then((res) => (res.ok ? res.json() : []))
-        .then((dados) => setInteressadosGrupoWhats(Array.isArray(dados) ? dados : []));
+        .then((dados) => setHistoricoBroadcasts(Array.isArray(dados) ? dados : []));
     }
 
     // Dados Pessoais do Cliente
@@ -1640,39 +1637,38 @@ function App() {
       carregarDados();
     });
   };
-  const marcarAdicionadoGrupoWhats = (usuarioId) => {
-    fetch(
-      `${API_BASE}/admin/grupo-whatsapp/${usuarioId}/marcar-adicionado`,
-      { method: 'PUT', headers: getAuthHeaders() },
-    ).then((res) => {
-      if (res.ok) {
-        mostrarToast('Cliente marcado como adicionado!', 'sucesso');
-        carregarDados();
-      }
-    });
-  };
-  const enviarBroadcastGrupoWhats = () => {
-    if (!mensagemBroadcastGrupo.trim()) {
+  const enviarBroadcast = () => {
+    if (!mensagemBroadcast.trim()) {
       mostrarToast('Escreva uma mensagem antes de enviar.', 'erro');
+      return;
+    }
+    if (urlBroadcast.trim() && !urlBroadcast.trim().startsWith('http')) {
+      mostrarToast('A URL precisa começar com http:// ou https://', 'erro');
       return;
     }
     if (
       !window.confirm(
-        'Isso vai enviar uma notificação para TODOS os clientes cadastrados de uma vez. Essa ação não pode ser desfeita. Confirma o envio?',
+        'Isso vai enviar um aviso para TODOS os clientes cadastrados de uma vez, substituindo qualquer aviso anterior ainda não lido. Confirma o envio?',
       )
     ) {
       return;
     }
-    fetch(`${API_BASE}/admin/grupo-whatsapp/notificar-todos`, {
+    fetch(`${API_BASE}/admin/notificacoes/broadcast`, {
       method: 'POST',
       headers: getAuthHeaders(),
-      body: JSON.stringify({ mensagem: mensagemBroadcastGrupo, tipo: 'GRUPO_WHATSAPP' }),
+      body: JSON.stringify({
+        mensagem: mensagemBroadcast,
+        url_acao: urlBroadcast.trim() || null,
+      }),
     }).then(async (res) => {
       const data = await res.json();
       if (res.ok) {
-        mostrarToast(data.mensagem || 'Notificação enviada!', 'sucesso');
+        mostrarToast(data.mensagem || 'Aviso enviado!', 'sucesso');
+        setMensagemBroadcast('');
+        setUrlBroadcast('');
+        carregarDados();
       } else {
-        mostrarToast(data.detail || 'Erro ao enviar notificação.', 'erro');
+        mostrarToast(data.detail || 'Erro ao enviar aviso.', 'erro');
       }
     });
   };
@@ -4101,17 +4097,17 @@ function App() {
                 )}
 
                 {notificacoes.map((notif) =>
-                  notif.tipo === 'GRUPO_WHATSAPP' ? (
+                  notif.tipo === 'BROADCAST' ? (
                     <div
                       key={notif.id}
                       className="animate-fade-in relative mb-4 flex flex-col gap-4 overflow-hidden rounded-3xl border border-emerald-500/40 bg-emerald-950/30 p-6 shadow-[0_0_20px_rgba(16,185,129,0.1)] md:p-8"
                     >
                       <div className="absolute left-0 top-0 h-full w-1 bg-emerald-500"></div>
                       <div className="flex items-start gap-4">
-                        <span className="animate-bounce text-3xl">💬</span>
+                        <span className="animate-bounce text-3xl">📣</span>
                         <div>
                           <h3 className="mb-1 text-lg font-black uppercase tracking-tight text-emerald-400">
-                            Grupo do WhatsApp
+                            Aviso
                           </h3>
                           <p className="text-sm font-medium leading-relaxed text-zinc-300">
                             {notif.mensagem}
@@ -4119,16 +4115,16 @@ function App() {
                         </div>
                       </div>
                       <div className="mt-2 flex flex-col gap-3 pl-0 sm:flex-row sm:pl-12">
-                        <a
-                          href={`https://wa.me/5541995948532?text=${encodeURIComponent(
-                            'Oi! Vi o aviso no site e quero entrar no Grupo do WhatsApp de cupons de desconto 🎁',
-                          )}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="rounded-xl bg-emerald-600 px-6 py-3 text-center text-xs font-bold uppercase tracking-wider text-white shadow-lg shadow-emerald-600/20 transition-colors hover:bg-emerald-500"
-                        >
-                          💬 Entrar em contato
-                        </a>
+                        {notif.url_acao && (
+                          <a
+                            href={notif.url_acao}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="rounded-xl bg-emerald-600 px-6 py-3 text-center text-xs font-bold uppercase tracking-wider text-white shadow-lg shadow-emerald-600/20 transition-colors hover:bg-emerald-500"
+                          >
+                            🔗 Acessar
+                          </a>
+                        )}
                         <button
                           onClick={() => manterReserva(notif.id, 'Notificação removida.')}
                           className="rounded-xl border border-zinc-700 bg-zinc-800 px-6 py-3 text-xs font-bold uppercase tracking-wider text-zinc-300 transition-colors hover:bg-zinc-700"
@@ -4849,13 +4845,11 @@ function App() {
                               ? locacoesAtivasFiltradas.length
                               : s.id === 'fila'
                                 ? reservasAdminFiltradas.length
-                                : s.id === 'grupo-whatsapp'
-                                  ? interessadosGrupoWhats.length
-                                  : s.id === 'clientes'
-                                    ? todosUsuarios.length
-                                    : s.id === 'manutencao'
-                                      ? contasManutencao.length
-                                      : 0;
+                                : s.id === 'clientes'
+                                  ? todosUsuarios.length
+                                  : s.id === 'manutencao'
+                                    ? contasManutencao.length
+                                    : 0;
                         const ativa = secaoAdmin === s.id;
                         return (
                           <button
@@ -5628,9 +5622,9 @@ function App() {
                       </div>
                     )}
 
-                    {secaoAdmin === 'grupo-whatsapp' && (
+                    {secaoAdmin === 'avisos' && (
                       <div className="animate-fade-in flex flex-col gap-8">
-                        {/* 📣 BROADCAST PARA CLIENTES ANTIGOS */}
+                        {/* 📣 COMPOR AVISO */}
                         <div className="overflow-hidden rounded-3xl border border-l-4 border-zinc-800 border-l-green-500 bg-zinc-900/80 shadow-2xl shadow-green-500/10">
                           <div className="flex items-center justify-between p-6 md:p-8">
                             <span className="flex items-center gap-3 text-lg font-black tracking-tight text-green-400">
@@ -5639,19 +5633,31 @@ function App() {
                           </div>
                           <div className="border-t border-zinc-800/50 px-6 pb-6 pt-8 md:px-8 md:pb-8">
                             <p className="mb-4 text-xs font-medium text-zinc-400">
-                              Dispara uma notificação (sininho) única para todos os clientes já
-                              cadastrados, avisando que o Grupo do WhatsApp existe. Use uma vez
-                              só — novos cadastros já veem a opção direto na tela de criação de
-                              conta.
+                              Dispara um aviso (sininho) para todos os clientes cadastrados. Um
+                              aviso novo substitui automaticamente qualquer aviso anterior ainda
+                              não lido.
                             </p>
                             <textarea
-                              value={mensagemBroadcastGrupo}
-                              onChange={(e) => setMensagemBroadcastGrupo(e.target.value)}
+                              value={mensagemBroadcast}
+                              onChange={(e) => setMensagemBroadcast(e.target.value)}
                               rows={4}
+                              placeholder="Escreva o aviso que os clientes vão ver no sino..."
                               className="w-full rounded-xl border border-zinc-700 bg-zinc-900 p-3 text-sm font-medium text-white outline-none focus:ring-2 focus:ring-green-500"
                             />
+                            <div className="mt-3">
+                              <label className="mb-1 block text-[10px] font-bold uppercase tracking-wider text-zinc-500">
+                                URL do botão (opcional)
+                              </label>
+                              <input
+                                type="text"
+                                value={urlBroadcast}
+                                onChange={(e) => setUrlBroadcast(e.target.value)}
+                                placeholder="https://chat.whatsapp.com/... ou https://instagram.com/..."
+                                className="w-full rounded-xl border border-zinc-700 bg-zinc-900 p-3 text-sm font-medium text-white outline-none focus:ring-2 focus:ring-green-500"
+                              />
+                            </div>
                             <button
-                              onClick={enviarBroadcastGrupoWhats}
+                              onClick={enviarBroadcast}
                               className="mt-4 rounded-xl bg-green-600 px-6 py-3 text-xs font-bold uppercase tracking-wider text-white shadow-lg shadow-green-600/20 transition-colors hover:bg-green-500"
                             >
                               📣 Enviar para Todos os Clientes
@@ -5659,60 +5665,36 @@ function App() {
                           </div>
                         </div>
 
-                        {/* 💬 PENDENTES DE ADIÇÃO MANUAL */}
+                        {/* 🕓 HISTÓRICO DE AVISOS */}
                         <div className="overflow-hidden rounded-3xl border border-l-4 border-zinc-800 border-l-green-500 bg-zinc-900/80 shadow-2xl shadow-green-500/10">
                           <div className="flex items-center justify-between p-6 md:p-8">
                             <span className="flex items-center gap-3 text-lg font-black tracking-tight text-green-400">
-                              💬 Interessados no Grupo ({interessadosGrupoWhats.length})
+                              🕓 Últimos Avisos Enviados
                             </span>
                           </div>
                           <div className="border-t border-zinc-800/50 px-6 pb-6 pt-8 md:px-8 md:pb-8">
-                            <div className="custom-scrollbar max-h-[600px] overflow-y-auto pr-3">
-                              {interessadosGrupoWhats.length === 0 ? (
+                            <div className="flex flex-col gap-3">
+                              {historicoBroadcasts.length === 0 ? (
                                 <p className="text-sm font-medium text-zinc-500">
-                                  Nenhum cliente pendente.
+                                  Nenhum aviso enviado ainda.
                                 </p>
                               ) : (
-                                <table className="w-full whitespace-nowrap text-left text-sm">
-                                  <thead>
-                                    <tr className="border-b border-zinc-800 text-zinc-500">
-                                      <th className="pb-3 text-[10px] font-bold uppercase tracking-wider">
-                                        Cliente
-                                      </th>
-                                      <th className="pb-3 text-[10px] font-bold uppercase tracking-wider">
-                                        WhatsApp
-                                      </th>
-                                      <th className="pb-3 text-right text-[10px] font-bold uppercase tracking-wider">
-                                        Ações
-                                      </th>
-                                    </tr>
-                                  </thead>
-                                  <tbody>
-                                    {interessadosGrupoWhats.map((cliente) => (
-                                      <tr
-                                        key={`interessado-${cliente.id}`}
-                                        className="border-b border-zinc-800/50 transition-colors hover:bg-zinc-800/30"
-                                      >
-                                        <td className="py-4 text-xs font-medium text-zinc-300">
-                                          {cliente.nome}
-                                        </td>
-                                        <td className="py-4 text-xs font-bold text-green-400">
-                                          {cliente.telefone}
-                                        </td>
-                                        <td className="py-4 text-right">
-                                          <button
-                                            onClick={() =>
-                                              marcarAdicionadoGrupoWhats(cliente.id)
-                                            }
-                                            className="rounded-lg border border-green-500/30 bg-green-900/30 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-green-400 shadow transition-colors hover:bg-green-600 hover:text-white"
-                                          >
-                                            ✅ Já Adicionei
-                                          </button>
-                                        </td>
-                                      </tr>
-                                    ))}
-                                  </tbody>
-                                </table>
+                                historicoBroadcasts.map((item, i) => (
+                                  <div
+                                    key={`historico-${i}`}
+                                    className="rounded-xl border border-zinc-800 bg-zinc-950/50 p-4"
+                                  >
+                                    <p className="text-sm text-zinc-300">{item.mensagem}</p>
+                                    {item.url_acao && (
+                                      <p className="mt-1 truncate text-xs text-emerald-400">
+                                        🔗 {item.url_acao}
+                                      </p>
+                                    )}
+                                    <p className="mt-2 text-[10px] font-bold uppercase tracking-wider text-zinc-600">
+                                      {new Date(item.data_criacao).toLocaleString('pt-BR')}
+                                    </p>
+                                  </div>
+                                ))
                               )}
                             </div>
                           </div>
