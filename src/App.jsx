@@ -408,6 +408,7 @@ function App() {
   const [buscaEstoque, setBuscaEstoque] = useState('');
   const [buscaLocacao, setBuscaLocacao] = useState('');
   const [buscaCliente, setBuscaCliente] = useState('');
+  const [numeroDesbloquear, setNumeroDesbloquear] = useState('');
   const [buscaManutencao, setBuscaManutencao] = useState('');
   const [buscaReservaAdmin, setBuscaReservaAdmin] = useState('');
   const [ordenacaoClientes, setOrdenacaoClientes] = useState('recentes');
@@ -1727,6 +1728,25 @@ function App() {
       .catch(() => mostrarToast('Erro de conexão.', 'erro'));
   };
 
+  const desbloquearNumeroWhats = () => {
+    if (!numeroDesbloquear.trim()) {
+      mostrarToast('Digite o número que quer desbloquear.', 'erro');
+      return;
+    }
+    fetch(`${API_BASE}/admin/whatsapp/desbloquear`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ numero: numeroDesbloquear }),
+    }).then(async (res) => {
+      const data = await res.json();
+      if (res.ok) {
+        mostrarToast(data.mensagem, 'sucesso');
+        setNumeroDesbloquear('');
+      } else {
+        mostrarToast(data.detail, 'erro');
+      }
+    });
+  };
   const salvarTelefoneWhats = () => {
     const numeroLimpo = telefoneEditavel.replace(/\D/g, '');
     if (numeroLimpo.length < 10) {
@@ -5704,6 +5724,37 @@ function App() {
 
                     {secaoAdmin === 'clientes' && (
                       <div className="animate-fade-in flex flex-col gap-8">
+                        {/* 🔓 DESBLOQUEAR NÚMERO DE WHATSAPP */}
+                        <div className="overflow-hidden rounded-3xl border border-l-4 border-zinc-800 border-l-rose-500 bg-zinc-900/80 shadow-2xl shadow-rose-500/10">
+                          <div className="flex items-center justify-between p-6 md:p-8">
+                            <span className="flex items-center gap-3 text-lg font-black tracking-tight text-rose-400">
+                              🔓 Desbloquear Número de WhatsApp
+                            </span>
+                          </div>
+                          <div className="border-t border-zinc-800/50 px-6 pb-6 pt-8 md:px-8 md:pb-8">
+                            <p className="mb-4 text-xs font-medium text-zinc-400">
+                              Números já verificados ficam travados pra sempre em outras
+                              contas. Use isso só em casos legítimos (ex: operadora reciclou
+                              o chip e caiu num cliente novo).
+                            </p>
+                            <div className="flex flex-col gap-3 sm:flex-row">
+                              <input
+                                type="text"
+                                value={numeroDesbloquear}
+                                onChange={(e) => setNumeroDesbloquear(e.target.value)}
+                                placeholder="(41) 99999-9999"
+                                className={`${adminInputClass} flex-1`}
+                              />
+                              <button
+                                onClick={desbloquearNumeroWhats}
+                                className="rounded-xl bg-rose-600 px-6 py-3 text-xs font-bold uppercase tracking-wider text-white shadow-lg shadow-rose-600/20 transition-colors hover:bg-rose-500"
+                              >
+                                🔓 Desbloquear
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+
                         {/* 👥 BLOCO BASE DE CLIENTES */}
                         <div className="overflow-hidden rounded-3xl border border-l-4 border-zinc-800 border-l-purple-500 bg-zinc-900/80 shadow-2xl shadow-purple-500/10">
                           <div className="flex items-center justify-between p-6 md:p-8">
