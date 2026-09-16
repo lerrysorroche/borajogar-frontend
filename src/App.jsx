@@ -328,6 +328,9 @@ function App() {
   const [carregandoDossie, setCarregandoDossie] = useState(false);
   const [limiteTransacoesDossie, setLimiteTransacoesDossie] = useState(10);
   const [limiteLocacoesDossie, setLimiteLocacoesDossie] = useState(10);
+  // Histórico de faturamento do jogo (badge 💰 na vitrine, clicável só para admin)
+  const [modalHistoricoJogo, setModalHistoricoJogo] = useState(null);
+  const [carregandoHistoricoJogo, setCarregandoHistoricoJogo] = useState(false);
   const [modalWhatsappBloqueado, setModalWhatsappBloqueado] = useState(false);
   const [indiceBanner, setIndiceBanner] = useState(0);
 
@@ -1423,6 +1426,26 @@ function App() {
         setModalDossie(null);
       })
       .finally(() => setCarregandoDossie(false));
+  };
+
+  const abrirHistoricoJogo = (jogoId) => {
+    setModalHistoricoJogo({ jogoId, dados: null });
+    setCarregandoHistoricoJogo(true);
+    fetch(`${API_BASE}/admin/jogos/${jogoId}/historico`, { headers: getAuthHeaders() })
+      .then(async (res) => {
+        const data = await res.json();
+        if (res.ok) {
+          setModalHistoricoJogo({ jogoId, dados: data });
+        } else {
+          mostrarToast(data.detail || 'Erro ao carregar o histórico.', 'erro');
+          setModalHistoricoJogo(null);
+        }
+      })
+      .catch(() => {
+        mostrarToast('Erro de conexão.', 'erro');
+        setModalHistoricoJogo(null);
+      })
+      .finally(() => setCarregandoHistoricoJogo(false));
   };
 
   const confirmarWhatsAdmin = (idUsuario) => {
@@ -2526,6 +2549,87 @@ function App() {
                         </button>
                       )}
                     </>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {modalHistoricoJogo && (
+        <div
+          className="animate-fade-in fixed inset-0 z-[260] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm"
+          onClick={() => setModalHistoricoJogo(null)}
+        >
+          <div
+            className="custom-scrollbar max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-3xl border border-emerald-500/30 bg-gradient-to-br from-emerald-900/10 to-zinc-900 p-6 shadow-2xl shadow-emerald-500/10 md:p-8"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="mb-6 flex items-start justify-between gap-4">
+              <div>
+                <h3 className="flex items-center gap-3 text-xl font-black tracking-tight text-emerald-400">
+                  💰 Histórico do Jogo
+                </h3>
+                <p className="mt-1 text-sm font-bold text-white">
+                  {modalHistoricoJogo.dados?.jogo || '...'}
+                </p>
+              </div>
+              <button
+                onClick={() => setModalHistoricoJogo(null)}
+                className="shrink-0 rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-zinc-300 transition-colors hover:bg-zinc-700"
+              >
+                Fechar
+              </button>
+            </div>
+
+            {carregandoHistoricoJogo || !modalHistoricoJogo.dados ? (
+              <p className="animate-pulse py-12 text-center text-sm font-bold text-zinc-500">
+                Carregando histórico...
+              </p>
+            ) : (
+              <div className="space-y-6">
+                <div className="rounded-2xl border border-zinc-800 bg-zinc-950 p-4">
+                  <p className="mb-1 text-[9px] font-bold uppercase tracking-widest text-zinc-500">
+                    Faturamento Total
+                  </p>
+                  <p className="text-lg font-black tracking-tight text-emerald-400">
+                    R$ {modalHistoricoJogo.dados.faturamento_total.toFixed(2)}
+                  </p>
+                </div>
+
+                <div>
+                  <h4 className="mb-3 text-xs font-black uppercase tracking-wider text-zinc-400">
+                    🧾 Movimentações ({modalHistoricoJogo.dados.movimentacoes.length})
+                  </h4>
+                  {modalHistoricoJogo.dados.movimentacoes.length === 0 ? (
+                    <p className="text-xs text-zinc-600">Nenhuma movimentação registrada.</p>
+                  ) : (
+                    <div className="custom-scrollbar max-h-96 overflow-y-auto pr-2">
+                      <ul className="space-y-1.5">
+                        {modalHistoricoJogo.dados.movimentacoes.map((m, i) => (
+                          <li
+                            key={i}
+                            className="flex items-center justify-between gap-3 rounded-lg bg-zinc-950/50 px-3 py-2"
+                          >
+                            <div className="min-w-0">
+                              <p className="truncate text-[11px] font-bold text-white">
+                                {m.cliente_nome}
+                              </p>
+                              <p className="truncate text-[10px] text-zinc-500">{m.descricao}</p>
+                              <p className="text-[9px] text-zinc-600">
+                                {new Date(m.data_transacao).toLocaleString('pt-BR')}
+                              </p>
+                            </div>
+                            <span
+                              className={`shrink-0 text-xs font-black ${m.tipo === 'ENTRADA' ? 'text-rose-400' : 'text-emerald-400'}`}
+                            >
+                              {m.tipo === 'ENTRADA' ? '−' : '+'} R$ {m.valor.toFixed(2)}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
                   )}
                 </div>
               </div>
@@ -3839,11 +3943,13 @@ function App() {
                               )}
                             </div>
 
-                            {/* [ADMIN ONLY] Badge de Faturamento Total (Com Inteligência Visual) */}
+                            {/* [ADMIN ONLY] Badge de Faturamento Total (clicável: abre o histórico do jogo) */}
                             {usuarioLogado?.is_admin && (
-                              <div className="absolute bottom-4 left-4 z-20">
-                                <div
-                                  className={`flex items-center gap-1.5 rounded-lg border px-2 py-1 shadow-lg backdrop-blur-md ${
+                              <div className="pointer-events-auto absolute bottom-4 left-4 z-20">
+                                <button
+                                  onClick={() => abrirHistoricoJogo(jogo.id)}
+                                  title="Ver histórico de locações deste jogo"
+                                  className={`flex items-center gap-1.5 rounded-lg border px-2 py-1 shadow-lg backdrop-blur-md transition-transform hover:scale-105 ${
                                     jogo.faturamento_total >= (jogo.meta_faturamento || 350)
                                       ? 'border-yellow-500/50 bg-yellow-950/80'
                                       : 'border-emerald-500/50 bg-emerald-950/80'
@@ -3861,7 +3967,7 @@ function App() {
                                     )}
                                     💰 R$ {jogo.faturamento_total?.toFixed(2) || '0.00'}
                                   </span>
-                                </div>
+                                </button>
                               </div>
                             )}
                           </div>
