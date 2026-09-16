@@ -2340,7 +2340,7 @@ function App() {
                     },
                     {
                       rotulo: 'Total Gasto',
-                      valor: `R$ ${modalDossie.dados.resumo.total_saidas.toFixed(2)}`,
+                      valor: `R$ ${modalDossie.dados.resumo.total_gasto.toFixed(2)}`,
                       cor: 'text-orange-400',
                     },
                     {
