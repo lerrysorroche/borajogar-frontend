@@ -4158,7 +4158,7 @@ function App() {
                 )}
 
                 {notificacoes.map((notif) =>
-                  notif.tipo === 'BROADCAST' ? (
+                  notif.tipo === 'BROADCAST' || notif.tipo === 'BOAS_VINDAS' ? (
                     <div
                       key={notif.id}
                       className="animate-fade-in relative mb-4 flex flex-col gap-4 overflow-hidden rounded-3xl border border-emerald-500/40 bg-emerald-950/30 p-6 shadow-[0_0_20px_rgba(16,185,129,0.1)] md:p-8"
