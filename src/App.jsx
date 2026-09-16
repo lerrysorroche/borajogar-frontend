@@ -2646,12 +2646,22 @@ function App() {
                               ? new Date(j.data_lancamento + 'T00:00:00')
                               : new Date();
 
-                          if (j.proxima_devolucao) {
-                            const pd = new Date(j.proxima_devolucao);
+                          // A fila entra na MESMA vaga que confirmarTransacao usa
+                          // (primária quando ela existe, senão secundária), então a
+                          // data tem que sair dessa vaga — não de uma mistura das duas.
+                          const devolucaoFila = modalConfirmacao.temPrimariaAtiva
+                            ? j.proxima_devolucao_primaria
+                            : j.proxima_devolucao_secundaria;
+                          const diasFila = modalConfirmacao.temPrimariaAtiva
+                            ? j.fila_dias_primaria
+                            : j.fila_dias_secundaria;
+
+                          if (devolucaoFila) {
+                            const pd = new Date(devolucaoFila);
                             if (pd > dGlobal) dGlobal = pd;
                           }
 
-                          const filaMs = (j.fila_dias_espera || 0) * 24 * 60 * 60 * 1000;
+                          const filaMs = (diasFila || 0) * 24 * 60 * 60 * 1000;
                           const dataFinal = new Date(dGlobal.getTime() + filaMs);
 
                           const dataFormatada = dataFinal.toLocaleDateString('pt-BR', {
@@ -2661,7 +2671,7 @@ function App() {
 
                           return (
                             <span className="ml-auto shrink-0 rounded-lg bg-amber-500/20 px-2 py-1 text-[9px] font-black uppercase tracking-widest text-amber-400 [text-shadow:1px_1px_0px_black,-1px_-1px_0px_black,1px_-1px_0px_black,-1px_1px_0px_black]">
-                              {modalConfirmacao.isEmBreve && !j.fila_dias_espera
+                              {modalConfirmacao.isEmBreve && !diasFila
                                 ? `🚀 Dia ${dataFormatada}`
                                 : `⏳ Volta ${dataFormatada}`}
                             </span>
@@ -3735,14 +3745,26 @@ function App() {
                       (res) => res.jogo === jogo.titulo,
                     );
 
-                    let dataVagaGlobal = isEmBreve ? new Date(dataLanc) : new Date();
-                    if (jogo.proxima_devolucao) {
-                      const pd = new Date(jogo.proxima_devolucao);
-                      if (pd > dataVagaGlobal) dataVagaGlobal = pd;
-                    }
-                    const diasFilaEsperaMs = (jogo.fila_dias_espera || 0) * 24 * 60 * 60 * 1000;
-                    const dataFinalExata = new Date(dataVagaGlobal.getTime() + diasFilaEsperaMs);
-                    const dataVagaGlobalStr = dataFinalExata.toLocaleDateString('pt-BR');
+                    // [INFO] Cada vaga tem a própria fila: a data de uma NUNCA pode ser
+                    // calculada com a devolução da outra. Antes isso era somado
+                    // misturado e a vitrine mostrava uma data que não existia.
+                    const baseVaga = isEmBreve && dataLanc ? new Date(dataLanc) : new Date();
+                    const calcularVaga = (devolucao, diasFila) => {
+                      let d = new Date(baseVaga);
+                      if (devolucao) {
+                        const pd = new Date(devolucao);
+                        if (pd > d) d = pd;
+                      }
+                      return new Date(d.getTime() + (diasFila || 0) * 24 * 60 * 60 * 1000);
+                    };
+                    const vagaPrimariaStr = calcularVaga(
+                      jogo.proxima_devolucao_primaria,
+                      jogo.fila_dias_primaria,
+                    ).toLocaleDateString('pt-BR');
+                    const vagaSecundariaStr = calcularVaga(
+                      jogo.proxima_devolucao_secundaria,
+                      jogo.fila_dias_secundaria,
+                    ).toLocaleDateString('pt-BR');
 
                     return (
                       <div
@@ -3886,26 +3908,45 @@ function App() {
                           </div>
 
                           <div className="mt-auto">
-                            {(!temEstoque || isEmBreve) && (
-                              <div className="mb-4 rounded-xl border border-zinc-800/80 bg-zinc-950 p-4 shadow-inner">
-                                <div className="mb-2 flex items-center justify-between">
-                                  <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">
-                                    👥 Fila de espera:
-                                  </span>
-                                  <span className="text-xs font-black text-amber-400">
-                                    {jogo.tamanho_fila || 0} pessoa(s)
-                                  </span>
+                            {(!temEstoque || isEmBreve) &&
+                              (temPrimariaAtiva || temSecundariaAtiva) && (
+                                <div className="mb-4 flex flex-col gap-2.5 rounded-xl border border-zinc-800/80 bg-zinc-950 p-4 shadow-inner">
+                                  {temPrimariaAtiva && (
+                                    <div className="flex items-center justify-between gap-2">
+                                      <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">
+                                        🔑 Vaga Primária
+                                      </span>
+                                      <span className="flex items-baseline gap-2">
+                                        <span className="text-[10px] font-bold uppercase tracking-wider text-amber-400">
+                                          {jogo.fila_primaria > 0
+                                            ? `${jogo.fila_primaria} na fila`
+                                            : 'sem fila'}
+                                        </span>
+                                        <span className="text-xs font-black text-blue-400">
+                                          {vagaPrimariaStr}
+                                        </span>
+                                      </span>
+                                    </div>
+                                  )}
+                                  {temSecundariaAtiva && (
+                                    <div className="flex items-center justify-between gap-2">
+                                      <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">
+                                        🔑 Vaga Secundária
+                                      </span>
+                                      <span className="flex items-baseline gap-2">
+                                        <span className="text-[10px] font-bold uppercase tracking-wider text-amber-400">
+                                          {jogo.fila_secundaria > 0
+                                            ? `${jogo.fila_secundaria} na fila`
+                                            : 'sem fila'}
+                                        </span>
+                                        <span className="text-xs font-black text-blue-400">
+                                          {vagaSecundariaStr}
+                                        </span>
+                                      </span>
+                                    </div>
+                                  )}
                                 </div>
-                                <div className="flex items-center justify-between">
-                                  <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">
-                                    ⏳ Próxima Vaga em:
-                                  </span>
-                                  <span className="text-xs font-black text-blue-400">
-                                    {dataVagaGlobalStr}
-                                  </span>
-                                </div>
-                              </div>
-                            )}
+                              )}
 
                             <div className="mt-auto pt-4">
                               {minhaReservaAtiva ? (
