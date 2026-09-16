@@ -5872,13 +5872,26 @@ function App() {
                                     .map((u) => (
                                       <li
                                         key={`cli-${u.id}`}
-                                        className="flex flex-col items-start justify-between gap-4 rounded-2xl border border-l-2 border-zinc-800/50 border-l-purple-500 bg-zinc-950/50 p-4 shadow-sm transition-colors hover:bg-zinc-800/50 md:flex-row md:items-center md:p-5"
+                                        className={`flex flex-col items-start justify-between gap-4 rounded-2xl border p-4 shadow-sm transition-colors md:flex-row md:items-center md:p-5 ${
+                                          u.total_alugueis > 0
+                                            ? 'border-l-4 border-emerald-500/30 border-l-emerald-500 bg-emerald-950/30 hover:bg-emerald-900/30'
+                                            : 'border-l-2 border-zinc-800/50 border-l-purple-500 bg-zinc-950/50 hover:bg-zinc-800/50'
+                                        }`}
                                       >
                                         <div className="flex flex-col gap-1.5">
-                                          <span className="text-sm font-black tracking-tight text-white">
-                                            {u.nome}{' '}
+                                          <span className="flex flex-wrap items-center gap-2 text-sm font-black tracking-tight text-white">
+                                            {u.nome}
+                                            {u.total_alugueis > 0 && (
+                                              <span
+                                                title="Cliente que já alugou pelo menos um jogo"
+                                                className="rounded-md bg-emerald-500/20 px-2 py-0.5 text-[9px] uppercase tracking-wider text-emerald-400"
+                                              >
+                                                🎮 {u.total_alugueis}{' '}
+                                                {u.total_alugueis === 1 ? 'aluguel' : 'aluguéis'}
+                                              </span>
+                                            )}
                                             {u.is_admin && (
-                                              <span className="ml-2 rounded-md bg-amber-500/20 px-2 py-0.5 text-[8px] uppercase tracking-wider text-amber-400">
+                                              <span className="rounded-md bg-amber-500/20 px-2 py-0.5 text-[8px] uppercase tracking-wider text-amber-400">
                                                 Admin
                                               </span>
                                             )}
