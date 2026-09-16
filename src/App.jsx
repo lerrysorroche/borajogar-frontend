@@ -1447,8 +1447,8 @@ function App() {
     });
   };
 
-  const confirmarResetSenha = (contaId) => {
-    const senha = novasSenhasTemp[contaId];
+  const confirmarResetSenha = (contaId, chaveTemp) => {
+    const senha = novasSenhasTemp[chaveTemp];
     if (!senha) {
       mostrarToast('Digite a nova senha antes de liberar a conta!', 'aviso');
       return;
@@ -6025,20 +6025,19 @@ function App() {
                               </p>
                             ) : (
                               <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
-                                {contasManutencaoFiltradas.map((conta) => (
+                                {contasManutencaoFiltradas.map((conta) => {
+                                  const chaveManutencao = `${conta.conta_psn_id}-${conta.tipo_slot}`;
+                                  return (
                                   <div
-                                    key={`manu-${conta.conta_psn_id}`}
+                                    key={`manu-${chaveManutencao}`}
                                     className="flex flex-col gap-6 rounded-3xl border border-rose-500/50 bg-zinc-900 p-6 shadow-lg md:p-8"
                                   >
                                     <div className="flex flex-col items-start justify-between gap-4 sm:flex-row">
                                       <div className="flex flex-col gap-1.5">
                                         <span
-                                          className={`w-max rounded-lg border px-2 py-1 text-[9px] font-black uppercase tracking-wider ${conta.status_primaria === 'MANUTENCAO' ? 'border-blue-500/30 bg-blue-500/20 text-blue-400' : 'border-fuchsia-500/30 bg-fuchsia-500/20 text-fuchsia-400'}`}
+                                          className={`w-max rounded-lg border px-2 py-1 text-[9px] font-black uppercase tracking-wider ${conta.tipo_slot === 'PRIMARIA' ? 'border-blue-500/30 bg-blue-500/20 text-blue-400' : 'border-fuchsia-500/30 bg-fuchsia-500/20 text-fuchsia-400'}`}
                                         >
-                                          🕹️ Slot:{' '}
-                                          {conta.status_primaria === 'MANUTENCAO'
-                                            ? 'PRIMARIA'
-                                            : 'SECUNDARIA'}
+                                          🕹️ Slot: {conta.tipo_slot}
                                         </span>
                                         <strong className="text-lg font-black tracking-tight text-white">
                                           {conta.jogo}
@@ -6098,24 +6097,27 @@ function App() {
                                       <input
                                         type="text"
                                         placeholder="Digite a NOVA senha para liberar"
-                                        value={novasSenhasTemp[conta.conta_psn_id] || ''}
+                                        value={novasSenhasTemp[chaveManutencao] || ''}
                                         onChange={(e) =>
                                           setNovasSenhasTemp({
                                             ...novasSenhasTemp,
-                                            [conta.conta_psn_id]: e.target.value,
+                                            [chaveManutencao]: e.target.value,
                                           })
                                         }
                                         className="flex-1 rounded-2xl border border-zinc-800 bg-zinc-950 px-5 py-3.5 text-sm font-bold text-white outline-none focus:border-rose-500"
                                       />
                                       <button
-                                        onClick={() => confirmarResetSenha(conta.conta_psn_id)}
+                                        onClick={() =>
+                                          confirmarResetSenha(conta.conta_psn_id, chaveManutencao)
+                                        }
                                         className="whitespace-nowrap rounded-2xl bg-emerald-600 px-6 py-3.5 text-xs font-bold uppercase tracking-wider text-white shadow-lg shadow-emerald-600/20 transition-colors hover:bg-emerald-500"
                                       >
                                         Liberar Jogo
                                       </button>
                                     </div>
                                   </div>
-                                ))}
+                                  );
+                                })}
                               </div>
                             )}
                           </section>
