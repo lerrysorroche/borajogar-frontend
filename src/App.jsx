@@ -4263,54 +4263,89 @@ function App() {
                   </div>
                 )}
 
-                {notificacoes.map((notif) =>
-                  notif.tipo === 'BROADCAST' || notif.tipo === 'BOAS_VINDAS' ? (
-                    <div
-                      key={notif.id}
-                      className="animate-fade-in relative mb-4 flex flex-col gap-4 overflow-hidden rounded-3xl border border-emerald-500/40 bg-emerald-950/30 p-6 shadow-[0_0_20px_rgba(16,185,129,0.1)] md:p-8"
-                    >
-                      <div className="absolute left-0 top-0 h-full w-1 bg-emerald-500"></div>
-                      <div className="flex items-start gap-4">
-                        <span className="animate-bounce text-3xl">📣</span>
-                        <div>
-                          <h3 className="mb-1 text-lg font-black uppercase tracking-tight text-emerald-400">
-                            Aviso
-                          </h3>
-                          <p className="text-sm font-medium leading-relaxed text-zinc-300">
-                            {notif.mensagem}
-                          </p>
+                {notificacoes.map((notif) => {
+                  if (notif.tipo === 'RECARGA') {
+                    return (
+                      <div
+                        key={notif.id}
+                        className="animate-fade-in relative mb-4 flex flex-col gap-4 overflow-hidden rounded-3xl border border-amber-500/40 bg-amber-950/30 p-6 shadow-[0_0_20px_rgba(245,158,11,0.1)] md:p-8"
+                      >
+                        <div className="absolute left-0 top-0 h-full w-1 bg-amber-500"></div>
+                        <div className="flex items-start gap-4">
+                          <span className="animate-bounce text-3xl">💰</span>
+                          <div>
+                            <h3 className="mb-1 text-lg font-black uppercase tracking-tight text-amber-400">
+                              {notif.titulo || 'Recarga Confirmada!'}
+                            </h3>
+                            <p className="text-sm font-medium leading-relaxed text-zinc-300">
+                              {notif.mensagem}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="mt-2 pl-0 sm:pl-12">
+                          <button
+                            onClick={() => manterReserva(notif.id, 'Notificação removida.')}
+                            className="w-full rounded-xl bg-amber-600 px-6 py-3 text-xs font-bold uppercase tracking-wider text-white shadow-lg shadow-amber-600/20 transition-colors hover:bg-amber-500 sm:w-auto"
+                          >
+                            👍 Entendi
+                          </button>
                         </div>
                       </div>
-                      <div className="mt-2 flex flex-col gap-3 pl-0 sm:flex-row sm:pl-12">
-                        {notif.url_acao && (
-                          <a
-                            href={notif.url_acao}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="rounded-xl bg-emerald-600 px-6 py-3 text-center text-xs font-bold uppercase tracking-wider text-white shadow-lg shadow-emerald-600/20 transition-colors hover:bg-emerald-500"
+                    );
+                  }
+                  if (notif.tipo === 'BROADCAST' || notif.tipo === 'BOAS_VINDAS') {
+                    return (
+                      <div
+                        key={notif.id}
+                        className="animate-fade-in relative mb-4 flex flex-col gap-4 overflow-hidden rounded-3xl border border-emerald-500/40 bg-emerald-950/30 p-6 shadow-[0_0_20px_rgba(16,185,129,0.1)] md:p-8"
+                      >
+                        <div className="absolute left-0 top-0 h-full w-1 bg-emerald-500"></div>
+                        <div className="flex items-start gap-4">
+                          <span className="animate-bounce text-3xl">📣</span>
+                          <div>
+                            <h3 className="mb-1 text-lg font-black uppercase tracking-tight text-emerald-400">
+                              {notif.titulo || 'Aviso'}
+                            </h3>
+                            <p className="text-sm font-medium leading-relaxed text-zinc-300">
+                              {notif.mensagem}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="mt-2 flex flex-col gap-3 pl-0 sm:flex-row sm:pl-12">
+                          {notif.url_acao && (
+                            <a
+                              href={notif.url_acao}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="rounded-xl bg-emerald-600 px-6 py-3 text-center text-xs font-bold uppercase tracking-wider text-white shadow-lg shadow-emerald-600/20 transition-colors hover:bg-emerald-500"
+                            >
+                              🔗 Acessar
+                            </a>
+                          )}
+                          <button
+                            onClick={() => manterReserva(notif.id, 'Notificação removida.')}
+                            className="rounded-xl border border-zinc-700 bg-zinc-800 px-6 py-3 text-xs font-bold uppercase tracking-wider text-zinc-300 transition-colors hover:bg-zinc-700"
                           >
-                            🔗 Acessar
-                          </a>
-                        )}
-                        <button
-                          onClick={() => manterReserva(notif.id, 'Notificação removida.')}
-                          className="rounded-xl border border-zinc-700 bg-zinc-800 px-6 py-3 text-xs font-bold uppercase tracking-wider text-zinc-300 transition-colors hover:bg-zinc-700"
-                        >
-                          🗑️ Apagar
-                        </button>
+                            🗑️ Apagar
+                          </button>
+                        </div>
                       </div>
-                    </div>
-                  ) : (
+                    );
+                  }
+                  // FILA (tipo padrão): jogo liberado — boa notícia, por isso a
+                  // cor e o título fogem do vermelho/laranja de alerta que essa
+                  // seção usava antes para todo mundo.
+                  return (
                     <div
                       key={notif.id}
-                      className="animate-fade-in relative mb-4 flex flex-col gap-4 overflow-hidden rounded-3xl border border-orange-500/40 bg-orange-950/30 p-6 shadow-[0_0_20px_rgba(249,115,22,0.1)] md:p-8"
+                      className="animate-fade-in relative mb-4 flex flex-col gap-4 overflow-hidden rounded-3xl border border-sky-500/40 bg-sky-950/30 p-6 shadow-[0_0_20px_rgba(14,165,233,0.1)] md:p-8"
                     >
-                      <div className="absolute left-0 top-0 h-full w-1 bg-orange-500"></div>
+                      <div className="absolute left-0 top-0 h-full w-1 bg-sky-500"></div>
                       <div className="flex items-start gap-4">
-                        <span className="animate-bounce text-3xl">⚠️</span>
+                        <span className="animate-bounce text-3xl">🎮</span>
                         <div>
-                          <h3 className="mb-1 text-lg font-black uppercase tracking-tight text-orange-400">
-                            Atualização na sua Reserva
+                          <h3 className="mb-1 text-lg font-black uppercase tracking-tight text-sky-400">
+                            {notif.titulo || 'Atualização na sua Reserva'}
                           </h3>
                           <p className="text-sm font-medium leading-relaxed text-zinc-300">
                             {notif.mensagem}
@@ -4320,14 +4355,14 @@ function App() {
                       <div className="mt-2 pl-0 sm:pl-12">
                         <button
                           onClick={() => manterReserva(notif.id)}
-                          className="w-full rounded-xl bg-orange-600 px-6 py-3 text-xs font-bold uppercase tracking-wider text-white shadow-lg shadow-orange-600/20 transition-colors hover:bg-orange-500 sm:w-auto"
+                          className="w-full rounded-xl bg-sky-600 px-6 py-3 text-xs font-bold uppercase tracking-wider text-white shadow-lg shadow-sky-600/20 transition-colors hover:bg-sky-500 sm:w-auto"
                         >
                           👍 Entendi
                         </button>
                       </div>
                     </div>
-                  ),
-                )}
+                  );
+                })}
 
                 <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
                   {/* MENU LATERAL DE SECOES DE MEUS ACESSOS */}
@@ -5661,6 +5696,7 @@ function App() {
                                             <button
                                               onClick={() => avisarLiberacao(loc.cliente, loc.jogo)}
                                               className="flex items-center gap-1.5 rounded-lg border border-emerald-500/30 bg-emerald-900/30 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-emerald-400 shadow transition-colors hover:bg-emerald-600 hover:text-white"
+                                              title="Reforço manual: se essa vaga veio da fila, o WhatsApp automático já foi enviado. Use isto só se o cliente não recebeu (ex: locação criada direto pelo Admin, sem passar pela fila)."
                                             >
                                               <span className="text-sm">📲</span> Avisar
                                             </button>
