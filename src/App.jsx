@@ -10,6 +10,7 @@ import Privacidade from './components/Privacidade';
 import Faq from './components/Faq';
 import Footer from './components/Footer';
 import Auth from './components/Auth';
+import { ListaAdmin, ItemListaAdmin, CampoAdmin } from './components/ListaAdmin';
 import { API_BASE } from './config';
 
 // Inicialização do Google Analytics
@@ -228,7 +229,14 @@ function GraficoTendenciaClientes({ dados }) {
         ))}
 
         <path d={caminhoArea} fill="#10b981" fillOpacity="0.1" stroke="none" />
-        <path d={caminhoLinha} fill="none" stroke="#10b981" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
+        <path
+          d={caminhoLinha}
+          fill="none"
+          stroke="#10b981"
+          strokeWidth="2"
+          strokeLinejoin="round"
+          strokeLinecap="round"
+        />
 
         {dados.map(
           (d, i) =>
@@ -1094,10 +1102,9 @@ function App() {
 
   const gerarCodigo2FA = async (locacaoId) => {
     try {
-      const res = await fetch(
-        `${API_BASE}/gerar-2fa/${locacaoId}/${usuarioLogado.id}`,
-        { headers: getAuthHeaders() },
-      );
+      const res = await fetch(`${API_BASE}/gerar-2fa/${locacaoId}/${usuarioLogado.id}`, {
+        headers: getAuthHeaders(),
+      });
       const data = await res.json();
       if (res.ok) {
         setCodigosGerados2FA((prev) => ({ ...prev, [locacaoId]: data.codigo }));
@@ -5526,45 +5533,61 @@ function App() {
                               </div>
                             </div>
 
-                            <div className="custom-scrollbar max-h-[600px] overflow-y-auto pr-3">
-                              {jogosCatalogoAdminFiltrados.length === 0 ? (
-                                <p className="text-sm font-medium text-zinc-500">
-                                  Nenhum jogo encontrado.
-                                </p>
-                              ) : (
-                                <ul className="space-y-3">
-                                  {jogosCatalogoAdminFiltrados
-                                    .slice(paginaCatalogo * 50, (paginaCatalogo + 1) * 50)
-                                    .map((jogo) => (
-                                      <li
+                            {jogosCatalogoAdminFiltrados.length === 0 ? (
+                              <p className="text-sm font-medium text-zinc-500">
+                                Nenhum jogo encontrado.
+                              </p>
+                            ) : (
+                              <ListaAdmin
+                                cabecalhos={['Jogo', '7 dias', '14 dias', 'Vagas']}
+                                colunas="grid-cols-[minmax(200px,3fr)_90px_90px_110px_24px]"
+                                larguraMin="min-w-[620px]"
+                              >
+                                {jogosCatalogoAdminFiltrados
+                                  .slice(paginaCatalogo * 50, (paginaCatalogo + 1) * 50)
+                                  .map((jogo) => {
+                                    const vagas = jogo.estoque_primaria + jogo.estoque_secundaria;
+                                    return (
+                                      <ItemListaAdmin
                                         key={`cat-${jogo.id}`}
-                                        className="flex flex-col items-start justify-between gap-4 rounded-2xl border-l-2 border-blue-500 bg-zinc-950/50 p-4 shadow-sm transition-colors hover:bg-zinc-800/50 md:flex-row md:items-center md:p-5"
-                                      >
-                                        <div className="flex w-full flex-col gap-1 leading-relaxed md:w-auto">
-                                          <span className="max-w-[300px] truncate text-sm font-black tracking-tight text-white">
+                                        colunas="grid-cols-[minmax(200px,3fr)_90px_90px_110px_24px]"
+                                        borda="border-l-blue-500"
+                                        celulas={[
+                                          <span className="text-sm font-black tracking-tight text-white">
                                             {jogo.titulo}
-                                          </span>
-                                          <div className="flex items-center gap-3">
-                                            <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">
-                                              7D: R$ {jogo.preco_aluguel_base.toFixed(2)}
-                                            </span>
-                                            <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">
-                                              14D: R$ {jogo.preco_aluguel_14_base.toFixed(2)}
-                                            </span>
-                                          </div>
-                                          {jogo.estoque_primaria > 0 ||
-                                          jogo.estoque_secundaria > 0 ? (
-                                            <span className="mt-1 text-[10px] font-bold uppercase tracking-wider text-emerald-400">
-                                              ✅ {jogo.estoque_primaria + jogo.estoque_secundaria}{' '}
-                                              Vagas Disponíveis
+                                          </span>,
+                                          <span className="font-bold text-zinc-300">
+                                            R$ {jogo.preco_aluguel_base.toFixed(2)}
+                                          </span>,
+                                          <span className="font-bold text-zinc-300">
+                                            R$ {jogo.preco_aluguel_14_base.toFixed(2)}
+                                          </span>,
+                                          vagas > 0 ? (
+                                            <span className="font-bold text-emerald-400">
+                                              ✅ {vagas} livres
                                             </span>
                                           ) : (
-                                            <span className="mt-1 text-[10px] font-bold uppercase tracking-wider text-rose-400">
+                                            <span className="font-bold text-rose-400">
                                               ❌ Alugado
                                             </span>
-                                          )}
+                                          ),
+                                        ]}
+                                      >
+                                        <div className="mb-4 grid grid-cols-2 gap-4 sm:grid-cols-4">
+                                          <CampoAdmin rotulo="Plataforma">
+                                            {jogo.plataforma || '—'}
+                                          </CampoAdmin>
+                                          <CampoAdmin rotulo="Vagas primárias">
+                                            {jogo.estoque_primaria}
+                                          </CampoAdmin>
+                                          <CampoAdmin rotulo="Vagas secundárias">
+                                            {jogo.estoque_secundaria}
+                                          </CampoAdmin>
+                                          <CampoAdmin rotulo="Faturamento">
+                                            R$ {Number(jogo.faturamento_total || 0).toFixed(2)}
+                                          </CampoAdmin>
                                         </div>
-                                        <div className="flex w-full justify-end gap-2 md:w-auto">
+                                        <div className="flex flex-wrap gap-2">
                                           <button
                                             onClick={() => setModalEdicaoJogo(jogo)}
                                             className="rounded-lg border border-blue-500/30 bg-blue-900/30 px-4 py-2 text-[10px] font-bold uppercase tracking-wider text-blue-400 transition-colors hover:bg-blue-600 hover:text-white"
@@ -5578,11 +5601,11 @@ function App() {
                                             Excluir
                                           </button>
                                         </div>
-                                      </li>
-                                    ))}
-                                </ul>
-                              )}
-                            </div>
+                                      </ItemListaAdmin>
+                                    );
+                                  })}
+                              </ListaAdmin>
+                            )}
 
                             <div className="mt-6 flex items-center justify-between rounded-2xl border border-zinc-800/80 bg-zinc-950 p-4">
                               <button
@@ -5639,81 +5662,71 @@ function App() {
                                 <option value="az_cliente">👤 Cliente (A-Z)</option>
                               </select>
                             </div>
-                            <div className="custom-scrollbar max-h-[600px] overflow-y-auto pr-3">
-                              {locacoesAtivasFiltradas.length === 0 ? (
-                                <p className="text-sm font-medium text-zinc-500">
-                                  Nenhuma locação ativa.
-                                </p>
-                              ) : (
-                                <table className="w-full whitespace-nowrap text-left text-sm">
-                                  <thead>
-                                    <tr className="border-b border-zinc-800 text-zinc-500">
-                                      <th className="pb-3 text-[10px] font-bold uppercase tracking-wider">
-                                        Cliente
-                                      </th>
-                                      <th className="pb-3 text-[10px] font-bold uppercase tracking-wider">
-                                        Jogo
-                                      </th>
-                                      <th className="pb-3 text-[10px] font-bold uppercase tracking-wider">
-                                        Vaga
-                                      </th>
-                                      <th className="pb-3 text-[10px] font-bold uppercase tracking-wider">
-                                        Expira
-                                      </th>
-                                      <th className="pb-3 text-right text-[10px] font-bold uppercase tracking-wider">
-                                        Ações
-                                      </th>
-                                    </tr>
-                                  </thead>
-                                  <tbody>
-                                    {locacoesAtivasFiltradas.map((loc) => (
-                                      <tr
-                                        key={`locAtiva-${loc.id}`}
-                                        className="border-b border-zinc-800/50 transition-colors hover:bg-zinc-800/30"
+                            {locacoesAtivasFiltradas.length === 0 ? (
+                              <p className="text-sm font-medium text-zinc-500">
+                                Nenhuma locação ativa.
+                              </p>
+                            ) : (
+                              <ListaAdmin
+                                cabecalhos={['Cliente', 'Jogo', 'Vaga', 'Expira']}
+                                colunas="grid-cols-[minmax(150px,2fr)_minmax(200px,3fr)_110px_100px_24px]"
+                                larguraMin="min-w-[640px]"
+                              >
+                                {locacoesAtivasFiltradas.map((loc) => (
+                                  <ItemListaAdmin
+                                    key={`locAtiva-${loc.id}`}
+                                    colunas="grid-cols-[minmax(150px,2fr)_minmax(200px,3fr)_110px_100px_24px]"
+                                    borda="border-l-emerald-500"
+                                    celulas={[
+                                      <span className="font-medium text-zinc-300">
+                                        {loc.cliente}
+                                      </span>,
+                                      <span className="text-sm font-black tracking-tight text-white">
+                                        {loc.jogo}
+                                      </span>,
+                                      <span className="font-bold text-purple-400">
+                                        {loc.tipo_slot}
+                                      </span>,
+                                      <span className="font-bold text-amber-400">
+                                        {new Date(loc.data_fim).toLocaleDateString()}
+                                      </span>,
+                                    ]}
+                                  >
+                                    <div className="mb-4 grid grid-cols-2 gap-4 sm:grid-cols-4">
+                                      <CampoAdmin rotulo="Cliente">{loc.cliente}</CampoAdmin>
+                                      <CampoAdmin rotulo="Jogo">{loc.jogo}</CampoAdmin>
+                                      <CampoAdmin rotulo="Vaga">{loc.tipo_slot}</CampoAdmin>
+                                      <CampoAdmin rotulo="Expira em">
+                                        {new Date(loc.data_fim).toLocaleDateString()}
+                                      </CampoAdmin>
+                                    </div>
+                                    <div className="flex flex-wrap gap-2">
+                                      {/* [INFO] Botão de socorro Admin para falha de 2FA (vale pras duas vagas) */}
+                                      <button
+                                        onClick={() => resetar2FAAdmin(loc.id)}
+                                        className="rounded-lg border border-fuchsia-500/30 bg-fuchsia-900/30 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-fuchsia-400 shadow transition-colors hover:bg-fuchsia-600 hover:text-white"
+                                        title="Permitir que o cliente gere o 2FA de novo"
                                       >
-                                        <td className="py-4 text-xs font-medium text-zinc-300">
-                                          {loc.cliente}
-                                        </td>
-                                        <td className="py-4 text-sm font-black tracking-tight text-white">
-                                          {loc.jogo}
-                                        </td>
-                                        <td className="py-4 text-xs font-bold text-purple-400">
-                                          {loc.tipo_slot}
-                                        </td>
-                                        <td className="py-4 text-xs font-bold text-amber-400">
-                                          {new Date(loc.data_fim).toLocaleDateString()}
-                                        </td>
-                                        <td className="py-4">
-                                          <div className="flex justify-end gap-2">
-                                            {/* [INFO] Botão de socorro Admin para falha de 2FA (agora vale pras duas vagas, já que a trava de "uma única vez" passou a valer pra Primária também) */}
-                                            <button
-                                              onClick={() => resetar2FAAdmin(loc.id)}
-                                              className="rounded-lg border border-fuchsia-500/30 bg-fuchsia-900/30 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-fuchsia-400 shadow transition-colors hover:bg-fuchsia-600 hover:text-white"
-                                              title="Permitir que o cliente gere o 2FA de novo"
-                                            >
-                                              🔄 2FA
-                                            </button>
-                                            <button
-                                              onClick={() => avisarLiberacao(loc.cliente, loc.jogo)}
-                                              className="flex items-center gap-1.5 rounded-lg border border-emerald-500/30 bg-emerald-900/30 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-emerald-400 shadow transition-colors hover:bg-emerald-600 hover:text-white"
-                                              title="Reforço manual: se essa vaga veio da fila, o WhatsApp automático já foi enviado. Use isto só se o cliente não recebeu (ex: locação criada direto pelo Admin, sem passar pela fila)."
-                                            >
-                                              <span className="text-sm">📲</span> Avisar
-                                            </button>
-                                            <button
-                                              onClick={() => revogarLocacao(loc.id)}
-                                              className="rounded-lg border border-rose-500/30 bg-rose-900/30 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-rose-400 shadow transition-colors hover:bg-rose-600 hover:text-white"
-                                            >
-                                              Revogar
-                                            </button>
-                                          </div>
-                                        </td>
-                                      </tr>
-                                    ))}
-                                  </tbody>
-                                </table>
-                              )}
-                            </div>
+                                        🔄 2FA
+                                      </button>
+                                      <button
+                                        onClick={() => avisarLiberacao(loc.cliente, loc.jogo)}
+                                        className="flex items-center gap-1.5 rounded-lg border border-emerald-500/30 bg-emerald-900/30 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-emerald-400 shadow transition-colors hover:bg-emerald-600 hover:text-white"
+                                        title="Reforço manual: se essa vaga veio da fila, o WhatsApp automático já foi enviado. Use isto só se o cliente não recebeu (ex: locação criada direto pelo Admin, sem passar pela fila)."
+                                      >
+                                        <span className="text-sm">📲</span> Avisar
+                                      </button>
+                                      <button
+                                        onClick={() => revogarLocacao(loc.id)}
+                                        className="rounded-lg border border-rose-500/30 bg-rose-900/30 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-rose-400 shadow transition-colors hover:bg-rose-600 hover:text-white"
+                                      >
+                                        Revogar
+                                      </button>
+                                    </div>
+                                  </ItemListaAdmin>
+                                ))}
+                              </ListaAdmin>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -5747,79 +5760,69 @@ function App() {
                                 <option value="az_cliente">👤 Cliente (A-Z)</option>
                               </select>
                             </div>
-                            <div className="custom-scrollbar max-h-[600px] overflow-y-auto pr-3">
-                              {reservasAdminFiltradas.length === 0 ? (
-                                <p className="text-sm font-medium text-zinc-500">
-                                  Nenhuma reserva pendente.
-                                </p>
-                              ) : (
-                                <table className="w-full whitespace-nowrap text-left text-sm">
-                                  <thead>
-                                    <tr className="border-b border-zinc-800 text-zinc-500">
-                                      <th className="pb-3 text-[10px] font-bold uppercase tracking-wider">
-                                        Cliente
-                                      </th>
-                                      <th className="pb-3 text-[10px] font-bold uppercase tracking-wider">
-                                        Jogo
-                                      </th>
-                                      <th className="pb-3 text-[10px] font-bold uppercase tracking-wider">
-                                        Início Previsto
-                                      </th>
-                                      <th className="pb-3 text-[10px] font-bold uppercase tracking-wider">
-                                        Fim Previsto
-                                      </th>
-                                      <th className="pb-3 text-right text-[10px] font-bold uppercase tracking-wider">
-                                        Ações
-                                      </th>
-                                    </tr>
-                                  </thead>
-                                  <tbody>
-                                    {reservasAdminFiltradas.map((reserva) => (
-                                      <tr
-                                        key={`reservaAdm-${reserva.id}`}
-                                        className="border-b border-zinc-800/50 transition-colors hover:bg-zinc-800/30"
-                                      >
-                                        <td className="py-4 text-xs font-medium text-zinc-300">
-                                          {reserva.cliente}
-                                          <div className="mt-1 text-[9px] font-bold text-zinc-500">
-                                            Feita em:{' '}
-                                            {new Date(
-                                              reserva.data_solicitacao,
-                                            ).toLocaleDateString()}
-                                          </div>
-                                        </td>
-                                        <td className="py-4 text-sm font-black tracking-tight text-white">
-                                          {reserva.jogo}
-                                        </td>
-                                        <td className="py-4 text-xs font-bold text-blue-400">
-                                          {reserva.data_inicio}
-                                        </td>
-                                        <td className="py-4 text-xs font-bold text-amber-400">
-                                          {reserva.data_fim}{' '}
-                                          <span className="ml-1 font-normal text-zinc-500">
-                                            ({reserva.dias_aluguel}d)
-                                          </span>
-                                        </td>
-                                        <td className="py-4 text-right">
-                                          <button
-                                            onClick={() =>
-                                              cancelarReservaAdmin(
-                                                reserva.id,
-                                                reserva.cliente,
-                                                reserva.jogo,
-                                              )
-                                            }
-                                            className="rounded-lg border border-rose-500/30 bg-rose-900/30 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-rose-400 shadow transition-colors hover:bg-rose-600 hover:text-white"
-                                          >
-                                            Cancelar e Estornar
-                                          </button>
-                                        </td>
-                                      </tr>
-                                    ))}
-                                  </tbody>
-                                </table>
-                              )}
-                            </div>
+                            {reservasAdminFiltradas.length === 0 ? (
+                              <p className="text-sm font-medium text-zinc-500">
+                                Nenhuma reserva pendente.
+                              </p>
+                            ) : (
+                              <ListaAdmin
+                                cabecalhos={['Cliente', 'Jogo', 'Início Previsto', 'Fim Previsto']}
+                                colunas="grid-cols-[minmax(150px,2fr)_minmax(200px,3fr)_120px_140px_24px]"
+                                larguraMin="min-w-[680px]"
+                              >
+                                {reservasAdminFiltradas.map((reserva) => (
+                                  <ItemListaAdmin
+                                    key={`reservaAdm-${reserva.id}`}
+                                    colunas="grid-cols-[minmax(150px,2fr)_minmax(200px,3fr)_120px_140px_24px]"
+                                    borda="border-l-amber-500"
+                                    celulas={[
+                                      <span className="font-medium text-zinc-300">
+                                        {reserva.cliente}
+                                      </span>,
+                                      <span className="text-sm font-black tracking-tight text-white">
+                                        {reserva.jogo}
+                                      </span>,
+                                      <span className="font-bold text-blue-400">
+                                        {reserva.data_inicio}
+                                      </span>,
+                                      <span className="font-bold text-amber-400">
+                                        {reserva.data_fim}{' '}
+                                        <span className="ml-1 font-normal text-zinc-500">
+                                          ({reserva.dias_aluguel}d)
+                                        </span>
+                                      </span>,
+                                    ]}
+                                  >
+                                    <div className="mb-4 grid grid-cols-2 gap-4 sm:grid-cols-4">
+                                      <CampoAdmin rotulo="Reserva feita em">
+                                        {new Date(reserva.data_solicitacao).toLocaleDateString()}
+                                      </CampoAdmin>
+                                      <CampoAdmin rotulo="Duração">
+                                        {reserva.dias_aluguel} dias
+                                      </CampoAdmin>
+                                      <CampoAdmin rotulo="Início previsto">
+                                        {reserva.data_inicio}
+                                      </CampoAdmin>
+                                      <CampoAdmin rotulo="Fim previsto">
+                                        {reserva.data_fim}
+                                      </CampoAdmin>
+                                    </div>
+                                    <button
+                                      onClick={() =>
+                                        cancelarReservaAdmin(
+                                          reserva.id,
+                                          reserva.cliente,
+                                          reserva.jogo,
+                                        )
+                                      }
+                                      className="rounded-lg border border-rose-500/30 bg-rose-900/30 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-rose-400 shadow transition-colors hover:bg-rose-600 hover:text-white"
+                                    >
+                                      Cancelar e Estornar
+                                    </button>
+                                  </ItemListaAdmin>
+                                ))}
+                              </ListaAdmin>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -5837,8 +5840,8 @@ function App() {
                           <div className="border-t border-zinc-800/50 px-6 pb-6 pt-8 md:px-8 md:pb-8">
                             <p className="mb-4 text-xs font-medium text-zinc-400">
                               Dispara um aviso (sininho) para todos os clientes cadastrados. Um
-                              aviso novo substitui automaticamente qualquer aviso anterior ainda
-                              não lido.
+                              aviso novo substitui automaticamente qualquer aviso anterior ainda não
+                              lido.
                             </p>
                             <textarea
                               value={mensagemBroadcast}
@@ -5916,9 +5919,9 @@ function App() {
                           </div>
                           <div className="border-t border-zinc-800/50 px-6 pb-6 pt-8 md:px-8 md:pb-8">
                             <p className="mb-4 text-xs font-medium text-zinc-400">
-                              Números já verificados ficam travados pra sempre em outras
-                              contas. Use isso só em casos legítimos (ex: operadora reciclou
-                              o chip e caiu num cliente novo).
+                              Números já verificados ficam travados pra sempre em outras contas. Use
+                              isso só em casos legítimos (ex: operadora reciclou o chip e caiu num
+                              cliente novo).
                             </p>
                             <div className="flex flex-col gap-3 sm:flex-row">
                               <input
@@ -6004,102 +6007,114 @@ function App() {
                                 </div>
                               </div>
                             </div>
-                            <div className="custom-scrollbar max-h-[600px] overflow-y-auto pr-3">
-                              {clientesFiltrados.length === 0 ? (
-                                <p className="text-sm font-medium text-zinc-500">Vazio.</p>
-                              ) : (
-                                <ul className="space-y-4">
-                                  {clientesFiltrados
-                                    .slice(paginaClientes * 50, (paginaClientes + 1) * 50)
-                                    .map((u) => (
-                                      <li
-                                        key={`cli-${u.id}`}
-                                        className={`flex flex-col items-start justify-between gap-4 rounded-2xl border p-4 shadow-sm transition-colors md:flex-row md:items-center md:p-5 ${
-                                          u.total_alugueis > 0
-                                            ? 'border-l-4 border-emerald-500/30 border-l-emerald-500 bg-emerald-950/30 hover:bg-emerald-900/30'
-                                            : 'border-l-2 border-zinc-800/50 border-l-purple-500 bg-zinc-950/50 hover:bg-zinc-800/50'
-                                        }`}
-                                      >
-                                        <div className="flex flex-col gap-1.5">
-                                          <span className="flex flex-wrap items-center gap-2 text-sm font-black tracking-tight text-white">
-                                            {u.nome}
-                                            {u.total_alugueis > 0 && (
-                                              <span
-                                                title="Cliente que já alugou pelo menos um jogo"
-                                                className="rounded-md bg-emerald-500/20 px-2 py-0.5 text-[9px] uppercase tracking-wider text-emerald-400"
-                                              >
-                                                🎮 {u.total_alugueis}{' '}
-                                                {u.total_alugueis === 1 ? 'aluguel' : 'aluguéis'}
-                                              </span>
-                                            )}
-                                            {u.is_admin && (
-                                              <span className="rounded-md bg-amber-500/20 px-2 py-0.5 text-[8px] uppercase tracking-wider text-amber-400">
-                                                Admin
-                                              </span>
-                                            )}
-                                          </span>
-                                          <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">
-                                            Saldo:{' '}
-                                            <strong
-                                              className={`ml-1 text-xs tracking-normal ${u.saldo < 0 ? 'text-rose-400' : 'text-emerald-400'}`}
+                            {clientesFiltrados.length === 0 ? (
+                              <p className="text-sm font-medium text-zinc-500">Vazio.</p>
+                            ) : (
+                              <ListaAdmin
+                                cabecalhos={['Cliente', 'Saldo', 'E-mail']}
+                                colunas="grid-cols-[minmax(200px,3fr)_110px_minmax(220px,3fr)_24px]"
+                                larguraMin="min-w-[640px]"
+                              >
+                                {clientesFiltrados
+                                  .slice(paginaClientes * 50, (paginaClientes + 1) * 50)
+                                  .map((u) => (
+                                    <ItemListaAdmin
+                                      key={`cli-${u.id}`}
+                                      colunas="grid-cols-[minmax(200px,3fr)_110px_minmax(220px,3fr)_24px]"
+                                      borda={
+                                        u.total_alugueis > 0
+                                          ? 'border-l-emerald-500'
+                                          : 'border-l-purple-500'
+                                      }
+                                      celulas={[
+                                        <span className="flex items-center gap-2 text-sm font-black tracking-tight text-white">
+                                          <span className="truncate">{u.nome}</span>
+                                          {u.total_alugueis > 0 && (
+                                            <span
+                                              title="Cliente que já alugou pelo menos um jogo"
+                                              className="shrink-0 rounded-md bg-emerald-500/20 px-2 py-0.5 text-[9px] uppercase tracking-wider text-emerald-400"
                                             >
-                                              R$ {parseFloat(u.saldo).toFixed(2)}
-                                            </strong>
-                                          </span>
-                                          <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">
-                                            E-mail:{' '}
-                                            <span className="ml-1 truncate text-zinc-300">
-                                              {u.email}
+                                              🎮 {u.total_alugueis}
                                             </span>
-                                          </span>
+                                          )}
+                                          {u.is_admin && (
+                                            <span className="shrink-0 rounded-md bg-amber-500/20 px-2 py-0.5 text-[8px] uppercase tracking-wider text-amber-400">
+                                              Admin
+                                            </span>
+                                          )}
+                                        </span>,
+                                        <span
+                                          className={`font-bold ${u.saldo < 0 ? 'text-rose-400' : 'text-emerald-400'}`}
+                                        >
+                                          R$ {parseFloat(u.saldo).toFixed(2)}
+                                        </span>,
+                                        <span className="text-zinc-300">{u.email}</span>,
+                                      ]}
+                                    >
+                                      <div className="mb-4 grid grid-cols-2 gap-4 sm:grid-cols-4">
+                                        <CampoAdmin rotulo="Telefone">
+                                          {u.telefone || '—'}
+                                        </CampoAdmin>
+                                        <CampoAdmin rotulo="WhatsApp">
+                                          {u.whatsapp_verificado
+                                            ? '✅ Verificado'
+                                            : '⏳ Não verificado'}
+                                        </CampoAdmin>
+                                        <CampoAdmin rotulo="Aluguéis">
+                                          {u.total_alugueis}
+                                        </CampoAdmin>
+                                        <CampoAdmin rotulo="Rank">{u.rank ?? 0}</CampoAdmin>
+                                      </div>
+                                      {!u.is_admin ? (
+                                        <div className="flex flex-wrap gap-2">
+                                          {u.telefone && (
+                                            <a
+                                              href={`whatsapp://send?phone=${u.telefone.replace(/\D/g, '').startsWith('55') ? u.telefone.replace(/\D/g, '') : '55' + u.telefone.replace(/\D/g, '')}`}
+                                              target="_blank"
+                                              rel="noopener noreferrer"
+                                              className="flex items-center gap-1 rounded-lg border border-emerald-500/30 bg-emerald-900/30 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-emerald-400 transition-colors hover:bg-emerald-600 hover:text-white"
+                                            >
+                                              📱 Whats
+                                            </a>
+                                          )}
+                                          {!u.whatsapp_verificado && (
+                                            <button
+                                              onClick={() => confirmarWhatsAdmin(u.id)}
+                                              title="Confirme manualmente caso o cliente já tenha mandado a mensagem de verificação"
+                                              className="flex items-center gap-1 rounded-lg border border-purple-500/30 bg-purple-900/30 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-purple-400 transition-colors hover:bg-purple-600 hover:text-white"
+                                            >
+                                              ✅ Confirmar Whats
+                                            </button>
+                                          )}
+                                          <button
+                                            onClick={() => abrirDossieCliente(u)}
+                                            title="Ver extrato, locações e pagamentos pendentes deste cliente"
+                                            className="flex items-center gap-1 rounded-lg border border-amber-500/30 bg-amber-900/30 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-amber-400 transition-colors hover:bg-amber-600 hover:text-white"
+                                          >
+                                            💰 Extrato
+                                          </button>
+                                          <button
+                                            onClick={() => setModalEdicaoCliente(u)}
+                                            className="flex items-center gap-1 rounded-lg border border-blue-500/30 bg-blue-900/30 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-blue-400 transition-colors hover:bg-blue-600 hover:text-white"
+                                          >
+                                            ✏️ Editar
+                                          </button>
+                                          <button
+                                            onClick={() => removerUsuario(u.id)}
+                                            className="flex items-center gap-1 rounded-lg border border-rose-500/30 bg-rose-900/30 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-rose-400 transition-colors hover:bg-rose-600 hover:text-white"
+                                          >
+                                            🗑️ Excluir
+                                          </button>
                                         </div>
-                                        {!u.is_admin && (
-                                          <div className="mt-2 flex w-full flex-wrap justify-end gap-2 md:mt-0 md:w-auto">
-                                            {u.telefone && (
-                                              <a
-                                                href={`whatsapp://send?phone=${u.telefone.replace(/\D/g, '').startsWith('55') ? u.telefone.replace(/\D/g, '') : '55' + u.telefone.replace(/\D/g, '')}`}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="flex items-center gap-1 rounded-lg border border-emerald-500/30 bg-emerald-900/30 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-emerald-400 transition-colors hover:bg-emerald-600 hover:text-white"
-                                              >
-                                                📱 Whats
-                                              </a>
-                                            )}
-                                            {!u.whatsapp_verificado && (
-                                              <button
-                                                onClick={() => confirmarWhatsAdmin(u.id)}
-                                                title="Confirme manualmente caso o cliente já tenha mandado a mensagem de verificação"
-                                                className="flex items-center gap-1 rounded-lg border border-purple-500/30 bg-purple-900/30 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-purple-400 transition-colors hover:bg-purple-600 hover:text-white"
-                                              >
-                                                ✅ Confirmar Whats
-                                              </button>
-                                            )}
-                                            <button
-                                              onClick={() => abrirDossieCliente(u)}
-                                              title="Ver extrato, locações e pagamentos pendentes deste cliente"
-                                              className="flex items-center gap-1 rounded-lg border border-amber-500/30 bg-amber-900/30 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-amber-400 transition-colors hover:bg-amber-600 hover:text-white"
-                                            >
-                                              💰 Extrato
-                                            </button>
-                                            <button
-                                              onClick={() => setModalEdicaoCliente(u)}
-                                              className="flex items-center gap-1 rounded-lg border border-blue-500/30 bg-blue-900/30 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-blue-400 transition-colors hover:bg-blue-600 hover:text-white"
-                                            >
-                                              ✏️ Editar
-                                            </button>
-                                            <button
-                                              onClick={() => removerUsuario(u.id)}
-                                              className="flex items-center gap-1 rounded-lg border border-rose-500/30 bg-rose-900/30 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-rose-400 transition-colors hover:bg-rose-600 hover:text-white"
-                                            >
-                                              🗑️ Excluir
-                                            </button>
-                                          </div>
-                                        )}
-                                      </li>
-                                    ))}
-                                </ul>
-                              )}
-                            </div>
+                                      ) : (
+                                        <p className="text-xs text-zinc-500">
+                                          Conta administradora: sem ações disponíveis.
+                                        </p>
+                                      )}
+                                    </ItemListaAdmin>
+                                  ))}
+                              </ListaAdmin>
+                            )}
                             <div className="mt-6 flex items-center justify-between rounded-2xl border border-zinc-800/80 bg-zinc-950 p-4">
                               <button
                                 onClick={() => setPaginaClientes(Math.max(0, paginaClientes - 1))}
@@ -6166,46 +6181,53 @@ function App() {
                                 Nenhuma conta em manutenção no momento.
                               </p>
                             ) : (
-                              <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+                              <ListaAdmin
+                                cabecalhos={['Jogo', 'Vaga', 'Último Cliente', 'Cashback']}
+                                colunas="grid-cols-[minmax(200px,3fr)_120px_minmax(160px,2fr)_110px_24px]"
+                                larguraMin="min-w-[640px]"
+                              >
                                 {contasManutencaoFiltradas.map((conta) => {
                                   const chaveManutencao = `${conta.conta_psn_id}-${conta.tipo_slot}`;
                                   return (
-                                  <div
-                                    key={`manu-${chaveManutencao}`}
-                                    className="flex flex-col gap-6 rounded-3xl border border-rose-500/50 bg-zinc-900 p-6 shadow-lg md:p-8"
-                                  >
-                                    <div className="flex flex-col items-start justify-between gap-4 sm:flex-row">
-                                      <div className="flex flex-col gap-1.5">
-                                        <span
-                                          className={`w-max rounded-lg border px-2 py-1 text-[9px] font-black uppercase tracking-wider ${conta.tipo_slot === 'PRIMARIA' ? 'border-blue-500/30 bg-blue-500/20 text-blue-400' : 'border-fuchsia-500/30 bg-fuchsia-500/20 text-fuchsia-400'}`}
-                                        >
-                                          🕹️ Slot: {conta.tipo_slot}
-                                        </span>
-                                        <strong className="text-lg font-black tracking-tight text-white">
+                                    <ItemListaAdmin
+                                      key={`manu-${chaveManutencao}`}
+                                      colunas="grid-cols-[minmax(200px,3fr)_120px_minmax(160px,2fr)_110px_24px]"
+                                      borda="border-l-rose-500"
+                                      celulas={[
+                                        <span className="text-sm font-black tracking-tight text-white">
                                           {conta.jogo}
-                                        </strong>
-                                        <span className="text-xs font-bold tracking-wide text-zinc-400">
-                                          Login:{' '}
-                                          <span className="select-all font-medium text-white">
-                                            {conta.email_login}
-                                          </span>
-                                        </span>
-                                        <span className="text-xs font-bold tracking-wide text-zinc-500 line-through">
-                                          Senha Velha:{' '}
-                                          <span className="font-mono">{conta.senha_antiga}</span>
-                                        </span>
-                                        <span className="mt-4 w-max rounded-xl border border-amber-500/20 bg-amber-500/10 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-amber-500">
-                                          Último Cliente:{' '}
+                                        </span>,
+                                        <span
+                                          className={`rounded-md border px-2 py-0.5 text-[9px] font-black uppercase tracking-wider ${conta.tipo_slot === 'PRIMARIA' ? 'border-blue-500/30 bg-blue-500/20 text-blue-400' : 'border-fuchsia-500/30 bg-fuchsia-500/20 text-fuchsia-400'}`}
+                                        >
+                                          {conta.tipo_slot}
+                                        </span>,
+                                        <span className="font-bold text-amber-500">
                                           {conta.ultimo_cliente_nome || 'Desconhecido'}
-                                        </span>
-                                        {conta.cashback_pendente > 0 && (
-                                          <span className="mt-3 w-max rounded-xl border border-emerald-500/30 bg-emerald-400/10 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-emerald-400">
-                                            💸 Cashback Pendente: R${' '}
-                                            {conta.cashback_pendente.toFixed(2)}
+                                        </span>,
+                                        conta.cashback_pendente > 0 ? (
+                                          <span className="font-bold text-emerald-400">
+                                            💸 R$ {conta.cashback_pendente.toFixed(2)}
                                           </span>
-                                        )}
+                                        ) : (
+                                          <span className="text-zinc-600">—</span>
+                                        ),
+                                      ]}
+                                    >
+                                      <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
+                                        <CampoAdmin rotulo="Login">
+                                          <span className="select-all">{conta.email_login}</span>
+                                        </CampoAdmin>
+                                        <CampoAdmin rotulo="Senha velha">
+                                          <span className="font-mono text-zinc-500 line-through">
+                                            {conta.senha_antiga}
+                                          </span>
+                                        </CampoAdmin>
+                                        <CampoAdmin rotulo="Último cliente">
+                                          {conta.ultimo_cliente_nome || 'Desconhecido'}
+                                        </CampoAdmin>
                                       </div>
-                                      <div className="flex w-full flex-col gap-3 sm:w-auto">
+                                      <div className="mb-4 flex flex-wrap gap-2">
                                         {conta.ultimo_cliente_telefone && (
                                           <button
                                             onClick={() =>
@@ -6215,7 +6237,7 @@ function App() {
                                                 conta.jogo,
                                               )
                                             }
-                                            className="flex items-center justify-center gap-2 rounded-xl border border-emerald-500/30 bg-emerald-900/40 px-4 py-2.5 text-[10px] font-bold uppercase tracking-wider text-emerald-400 shadow transition-colors hover:bg-emerald-600 hover:text-white"
+                                            className="flex items-center justify-center gap-2 rounded-lg border border-emerald-500/30 bg-emerald-900/40 px-4 py-2 text-[10px] font-bold uppercase tracking-wider text-emerald-400 shadow transition-colors hover:bg-emerald-600 hover:text-white"
                                           >
                                             📱 Cobrar via Whats
                                           </button>
@@ -6228,39 +6250,38 @@ function App() {
                                                 conta.ultimo_cliente_nome,
                                               )
                                             }
-                                            className="flex items-center justify-center gap-2 rounded-xl border border-rose-500/30 bg-rose-900/40 px-4 py-2.5 text-[10px] font-bold uppercase tracking-wider text-rose-400 shadow transition-colors hover:bg-rose-600 hover:text-white"
+                                            className="flex items-center justify-center gap-2 rounded-lg border border-rose-500/30 bg-rose-900/40 px-4 py-2 text-[10px] font-bold uppercase tracking-wider text-rose-400 shadow transition-colors hover:bg-rose-600 hover:text-white"
                                           >
                                             🚨 Aplicar Multa
                                           </button>
                                         )}
                                       </div>
-                                    </div>
-                                    <div className="mt-2 flex flex-col gap-3 border-t border-rose-900/50 pt-6 sm:flex-row">
-                                      <input
-                                        type="text"
-                                        placeholder="Digite a NOVA senha para liberar"
-                                        value={novasSenhasTemp[chaveManutencao] || ''}
-                                        onChange={(e) =>
-                                          setNovasSenhasTemp({
-                                            ...novasSenhasTemp,
-                                            [chaveManutencao]: e.target.value,
-                                          })
-                                        }
-                                        className="flex-1 rounded-2xl border border-zinc-800 bg-zinc-950 px-5 py-3.5 text-sm font-bold text-white outline-none focus:border-rose-500"
-                                      />
-                                      <button
-                                        onClick={() =>
-                                          confirmarResetSenha(conta.conta_psn_id, chaveManutencao)
-                                        }
-                                        className="whitespace-nowrap rounded-2xl bg-emerald-600 px-6 py-3.5 text-xs font-bold uppercase tracking-wider text-white shadow-lg shadow-emerald-600/20 transition-colors hover:bg-emerald-500"
-                                      >
-                                        Liberar Jogo
-                                      </button>
-                                    </div>
-                                  </div>
+                                      <div className="flex flex-col gap-3 border-t border-rose-900/50 pt-4 sm:flex-row">
+                                        <input
+                                          type="text"
+                                          placeholder="Digite a NOVA senha para liberar"
+                                          value={novasSenhasTemp[chaveManutencao] || ''}
+                                          onChange={(e) =>
+                                            setNovasSenhasTemp({
+                                              ...novasSenhasTemp,
+                                              [chaveManutencao]: e.target.value,
+                                            })
+                                          }
+                                          className="flex-1 rounded-xl border border-zinc-800 bg-zinc-950 px-4 py-3 text-sm font-bold text-white outline-none focus:border-rose-500"
+                                        />
+                                        <button
+                                          onClick={() =>
+                                            confirmarResetSenha(conta.conta_psn_id, chaveManutencao)
+                                          }
+                                          className="whitespace-nowrap rounded-xl bg-emerald-600 px-6 py-3 text-xs font-bold uppercase tracking-wider text-white shadow-lg shadow-emerald-600/20 transition-colors hover:bg-emerald-500"
+                                        >
+                                          Liberar Jogo
+                                        </button>
+                                      </div>
+                                    </ItemListaAdmin>
                                   );
                                 })}
-                              </div>
+                              </ListaAdmin>
                             )}
                           </section>
                         )}
@@ -6328,58 +6349,45 @@ function App() {
                                 </button>
                               </form>
 
-                              <div className="scrollbar-thin scrollbar-thumb-purple-700 scrollbar-track-transparent max-h-[200px] overflow-y-auto pr-3 lg:col-span-2">
+                              <div className="lg:col-span-2">
                                 {listaCupons.length === 0 ? (
                                   <p className="text-sm font-medium text-zinc-500">
                                     Nenhum cupom ativo.
                                   </p>
                                 ) : (
-                                  <table className="w-full whitespace-nowrap text-left text-sm">
-                                    <thead>
-                                      <tr className="border-b border-purple-500/30 text-zinc-400">
-                                        <th className="pb-3 text-[10px] font-bold uppercase tracking-wider">
-                                          Código
-                                        </th>
-                                        <th className="pb-3 text-[10px] font-bold uppercase tracking-wider">
-                                          Tipo
-                                        </th>
-                                        <th className="pb-3 text-[10px] font-bold uppercase tracking-wider">
-                                          Bônus
-                                        </th>
-                                        <th className="pb-3 text-right text-[10px] font-bold uppercase tracking-wider">
-                                          Ação
-                                        </th>
-                                      </tr>
-                                    </thead>
-                                    <tbody>
-                                      {listaCupons.map((c) => (
-                                        <tr
-                                          key={c.id}
-                                          className="border-b border-purple-500/10 transition-colors hover:bg-purple-900/20"
-                                        >
-                                          <td className="py-4 text-sm font-black tracking-widest text-white">
+                                  <ListaAdmin
+                                    cabecalhos={['Código', 'Tipo', 'Bônus']}
+                                    colunas="grid-cols-[minmax(120px,2fr)_110px_110px_24px]"
+                                    larguraMin="min-w-[420px]"
+                                  >
+                                    {listaCupons.map((c) => (
+                                      <ItemListaAdmin
+                                        key={c.id}
+                                        colunas="grid-cols-[minmax(120px,2fr)_110px_110px_24px]"
+                                        borda="border-l-purple-500"
+                                        celulas={[
+                                          <span className="text-sm font-black tracking-widest text-white">
                                             {c.codigo}
-                                          </td>
-                                          <td className="py-4 text-[10px] font-bold uppercase tracking-wider text-zinc-400">
+                                          </span>,
+                                          <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">
                                             {c.tipo}
-                                          </td>
-                                          <td className="py-4 text-sm font-black text-emerald-400">
+                                          </span>,
+                                          <span className="font-black text-emerald-400">
                                             {c.tipo === 'FIXO'
                                               ? `+ R$ ${c.valor.toFixed(2)}`
                                               : `+ ${c.valor}%`}
-                                          </td>
-                                          <td className="py-4 text-right">
-                                            <button
-                                              onClick={() => removerCupom(c.id)}
-                                              className="rounded-lg border border-rose-500/30 bg-rose-900/30 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-rose-400 transition-colors hover:text-white"
-                                            >
-                                              Excluir
-                                            </button>
-                                          </td>
-                                        </tr>
-                                      ))}
-                                    </tbody>
-                                  </table>
+                                          </span>,
+                                        ]}
+                                      >
+                                        <button
+                                          onClick={() => removerCupom(c.id)}
+                                          className="rounded-lg border border-rose-500/30 bg-rose-900/30 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-rose-400 transition-colors hover:bg-rose-600 hover:text-white"
+                                        >
+                                          Excluir
+                                        </button>
+                                      </ItemListaAdmin>
+                                    ))}
+                                  </ListaAdmin>
                                 )}
                               </div>
                             </div>
