@@ -10,6 +10,12 @@ import Privacidade from './components/Privacidade';
 import Faq from './components/Faq';
 import Footer from './components/Footer';
 import Auth from './components/Auth';
+import {
+  IconeControle,
+  IconeEstrela,
+  IconeRelogio,
+  IconeTrofeuPlatina,
+} from './components/IconesJogo';
 import { ListaAdmin, ItemListaAdmin, CampoAdmin } from './components/ListaAdmin';
 import { API_BASE } from './config';
 
@@ -439,6 +445,7 @@ function App() {
   const [novoJogoDescricao, setNovoJogoDescricao] = useState('');
   const [novoJogoImagem, setNovoJogoImagem] = useState('');
   const [novoJogoTempo, setNovoJogoTempo] = useState('');
+  const [novoJogoTempoPlatina, setNovoJogoTempoPlatina] = useState('');
   const [novoJogoNota, setNovoJogoNota] = useState('');
   const [novoJogoDataLancamento, setNovoJogoDataLancamento] = useState('');
   const [novoJogoRecomendacao, setNovoJogoRecomendacao] = useState(false);
@@ -1125,25 +1132,22 @@ function App() {
       return;
     }
     const RAWG_API_KEY = '8638e63fc8cf45459e0fb1cf9db3de42';
+    mostrarToast('Procurando jogo nos bancos de dados...', 'aviso');
+    const avisos = [];
+
+    // 1) RAWG: só data de lançamento e sinopse (capa, tempo e nota não vêm mais daqui).
     try {
-      mostrarToast('Procurando jogo no banco de dados...', 'aviso');
       const resBusca = await fetch(
         `https://api.rawg.io/api/games?key=${RAWG_API_KEY}&search=${encodeURIComponent(novoJogoTitulo)}&page_size=1`,
       );
       const dadosBusca = await resBusca.json();
       if (dadosBusca.results && dadosBusca.results.length > 0) {
         const jogoEncontrado = dadosBusca.results[0];
-        setNovoJogoImagem(jogoEncontrado.background_image || '');
         if (jogoEncontrado.released) setNovoJogoDataLancamento(jogoEncontrado.released);
         const resDetalhes = await fetch(
           `https://api.rawg.io/api/games/${jogoEncontrado.id}?key=${RAWG_API_KEY}`,
         );
         const dadosDetalhes = await resDetalhes.json();
-
-        if (dadosDetalhes.playtime) setNovoJogoTempo(`${dadosDetalhes.playtime}h`);
-        else setNovoJogoTempo('');
-        if (dadosDetalhes.rating) setNovoJogoNota(dadosDetalhes.rating);
-        else setNovoJogoNota('0');
 
         if (dadosDetalhes.description_raw) {
           const descricaoIngles = dadosDetalhes.description_raw;
@@ -1151,21 +1155,49 @@ function App() {
             const urlTradutor = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=pt&dt=t&q=${encodeURIComponent(descricaoIngles)}`;
             const resTraducao = await fetch(urlTradutor);
             const dadosTraducao = await resTraducao.json();
-            const descricaoPortugues = dadosTraducao[0].map((item) => item[0]).join('');
-            setNovoJogoDescricao(descricaoPortugues);
+            setNovoJogoDescricao(dadosTraducao[0].map((item) => item[0]).join(''));
           } catch (erroTraducao) {
             setNovoJogoDescricao(descricaoIngles);
-            mostrarToast('Capa importada. Falha ao traduzir sinopse.', 'aviso');
-            return;
+            avisos.push('falha ao traduzir a sinopse');
           }
         }
-        mostrarToast(`Dados importados com sucesso!`, 'sucesso');
       } else {
-        mostrarToast('Jogo não encontrado.', 'erro');
+        avisos.push('jogo não encontrado na RAWG (data e sinopse)');
       }
     } catch (erro) {
-      mostrarToast('Erro ao conectar com RAWG.', 'erro');
+      avisos.push('erro ao conectar com a RAWG (data e sinopse)');
     }
+
+    // 2) HowLongToBeat (via backend): tempo da história, tempo 100% e nota.
+    try {
+      const resHltb = await fetch(
+        `${API_BASE}/admin/jogos/hltb?titulo=${encodeURIComponent(novoJogoTitulo)}`,
+        { headers: getAuthHeaders() },
+      );
+      const dadosHltb = await resHltb.json();
+      if (!resHltb.ok) {
+        avisos.push(dadosHltb.detail || 'erro ao consultar o HowLongToBeat');
+      } else if (!dadosHltb.encontrado) {
+        setNovoJogoTempo('');
+        setNovoJogoTempoPlatina('');
+        setNovoJogoNota('');
+        avisos.push('jogo não encontrado no HowLongToBeat (tempos e nota)');
+      } else {
+        setNovoJogoTempo(dadosHltb.tempo_jogo);
+        setNovoJogoTempoPlatina(dadosHltb.tempo_platina);
+        setNovoJogoNota(dadosHltb.nota > 0 ? String(dadosHltb.nota) : '');
+        if (!dadosHltb.tempo_jogo && !dadosHltb.nota) {
+          avisos.push(`HowLongToBeat ainda não tem dados de "${dadosHltb.nome}"`);
+        } else if (dadosHltb.nome.toLowerCase() !== novoJogoTitulo.trim().toLowerCase()) {
+          avisos.push(`confira: no HowLongToBeat achei "${dadosHltb.nome}"`);
+        }
+      }
+    } catch (erro) {
+      avisos.push('erro de conexão ao consultar o HowLongToBeat');
+    }
+
+    if (avisos.length === 0) mostrarToast('Dados importados com sucesso!', 'sucesso');
+    else mostrarToast(`Importado, mas: ${avisos.join('; ')}.`, 'aviso');
   };
 
   const buscarImagemEnquete = async () => {
@@ -1233,6 +1265,7 @@ function App() {
         descricao: novoJogoDescricao,
         url_imagem: novoJogoImagem,
         tempo_jogo: novoJogoTempo,
+        tempo_platina: novoJogoTempoPlatina,
         nota: parseFloat(novoJogoNota) || 0,
         data_lancamento: novoJogoDataLancamento || null,
         recomendacao_cliente: novoJogoRecomendacao,
@@ -1250,6 +1283,7 @@ function App() {
         setNovoJogoDescricao('');
         setNovoJogoImagem('');
         setNovoJogoTempo('');
+        setNovoJogoTempoPlatina('');
         setNovoJogoNota('');
         setNovoJogoDataLancamento('');
         setNovoJogoRecomendacao(false);
@@ -1274,6 +1308,7 @@ function App() {
         descricao: modalEdicaoJogo.descricao,
         url_imagem: modalEdicaoJogo.url_imagem,
         tempo_jogo: modalEdicaoJogo.tempo_jogo,
+        tempo_platina: modalEdicaoJogo.tempo_platina || '',
         nota: parseFloat(modalEdicaoJogo.nota) || 0,
         data_lancamento: modalEdicaoJogo.data_lancamento || null,
         meta_faturamento: parseFloat(modalEdicaoJogo.meta_faturamento) || 350.0,
@@ -2038,7 +2073,7 @@ function App() {
               <div className="flex flex-col gap-4 md:flex-row">
                 <div className="w-full">
                   <label className="mb-1 block text-xs font-bold uppercase tracking-wider text-zinc-500">
-                    Tempo (Ex: 20h)
+                    Tempo História (Ex: 20h)
                   </label>
                   <input
                     type="text"
@@ -2051,11 +2086,26 @@ function App() {
                 </div>
                 <div className="w-full">
                   <label className="mb-1 block text-xs font-bold uppercase tracking-wider text-zinc-500">
-                    Nota (Ex: 4.8)
+                    Tempo 100% (Ex: 45h)
+                  </label>
+                  <input
+                    type="text"
+                    value={modalEdicaoJogo.tempo_platina || ''}
+                    onChange={(e) =>
+                      setModalEdicaoJogo({ ...modalEdicaoJogo, tempo_platina: e.target.value })
+                    }
+                    className={adminInputClass}
+                  />
+                </div>
+                <div className="w-full">
+                  <label className="mb-1 block text-xs font-bold uppercase tracking-wider text-zinc-500">
+                    Nota 0 a 10 (Ex: 8.5)
                   </label>
                   <input
                     type="number"
                     step="0.1"
+                    min="0"
+                    max="10"
                     value={modalEdicaoJogo.nota}
                     onChange={(e) =>
                       setModalEdicaoJogo({ ...modalEdicaoJogo, nota: e.target.value })
@@ -3970,23 +4020,48 @@ function App() {
                             )}
                           </div>
 
-                          {/* 1.2 FAIXA TÉCNICA (Conectada abaixo da imagem, com 3 colunas iguais) */}
-                          <div className="grid w-full grid-cols-3 border-b border-zinc-800/50 bg-zinc-950/80">
+                          {/* 1.2 FAIXA TÉCNICA (Conectada abaixo da imagem, 4 colunas: plataforma, nota, história, 100%) */}
+                          <div className="grid w-full grid-cols-4 border-b border-zinc-800/50 bg-zinc-950/80">
                             {/* Bloco 1: Plataforma */}
-                            <div className="flex items-center justify-center py-2.5 text-xs font-black uppercase tracking-wider text-zinc-300">
+                            <div className="flex items-center justify-center gap-1 whitespace-nowrap py-2.5 text-[11px] font-black uppercase tracking-wide text-zinc-300">
+                              <IconeControle className="h-3.5 w-3.5 shrink-0 text-blue-400" />
                               {jogo.plataforma}
                             </div>
 
-                            {/* Bloco 2: Nota */}
-                            <div className="flex items-center justify-center py-2.5 text-xs font-black uppercase text-amber-400">
-                              {jogo.nota > 0 ? `⭐ ${jogo.nota}` : ''}
+                            {/* Bloco 2: Nota (0 a 10, como no HowLongToBeat) */}
+                            <div className="flex items-center justify-center gap-1 whitespace-nowrap py-2.5 text-[11px] font-black text-amber-400">
+                              <IconeEstrela className="h-3.5 w-3.5 shrink-0" />
+                              {jogo.nota > 0 ? (
+                                Number(jogo.nota).toFixed(1)
+                              ) : (
+                                <span className="text-zinc-600">—</span>
+                              )}
                             </div>
 
-                            {/* Bloco 3: Tempo */}
-                            <div className="flex items-center justify-center py-2.5 text-xs font-black uppercase text-zinc-300">
-                              {jogo.tempo_jogo && jogo.tempo_jogo !== '0h'
-                                ? `⏱️ ~${jogo.tempo_jogo}`
-                                : ''}
+                            {/* Bloco 3: Tempo da história principal */}
+                            <div
+                              title="Tempo da história principal"
+                              className="flex items-center justify-center gap-1 whitespace-nowrap py-2.5 text-[11px] font-black text-zinc-300"
+                            >
+                              <IconeRelogio className="h-3.5 w-3.5 shrink-0 text-zinc-400" />
+                              {jogo.tempo_jogo && jogo.tempo_jogo !== '0h' ? (
+                                `~${jogo.tempo_jogo}`
+                              ) : (
+                                <span className="text-zinc-600">—</span>
+                              )}
+                            </div>
+
+                            {/* Bloco 4: Tempo "completionist" (100%), com troféu de platina */}
+                            <div
+                              title="Tempo para completar 100% (platina)"
+                              className="flex items-center justify-center gap-1 whitespace-nowrap py-2.5 text-[11px] font-black text-sky-200"
+                            >
+                              <IconeTrofeuPlatina className="h-4 w-4 shrink-0" />
+                              {jogo.tempo_platina && jogo.tempo_platina !== '0h' ? (
+                                `~${jogo.tempo_platina}`
+                              ) : (
+                                <span className="text-zinc-600">—</span>
+                              )}
                             </div>
                           </div>
                         </div>
@@ -5295,15 +5370,24 @@ function App() {
                               <div className="flex gap-3">
                                 <input
                                   type="text"
-                                  placeholder="Tempo (ex: 20h)"
+                                  placeholder="Tempo história (ex: 20h)"
                                   value={novoJogoTempo}
                                   onChange={(e) => setNovoJogoTempo(e.target.value)}
                                   className={adminInputClass}
                                 />
                                 <input
+                                  type="text"
+                                  placeholder="Tempo 100% (ex: 45h)"
+                                  value={novoJogoTempoPlatina}
+                                  onChange={(e) => setNovoJogoTempoPlatina(e.target.value)}
+                                  className={adminInputClass}
+                                />
+                                <input
                                   type="number"
                                   step="0.1"
-                                  placeholder="Nota"
+                                  min="0"
+                                  max="10"
+                                  placeholder="Nota (0 a 10)"
                                   value={novoJogoNota}
                                   onChange={(e) => setNovoJogoNota(e.target.value)}
                                   className={adminInputClass}
