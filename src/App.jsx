@@ -3,13 +3,19 @@
 // ==============================================================================
 // Ambiente de Produção / Staging
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import ReactGA from 'react-ga4';
 import Termos from './components/Termos';
 import Privacidade from './components/Privacidade';
 import Faq from './components/Faq';
 import Footer from './components/Footer';
 import Auth from './components/Auth';
+import {
+  IconeControle,
+  IconeEstrela,
+  IconeRelogio,
+  IconeTrofeuPlatina,
+} from './components/IconesJogo';
 import { ListaAdmin, ItemListaAdmin, CampoAdmin } from './components/ListaAdmin';
 import { API_BASE } from './config';
 
@@ -439,6 +445,10 @@ function App() {
   const [novoJogoDescricao, setNovoJogoDescricao] = useState('');
   const [novoJogoImagem, setNovoJogoImagem] = useState('');
   const [novoJogoTempo, setNovoJogoTempo] = useState('');
+  const [novoJogoTempoPlatina, setNovoJogoTempoPlatina] = useState('');
+  // Andamento da atualização em massa pelo HowLongToBeat (Admin > Jogos)
+  const [statusHltb, setStatusHltb] = useState(null);
+  const hltbEstavaRodando = useRef(false);
   const [novoJogoNota, setNovoJogoNota] = useState('');
   const [novoJogoDataLancamento, setNovoJogoDataLancamento] = useState('');
   const [novoJogoRecomendacao, setNovoJogoRecomendacao] = useState(false);
@@ -531,6 +541,25 @@ function App() {
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [abaAtual, paginaAtual]);
+
+  // Atualização em massa pelo HowLongToBeat: lê o andamento ao abrir Admin > Jogos
+  // e, enquanto estiver rodando, consulta a cada 3s; ao terminar, recarrega o catálogo.
+  useEffect(() => {
+    if (!usuarioLogado?.is_admin || secaoAdmin !== 'jogos') return;
+    carregarStatusHltb();
+  }, [secaoAdmin, usuarioLogado]);
+
+  useEffect(() => {
+    if (statusHltb?.rodando) {
+      hltbEstavaRodando.current = true;
+      const intervalo = setInterval(carregarStatusHltb, 3000);
+      return () => clearInterval(intervalo);
+    }
+    if (hltbEstavaRodando.current) {
+      hltbEstavaRodando.current = false;
+      carregarDados();
+    }
+  }, [statusHltb?.rodando]);
 
   // Efeito do Banner Rotativo Automático
   useEffect(() => {
@@ -1125,25 +1154,22 @@ function App() {
       return;
     }
     const RAWG_API_KEY = '8638e63fc8cf45459e0fb1cf9db3de42';
+    mostrarToast('Procurando jogo nos bancos de dados...', 'aviso');
+    const avisos = [];
+
+    // 1) RAWG: só data de lançamento e sinopse (capa, tempo e nota não vêm mais daqui).
     try {
-      mostrarToast('Procurando jogo no banco de dados...', 'aviso');
       const resBusca = await fetch(
         `https://api.rawg.io/api/games?key=${RAWG_API_KEY}&search=${encodeURIComponent(novoJogoTitulo)}&page_size=1`,
       );
       const dadosBusca = await resBusca.json();
       if (dadosBusca.results && dadosBusca.results.length > 0) {
         const jogoEncontrado = dadosBusca.results[0];
-        setNovoJogoImagem(jogoEncontrado.background_image || '');
         if (jogoEncontrado.released) setNovoJogoDataLancamento(jogoEncontrado.released);
         const resDetalhes = await fetch(
           `https://api.rawg.io/api/games/${jogoEncontrado.id}?key=${RAWG_API_KEY}`,
         );
         const dadosDetalhes = await resDetalhes.json();
-
-        if (dadosDetalhes.playtime) setNovoJogoTempo(`${dadosDetalhes.playtime}h`);
-        else setNovoJogoTempo('');
-        if (dadosDetalhes.rating) setNovoJogoNota(dadosDetalhes.rating);
-        else setNovoJogoNota('0');
 
         if (dadosDetalhes.description_raw) {
           const descricaoIngles = dadosDetalhes.description_raw;
@@ -1151,20 +1177,78 @@ function App() {
             const urlTradutor = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=pt&dt=t&q=${encodeURIComponent(descricaoIngles)}`;
             const resTraducao = await fetch(urlTradutor);
             const dadosTraducao = await resTraducao.json();
-            const descricaoPortugues = dadosTraducao[0].map((item) => item[0]).join('');
-            setNovoJogoDescricao(descricaoPortugues);
+            setNovoJogoDescricao(dadosTraducao[0].map((item) => item[0]).join(''));
           } catch (erroTraducao) {
             setNovoJogoDescricao(descricaoIngles);
-            mostrarToast('Capa importada. Falha ao traduzir sinopse.', 'aviso');
-            return;
+            avisos.push('falha ao traduzir a sinopse');
           }
         }
-        mostrarToast(`Dados importados com sucesso!`, 'sucesso');
       } else {
-        mostrarToast('Jogo não encontrado.', 'erro');
+        avisos.push('jogo não encontrado na RAWG (data e sinopse)');
       }
     } catch (erro) {
-      mostrarToast('Erro ao conectar com RAWG.', 'erro');
+      avisos.push('erro ao conectar com a RAWG (data e sinopse)');
+    }
+
+    // 2) HowLongToBeat (via backend): tempo da história, tempo 100% e nota.
+    try {
+      const resHltb = await fetch(
+        `${API_BASE}/admin/jogos/hltb?titulo=${encodeURIComponent(novoJogoTitulo)}`,
+        { headers: getAuthHeaders() },
+      );
+      const dadosHltb = await resHltb.json();
+      if (!resHltb.ok) {
+        avisos.push(dadosHltb.detail || 'erro ao consultar o HowLongToBeat');
+      } else if (!dadosHltb.encontrado) {
+        setNovoJogoTempo('');
+        setNovoJogoTempoPlatina('');
+        setNovoJogoNota('');
+        avisos.push('jogo não encontrado no HowLongToBeat (tempos e nota)');
+      } else {
+        setNovoJogoTempo(dadosHltb.tempo_jogo);
+        setNovoJogoTempoPlatina(dadosHltb.tempo_platina);
+        setNovoJogoNota(dadosHltb.nota > 0 ? String(dadosHltb.nota) : '');
+        if (!dadosHltb.tempo_jogo && !dadosHltb.nota) {
+          avisos.push(`HowLongToBeat ainda não tem dados de "${dadosHltb.nome}"`);
+        } else if (dadosHltb.nome.toLowerCase() !== novoJogoTitulo.trim().toLowerCase()) {
+          avisos.push(`confira: no HowLongToBeat achei "${dadosHltb.nome}"`);
+        }
+      }
+    } catch (erro) {
+      avisos.push('erro de conexão ao consultar o HowLongToBeat');
+    }
+
+    if (avisos.length === 0) mostrarToast('Dados importados com sucesso!', 'sucesso');
+    else mostrarToast(`Importado, mas: ${avisos.join('; ')}.`, 'aviso');
+  };
+
+  const carregarStatusHltb = () =>
+    fetch(`${API_BASE}/admin/jogos/atualizar-hltb/status`, { headers: getAuthHeaders() })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((dados) => dados && setStatusHltb(dados))
+      .catch(() => {});
+
+  const iniciarAtualizacaoHltb = async () => {
+    if (
+      !window.confirm(
+        'Reconsultar o HowLongToBeat para TODOS os jogos? Isso sobrescreve tempo, tempo 100% e nota (inclusive o que você editou à mão) e leva alguns minutos.',
+      )
+    )
+      return;
+    try {
+      const res = await fetch(`${API_BASE}/admin/jogos/atualizar-hltb`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+      });
+      const dados = await res.json();
+      if (res.ok) {
+        mostrarToast(dados.mensagem, 'sucesso');
+        setStatusHltb({ rodando: true, total: 0, processados: 0 });
+      } else {
+        mostrarToast(dados.detail || 'Erro ao iniciar a atualização.', 'erro');
+      }
+    } catch (erro) {
+      mostrarToast('Erro de conexão.', 'erro');
     }
   };
 
@@ -1233,6 +1317,7 @@ function App() {
         descricao: novoJogoDescricao,
         url_imagem: novoJogoImagem,
         tempo_jogo: novoJogoTempo,
+        tempo_platina: novoJogoTempoPlatina,
         nota: parseFloat(novoJogoNota) || 0,
         data_lancamento: novoJogoDataLancamento || null,
         recomendacao_cliente: novoJogoRecomendacao,
@@ -1250,6 +1335,7 @@ function App() {
         setNovoJogoDescricao('');
         setNovoJogoImagem('');
         setNovoJogoTempo('');
+        setNovoJogoTempoPlatina('');
         setNovoJogoNota('');
         setNovoJogoDataLancamento('');
         setNovoJogoRecomendacao(false);
@@ -1274,6 +1360,7 @@ function App() {
         descricao: modalEdicaoJogo.descricao,
         url_imagem: modalEdicaoJogo.url_imagem,
         tempo_jogo: modalEdicaoJogo.tempo_jogo,
+        tempo_platina: modalEdicaoJogo.tempo_platina || '',
         nota: parseFloat(modalEdicaoJogo.nota) || 0,
         data_lancamento: modalEdicaoJogo.data_lancamento || null,
         meta_faturamento: parseFloat(modalEdicaoJogo.meta_faturamento) || 350.0,
@@ -2038,7 +2125,7 @@ function App() {
               <div className="flex flex-col gap-4 md:flex-row">
                 <div className="w-full">
                   <label className="mb-1 block text-xs font-bold uppercase tracking-wider text-zinc-500">
-                    Tempo (Ex: 20h)
+                    Tempo História (Ex: 20h)
                   </label>
                   <input
                     type="text"
@@ -2051,11 +2138,26 @@ function App() {
                 </div>
                 <div className="w-full">
                   <label className="mb-1 block text-xs font-bold uppercase tracking-wider text-zinc-500">
-                    Nota (Ex: 4.8)
+                    Tempo 100% (Ex: 45h)
+                  </label>
+                  <input
+                    type="text"
+                    value={modalEdicaoJogo.tempo_platina || ''}
+                    onChange={(e) =>
+                      setModalEdicaoJogo({ ...modalEdicaoJogo, tempo_platina: e.target.value })
+                    }
+                    className={adminInputClass}
+                  />
+                </div>
+                <div className="w-full">
+                  <label className="mb-1 block text-xs font-bold uppercase tracking-wider text-zinc-500">
+                    Nota 0 a 10 (Ex: 8.5)
                   </label>
                   <input
                     type="number"
                     step="0.1"
+                    min="0"
+                    max="10"
                     value={modalEdicaoJogo.nota}
                     onChange={(e) =>
                       setModalEdicaoJogo({ ...modalEdicaoJogo, nota: e.target.value })
@@ -3970,23 +4072,48 @@ function App() {
                             )}
                           </div>
 
-                          {/* 1.2 FAIXA TÉCNICA (Conectada abaixo da imagem, com 3 colunas iguais) */}
-                          <div className="grid w-full grid-cols-3 border-b border-zinc-800/50 bg-zinc-950/80">
+                          {/* 1.2 FAIXA TÉCNICA (Conectada abaixo da imagem, 4 colunas: plataforma, nota, história, 100%) */}
+                          <div className="grid w-full grid-cols-4 border-b border-zinc-800/50 bg-zinc-950/80">
                             {/* Bloco 1: Plataforma */}
-                            <div className="flex items-center justify-center py-2.5 text-xs font-black uppercase tracking-wider text-zinc-300">
+                            <div className="flex items-center justify-center gap-1 whitespace-nowrap py-2.5 text-[11px] font-black uppercase tracking-wide text-zinc-300">
+                              <IconeControle className="h-3.5 w-3.5 shrink-0 text-blue-400" />
                               {jogo.plataforma}
                             </div>
 
-                            {/* Bloco 2: Nota */}
-                            <div className="flex items-center justify-center py-2.5 text-xs font-black uppercase text-amber-400">
-                              {jogo.nota > 0 ? `⭐ ${jogo.nota}` : ''}
+                            {/* Bloco 2: Nota (0 a 10, como no HowLongToBeat) */}
+                            <div className="flex items-center justify-center gap-1 whitespace-nowrap py-2.5 text-[11px] font-black text-amber-400">
+                              <IconeEstrela className="h-3.5 w-3.5 shrink-0" />
+                              {jogo.nota > 0 ? (
+                                Number(jogo.nota).toFixed(1)
+                              ) : (
+                                <span className="text-zinc-600">—</span>
+                              )}
                             </div>
 
-                            {/* Bloco 3: Tempo */}
-                            <div className="flex items-center justify-center py-2.5 text-xs font-black uppercase text-zinc-300">
-                              {jogo.tempo_jogo && jogo.tempo_jogo !== '0h'
-                                ? `⏱️ ~${jogo.tempo_jogo}`
-                                : ''}
+                            {/* Bloco 3: Tempo da história principal */}
+                            <div
+                              title="Tempo da história principal"
+                              className="flex items-center justify-center gap-1 whitespace-nowrap py-2.5 text-[11px] font-black text-zinc-300"
+                            >
+                              <IconeRelogio className="h-3.5 w-3.5 shrink-0 text-zinc-400" />
+                              {jogo.tempo_jogo && jogo.tempo_jogo !== '0h' ? (
+                                `~${jogo.tempo_jogo}`
+                              ) : (
+                                <span className="text-zinc-600">—</span>
+                              )}
+                            </div>
+
+                            {/* Bloco 4: Tempo "completionist" (100%), com troféu de platina */}
+                            <div
+                              title="Tempo para completar 100% (platina)"
+                              className="flex items-center justify-center gap-1 whitespace-nowrap py-2.5 text-[11px] font-black text-sky-200"
+                            >
+                              <IconeTrofeuPlatina className="h-4 w-4 shrink-0" />
+                              {jogo.tempo_platina && jogo.tempo_platina !== '0h' ? (
+                                `~${jogo.tempo_platina}`
+                              ) : (
+                                <span className="text-zinc-600">—</span>
+                              )}
                             </div>
                           </div>
                         </div>
@@ -5295,15 +5422,24 @@ function App() {
                               <div className="flex gap-3">
                                 <input
                                   type="text"
-                                  placeholder="Tempo (ex: 20h)"
+                                  placeholder="Tempo história (ex: 20h)"
                                   value={novoJogoTempo}
                                   onChange={(e) => setNovoJogoTempo(e.target.value)}
                                   className={adminInputClass}
                                 />
                                 <input
+                                  type="text"
+                                  placeholder="Tempo 100% (ex: 45h)"
+                                  value={novoJogoTempoPlatina}
+                                  onChange={(e) => setNovoJogoTempoPlatina(e.target.value)}
+                                  className={adminInputClass}
+                                />
+                                <input
                                   type="number"
                                   step="0.1"
-                                  placeholder="Nota"
+                                  min="0"
+                                  max="10"
+                                  placeholder="Nota (0 a 10)"
                                   value={novoJogoNota}
                                   onChange={(e) => setNovoJogoNota(e.target.value)}
                                   className={adminInputClass}
@@ -5488,6 +5624,67 @@ function App() {
                             </span>
                           </div>
                           <div className="border-t border-zinc-800/50 px-6 pb-6 pt-8 md:px-8 md:pb-8">
+                            <div className="mb-6 rounded-2xl border border-zinc-800/80 bg-zinc-950 p-4 shadow-inner">
+                              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                                <div className="text-xs font-medium text-zinc-400">
+                                  <strong className="text-zinc-200">
+                                    Tempos e notas (HowLongToBeat)
+                                  </strong>
+                                  <br />
+                                  Atualiza sozinho todo dia às 04h os jogos com mais de{' '}
+                                  {statusHltb?.intervalo_dias ?? 7} dias sem consulta.
+                                </div>
+                                <button
+                                  onClick={iniciarAtualizacaoHltb}
+                                  disabled={statusHltb?.rodando}
+                                  className="whitespace-nowrap rounded-xl bg-amber-500 px-5 py-2.5 text-[10px] font-bold uppercase tracking-wider text-zinc-900 shadow-lg shadow-amber-500/20 transition-colors hover:bg-amber-400 disabled:opacity-50"
+                                >
+                                  🔄 Atualizar todos agora
+                                </button>
+                              </div>
+                              {statusHltb?.rodando && (
+                                <p className="mt-3 animate-pulse text-xs font-bold text-amber-400">
+                                  ⏳ Atualizando... {statusHltb.processados || 0} de{' '}
+                                  {statusHltb.total || '?'} jogos
+                                </p>
+                              )}
+                              {statusHltb && !statusHltb.rodando && statusHltb.fim && (
+                                <div className="mt-3 text-xs font-medium text-zinc-400">
+                                  <p>
+                                    Última rodada:{' '}
+                                    {new Date(statusHltb.fim).toLocaleString('pt-BR')} —{' '}
+                                    <strong className="text-emerald-400">
+                                      {statusHltb.atualizados} atualizados
+                                    </strong>{' '}
+                                    de {statusHltb.total}
+                                    {statusHltb.sem_dados?.length > 0 &&
+                                      `, ${statusHltb.sem_dados.length} sem dados no site`}
+                                    {statusHltb.nao_encontrados?.length > 0 &&
+                                      `, ${statusHltb.nao_encontrados.length} não encontrados`}
+                                    .
+                                  </p>
+                                  {statusHltb.abortado && (
+                                    <p className="mt-1 font-bold text-rose-400">
+                                      ⚠️ Interrompida: o HowLongToBeat não respondeu. Tente de novo
+                                      mais tarde.
+                                    </p>
+                                  )}
+                                  {statusHltb.nao_encontrados?.length > 0 && (
+                                    <details className="mt-2">
+                                      <summary className="cursor-pointer text-zinc-500 hover:text-zinc-300">
+                                        Ver jogos não encontrados (preencha à mão)
+                                      </summary>
+                                      <ul className="mt-1 list-disc pl-5 text-zinc-300">
+                                        {statusHltb.nao_encontrados.map((t) => (
+                                          <li key={t}>{t}</li>
+                                        ))}
+                                      </ul>
+                                    </details>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+
                             <div className="mb-6 flex flex-col items-center gap-4 rounded-2xl border border-zinc-800/80 bg-zinc-950 p-4 shadow-inner lg:flex-row">
                               <input
                                 type="text"
