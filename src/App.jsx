@@ -390,7 +390,7 @@ function App() {
     valor_por_dia: 2.0,
     anuncio_ativo: false,
     mensagem_anuncio: '',
-    banners_url: '',
+    banners: [],
     enquete_titulo: 'Próximas Adições: Você Decide!',
     enquete_subtitulo:
       'Vote no jogo que você mais quer ver no catálogo e ajude a BORA JOGAR! a crescer.',
@@ -534,18 +534,13 @@ function App() {
 
   // Efeito do Banner Rotativo Automático
   useEffect(() => {
-    const urls = configSistema.banners_url
-      ? configSistema.banners_url
-          .split(',')
-          .map((u) => u.trim())
-          .filter((u) => u)
-      : [];
+    const urls = configSistema.banners || [];
     if (urls.length <= 1) return;
     const intervalo = setInterval(() => {
       setIndiceBanner((prev) => (prev + 1) % urls.length);
     }, 8000);
     return () => clearInterval(intervalo);
-  }, [configSistema.banners_url]);
+  }, [configSistema.banners]);
 
   // Efeito Polling do Pix: Fica perguntando se o cliente já pagou o QR Code
   useEffect(() => {
@@ -1962,13 +1957,9 @@ function App() {
   const adminInputClass =
     'w-full px-4 py-2.5 text-sm font-medium bg-zinc-950 border border-zinc-800 text-white rounded-xl focus:ring-1 focus:ring-blue-500 focus:outline-none transition-all placeholder-zinc-600';
   const navBtnClass = 'text-sm font-bold px-4 py-2 rounded-xl transition-all duration-300';
-  const bannerUrls = configSistema.banners_url
-    ? configSistema.banners_url
-        .split(',')
-        .map((u) => u.trim())
-        .filter((u) => u)
-    : [];
-  const currentBanner = bannerUrls.length > 0 ? bannerUrls[indiceBanner] : '/banner-padrao.jpg';
+  const bannerUrls = configSistema.banners || [];
+  const currentBanner =
+    bannerUrls.length > 0 ? bannerUrls[indiceBanner] || bannerUrls[0] : '/banner-padrao.jpg';
 
   // ==========================================================================
   // 9. RENDERIZAÇÃO DO COMPONENTE PRINCIPAL
@@ -6441,68 +6432,38 @@ function App() {
 
                             <div className="mt-8 border-t border-zinc-800/50 pt-6">
                               <h4 className="text-base font-bold tracking-tight text-white">
-                                🖼️ Banners do Carrossel (Imagens)
+                                🖼️ Banners do Carrossel (Automático)
                               </h4>
                               <p className="mb-4 mt-1 text-xs font-medium text-zinc-400">
-                                Cole as URLs das imagens que irão ficar trocando no topo do site.{' '}
-                                <strong className="text-emerald-400">
-                                  Separe cada URL com uma vírgula.
-                                </strong>
+                                O carrossel do topo usa sozinho a capa dos{' '}
+                                <strong className="text-emerald-400">5 jogos mais recentes</strong>{' '}
+                                do catálogo. Para trocar um banner, edite a imagem do jogo (ou
+                                cadastre um jogo novo).
                               </p>
 
-                              {/* [INFO] PREVIEW EM TEMPO REAL DOS BANNERS */}
-                              {(() => {
-                                const urls = configSistema.banners_url
-                                  ? configSistema.banners_url
-                                      .split(',')
-                                      .map((u) => u.trim())
-                                      .filter((u) => u)
-                                  : [];
-
-                                if (urls.length > 0) {
-                                  return (
-                                    <div className="mb-4 grid w-full grid-cols-3 gap-3 rounded-2xl border border-zinc-800/50 bg-black/20 p-4 shadow-inner sm:grid-cols-4 lg:grid-cols-5">
-                                      {urls.map((url, index) => (
-                                        <div
-                                          key={index}
-                                          className="relative flex flex-col transition-transform hover:scale-105"
-                                        >
-                                          <div className="relative aspect-video w-full overflow-hidden rounded-xl border border-zinc-700 bg-zinc-900 shadow-md">
-                                            <img
-                                              src={url}
-                                              alt={`Preview do Banner ${index + 1}`}
-                                              className="h-full w-full object-cover"
-                                              onError={(e) => {
-                                                e.target.src =
-                                                  'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="%2352525b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>';
-                                                e.target.className =
-                                                  'h-full w-full object-none opacity-50 p-4';
-                                              }}
-                                            />
-                                            {/* Badge mostrando a ordem do banner */}
-                                            <div className="absolute left-2 top-2 flex h-5 w-5 items-center justify-center rounded-md border border-orange-500/30 bg-black/80 text-[10px] font-black text-orange-400 backdrop-blur-md">
-                                              {index + 1}
-                                            </div>
-                                          </div>
+                              {(configSistema.banners || []).length > 0 ? (
+                                <div className="grid w-full grid-cols-3 gap-3 rounded-2xl border border-zinc-800/50 bg-black/20 p-4 shadow-inner sm:grid-cols-4 lg:grid-cols-5">
+                                  {configSistema.banners.map((url, index) => (
+                                    <div key={index} className="relative flex flex-col">
+                                      <div className="relative aspect-video w-full overflow-hidden rounded-xl border border-zinc-700 bg-zinc-900 shadow-md">
+                                        <img
+                                          src={url}
+                                          alt={`Banner ${index + 1}`}
+                                          className="h-full w-full object-cover"
+                                        />
+                                        <div className="absolute left-2 top-2 flex h-5 w-5 items-center justify-center rounded-md border border-orange-500/30 bg-black/80 text-[10px] font-black text-orange-400 backdrop-blur-md">
+                                          {index + 1}
                                         </div>
-                                      ))}
+                                      </div>
                                     </div>
-                                  );
-                                }
-                                return null;
-                              })()}
-
-                              <textarea
-                                placeholder="https://imagem1.jpg, https://imagem2.jpg..."
-                                value={configSistema.banners_url || ''}
-                                onChange={(e) =>
-                                  setConfigSistema({
-                                    ...configSistema,
-                                    banners_url: e.target.value,
-                                  })
-                                }
-                                className={`${adminInputClass} h-64 resize-none border-zinc-700 bg-zinc-950 text-sm focus:ring-orange-500`}
-                              />
+                                  ))}
+                                </div>
+                              ) : (
+                                <p className="text-xs font-medium text-zinc-500">
+                                  Nenhum jogo com imagem cadastrado ainda: o site mostra o banner
+                                  padrão.
+                                </p>
+                              )}
                             </div>
 
                             <div className="mt-6 flex justify-end">
