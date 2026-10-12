@@ -3,7 +3,7 @@
 // ==============================================================================
 // Ambiente de Produção / Staging
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import ReactGA from 'react-ga4';
 import Termos from './components/Termos';
 import Privacidade from './components/Privacidade';
@@ -446,6 +446,9 @@ function App() {
   const [novoJogoImagem, setNovoJogoImagem] = useState('');
   const [novoJogoTempo, setNovoJogoTempo] = useState('');
   const [novoJogoTempoPlatina, setNovoJogoTempoPlatina] = useState('');
+  // Andamento da atualização em massa pelo HowLongToBeat (Admin > Jogos)
+  const [statusHltb, setStatusHltb] = useState(null);
+  const hltbEstavaRodando = useRef(false);
   const [novoJogoNota, setNovoJogoNota] = useState('');
   const [novoJogoDataLancamento, setNovoJogoDataLancamento] = useState('');
   const [novoJogoRecomendacao, setNovoJogoRecomendacao] = useState(false);
@@ -538,6 +541,25 @@ function App() {
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [abaAtual, paginaAtual]);
+
+  // Atualização em massa pelo HowLongToBeat: lê o andamento ao abrir Admin > Jogos
+  // e, enquanto estiver rodando, consulta a cada 3s; ao terminar, recarrega o catálogo.
+  useEffect(() => {
+    if (!usuarioLogado?.is_admin || secaoAdmin !== 'jogos') return;
+    carregarStatusHltb();
+  }, [secaoAdmin, usuarioLogado]);
+
+  useEffect(() => {
+    if (statusHltb?.rodando) {
+      hltbEstavaRodando.current = true;
+      const intervalo = setInterval(carregarStatusHltb, 3000);
+      return () => clearInterval(intervalo);
+    }
+    if (hltbEstavaRodando.current) {
+      hltbEstavaRodando.current = false;
+      carregarDados();
+    }
+  }, [statusHltb?.rodando]);
 
   // Efeito do Banner Rotativo Automático
   useEffect(() => {
@@ -1198,6 +1220,36 @@ function App() {
 
     if (avisos.length === 0) mostrarToast('Dados importados com sucesso!', 'sucesso');
     else mostrarToast(`Importado, mas: ${avisos.join('; ')}.`, 'aviso');
+  };
+
+  const carregarStatusHltb = () =>
+    fetch(`${API_BASE}/admin/jogos/atualizar-hltb/status`, { headers: getAuthHeaders() })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((dados) => dados && setStatusHltb(dados))
+      .catch(() => {});
+
+  const iniciarAtualizacaoHltb = async () => {
+    if (
+      !window.confirm(
+        'Reconsultar o HowLongToBeat para TODOS os jogos? Isso sobrescreve tempo, tempo 100% e nota (inclusive o que você editou à mão) e leva alguns minutos.',
+      )
+    )
+      return;
+    try {
+      const res = await fetch(`${API_BASE}/admin/jogos/atualizar-hltb`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+      });
+      const dados = await res.json();
+      if (res.ok) {
+        mostrarToast(dados.mensagem, 'sucesso');
+        setStatusHltb({ rodando: true, total: 0, processados: 0 });
+      } else {
+        mostrarToast(dados.detail || 'Erro ao iniciar a atualização.', 'erro');
+      }
+    } catch (erro) {
+      mostrarToast('Erro de conexão.', 'erro');
+    }
   };
 
   const buscarImagemEnquete = async () => {
@@ -5572,6 +5624,67 @@ function App() {
                             </span>
                           </div>
                           <div className="border-t border-zinc-800/50 px-6 pb-6 pt-8 md:px-8 md:pb-8">
+                            <div className="mb-6 rounded-2xl border border-zinc-800/80 bg-zinc-950 p-4 shadow-inner">
+                              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                                <div className="text-xs font-medium text-zinc-400">
+                                  <strong className="text-zinc-200">
+                                    Tempos e notas (HowLongToBeat)
+                                  </strong>
+                                  <br />
+                                  Atualiza sozinho todo dia às 04h os jogos com mais de{' '}
+                                  {statusHltb?.intervalo_dias ?? 7} dias sem consulta.
+                                </div>
+                                <button
+                                  onClick={iniciarAtualizacaoHltb}
+                                  disabled={statusHltb?.rodando}
+                                  className="whitespace-nowrap rounded-xl bg-amber-500 px-5 py-2.5 text-[10px] font-bold uppercase tracking-wider text-zinc-900 shadow-lg shadow-amber-500/20 transition-colors hover:bg-amber-400 disabled:opacity-50"
+                                >
+                                  🔄 Atualizar todos agora
+                                </button>
+                              </div>
+                              {statusHltb?.rodando && (
+                                <p className="mt-3 animate-pulse text-xs font-bold text-amber-400">
+                                  ⏳ Atualizando... {statusHltb.processados || 0} de{' '}
+                                  {statusHltb.total || '?'} jogos
+                                </p>
+                              )}
+                              {statusHltb && !statusHltb.rodando && statusHltb.fim && (
+                                <div className="mt-3 text-xs font-medium text-zinc-400">
+                                  <p>
+                                    Última rodada:{' '}
+                                    {new Date(statusHltb.fim).toLocaleString('pt-BR')} —{' '}
+                                    <strong className="text-emerald-400">
+                                      {statusHltb.atualizados} atualizados
+                                    </strong>{' '}
+                                    de {statusHltb.total}
+                                    {statusHltb.sem_dados?.length > 0 &&
+                                      `, ${statusHltb.sem_dados.length} sem dados no site`}
+                                    {statusHltb.nao_encontrados?.length > 0 &&
+                                      `, ${statusHltb.nao_encontrados.length} não encontrados`}
+                                    .
+                                  </p>
+                                  {statusHltb.abortado && (
+                                    <p className="mt-1 font-bold text-rose-400">
+                                      ⚠️ Interrompida: o HowLongToBeat não respondeu. Tente de novo
+                                      mais tarde.
+                                    </p>
+                                  )}
+                                  {statusHltb.nao_encontrados?.length > 0 && (
+                                    <details className="mt-2">
+                                      <summary className="cursor-pointer text-zinc-500 hover:text-zinc-300">
+                                        Ver jogos não encontrados (preencha à mão)
+                                      </summary>
+                                      <ul className="mt-1 list-disc pl-5 text-zinc-300">
+                                        {statusHltb.nao_encontrados.map((t) => (
+                                          <li key={t}>{t}</li>
+                                        ))}
+                                      </ul>
+                                    </details>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+
                             <div className="mb-6 flex flex-col items-center gap-4 rounded-2xl border border-zinc-800/80 bg-zinc-950 p-4 shadow-inner lg:flex-row">
                               <input
                                 type="text"
