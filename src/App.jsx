@@ -1210,7 +1210,19 @@ function App() {
         setNovoJogoNota(dadosHltb.nota > 0 ? String(dadosHltb.nota) : '');
         if (!dadosHltb.tempo_jogo && !dadosHltb.nota) {
           avisos.push(`HowLongToBeat ainda não tem dados de "${dadosHltb.nome}"`);
-        } else if (dadosHltb.nome.toLowerCase() !== novoJogoTitulo.trim().toLowerCase()) {
+        } else if (
+          // Compara sem maiúscula, acento e pontuação ("CONTROL Resonant" = "Control: Resonant").
+          [dadosHltb.nome, novoJogoTitulo]
+            .map((t) =>
+              t
+                .normalize('NFD')
+                .replace(/\p{M}/gu, '')
+                .toLowerCase()
+                .replace(/[^a-z0-9]+/g, ' ')
+                .trim(),
+            )
+            .reduce((a, b) => a !== b)
+        ) {
           avisos.push(`confira: no HowLongToBeat achei "${dadosHltb.nome}"`);
         }
       }
