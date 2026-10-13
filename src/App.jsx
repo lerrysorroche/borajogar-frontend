@@ -2872,7 +2872,7 @@ function App() {
                         <span className="font-black uppercase tracking-wider text-white">
                           {modalConfirmacao.isEmBreve
                             ? 'Pré-Reserva (Lançamento)'
-                            : `Entrar na Fila (${modalConfirmacao.temPrimariaAtiva ? 'Primária' : 'Secundária'})`}
+                            : `Reservar Vaga (${modalConfirmacao.temPrimariaAtiva ? 'Primária' : 'Secundária'})`}
                         </span>
 
                         {/* Cálculo dinâmico da data da fila */}
@@ -4008,6 +4008,65 @@ function App() {
                       jogo.fila_dias_secundaria,
                     ).toLocaleDateString('pt-BR');
 
+                    // [INFO] Texto de cada vaga no card. O cliente quer saber QUANDO recebe o
+                    // jogo, não o estado interno da fila: a data é o destaque e a fila vira
+                    // um detalhe ("Você seria o 1º da fila" / "N pessoas na sua frente").
+                    const statusVaga = (estoque, fila, dataStr) => {
+                      if (!isEmBreve && estoque > 0) {
+                        return {
+                          livre: true,
+                          principal: 'Disponível agora',
+                          detalhe: 'Acesso imediato',
+                        };
+                      }
+                      return {
+                        livre: false,
+                        principal: `${isEmBreve && fila === 0 ? 'Lançamento' : 'Previsão'}: ${dataStr}`,
+                        detalhe:
+                          fila > 0
+                            ? `${fila} ${fila === 1 ? 'pessoa' : 'pessoas'} na sua frente`
+                            : 'Você seria o 1º da fila',
+                      };
+                    };
+                    const vagasCard = [
+                      temPrimariaAtiva && {
+                        chave: 'primaria',
+                        rotulo: '🔑 Vaga Primária',
+                        ...statusVaga(jogo.estoque_primaria, jogo.fila_primaria, vagaPrimariaStr),
+                      },
+                      temSecundariaAtiva && {
+                        chave: 'secundaria',
+                        rotulo: '🔑 Vaga Secundária',
+                        ...statusVaga(
+                          jogo.estoque_secundaria,
+                          jogo.fila_secundaria,
+                          vagaSecundariaStr,
+                        ),
+                      },
+                    ].filter(Boolean);
+
+                    // Bloco de preço do botão principal (igual para Alugar e Reservar):
+                    // com desconto de Rank mostra "De / Por", sem desconto "A partir de".
+                    const precoDoBotao = (corPreco) =>
+                      jogo.rank_aplicado > 0 ? (
+                        <div className="mt-1 flex flex-col items-center leading-none">
+                          <span className="text-[10px] font-bold text-white/70 line-through">
+                            De R$ {(precoExibicao / (1 - jogo.rank_aplicado / 100)).toFixed(2)}
+                          </span>
+                          <span
+                            className={`text-base font-black ${corPreco} [text-shadow:1px_1px_0px_black,-1px_-1px_0px_black,1px_-1px_0px_black,-1px_1px_0px_black]`}
+                          >
+                            Por R$ {precoExibicao.toFixed(2)}
+                          </span>
+                        </div>
+                      ) : (
+                        <span
+                          className={`mt-1 text-base font-black leading-none ${corPreco} [text-shadow:1px_1px_0px_black,-1px_-1px_0px_black,1px_-1px_0px_black,-1px_1px_0px_black]`}
+                        >
+                          A partir de R$ {precoExibicao.toFixed(2)}
+                        </span>
+                      );
+
                     return (
                       <div
                         key={jogo.id}
@@ -4177,49 +4236,35 @@ function App() {
                           </div>
 
                           <div className="mt-auto">
-                            {(!temEstoque || isEmBreve) &&
-                              (temPrimariaAtiva || temSecundariaAtiva) && (
-                                <div className="mb-4 flex flex-col gap-2.5 rounded-xl border border-zinc-800/80 bg-zinc-950 p-4 shadow-inner">
-                                  {temPrimariaAtiva && (
-                                    <div className="flex items-center justify-between gap-2">
-                                      <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">
-                                        🔑 Vaga Primária
+                            {vagasCard.length > 0 && (
+                              <div className="mb-4 flex min-h-[6.75rem] flex-col justify-center gap-3 rounded-xl border border-zinc-800/80 bg-zinc-950 p-4 shadow-inner">
+                                {vagasCard.map((v) => (
+                                  <div
+                                    key={v.chave}
+                                    className="flex items-start justify-between gap-3"
+                                  >
+                                    <span className="pt-0.5 text-[10px] font-bold uppercase tracking-wider text-zinc-500">
+                                      {v.rotulo}
+                                    </span>
+                                    <span className="flex flex-col items-end text-right leading-tight">
+                                      <span
+                                        className={`text-xs font-black ${v.livre ? 'text-emerald-400' : 'text-blue-400'}`}
+                                      >
+                                        {v.livre ? '✅ ' : ''}
+                                        {v.principal}
                                       </span>
-                                      <span className="flex items-baseline gap-2">
-                                        <span className="text-[10px] font-bold uppercase tracking-wider text-amber-400">
-                                          {jogo.fila_primaria > 0
-                                            ? `${jogo.fila_primaria} na fila`
-                                            : 'sem fila'}
-                                        </span>
-                                        <span className="text-xs font-black text-blue-400">
-                                          {vagaPrimariaStr}
-                                        </span>
+                                      <span className="mt-0.5 text-[10px] font-medium text-zinc-500">
+                                        {v.detalhe}
                                       </span>
-                                    </div>
-                                  )}
-                                  {temSecundariaAtiva && (
-                                    <div className="flex items-center justify-between gap-2">
-                                      <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">
-                                        🔑 Vaga Secundária
-                                      </span>
-                                      <span className="flex items-baseline gap-2">
-                                        <span className="text-[10px] font-bold uppercase tracking-wider text-amber-400">
-                                          {jogo.fila_secundaria > 0
-                                            ? `${jogo.fila_secundaria} na fila`
-                                            : 'sem fila'}
-                                        </span>
-                                        <span className="text-xs font-black text-blue-400">
-                                          {vagaSecundariaStr}
-                                        </span>
-                                      </span>
-                                    </div>
-                                  )}
-                                </div>
-                              )}
+                                    </span>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
 
                             <div className="mt-auto pt-4">
                               {minhaReservaAtiva ? (
-                                <div className="group relative flex h-[68px] flex-col items-center justify-center overflow-hidden rounded-xl border border-emerald-500/30 bg-emerald-950/40 px-4 shadow-[0_0_15px_rgba(16,185,129,0.15)] transition-all">
+                                <div className="group relative flex h-[76px] flex-col items-center justify-center overflow-hidden rounded-xl border border-emerald-500/30 bg-emerald-950/40 px-4 shadow-[0_0_15px_rgba(16,185,129,0.15)] transition-all">
                                   <div className="absolute left-0 top-0 h-1 w-full bg-gradient-to-r from-emerald-500 to-cyan-500"></div>
                                   <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-emerald-500 [text-shadow:1px_1px_0px_black,-1px_-1px_0px_black,1px_-1px_0px_black,-1px_1px_0px_black]">
                                     ✅ Já Reservado
@@ -4233,7 +4278,7 @@ function App() {
                                       'aviso',
                                     )
                                   }
-                                  className="group/lock flex h-[68px] w-full flex-col items-center justify-center rounded-xl border border-rose-500/20 bg-zinc-950/80 shadow-inner transition-all hover:bg-rose-950/30"
+                                  className="group/lock flex h-[76px] w-full flex-col items-center justify-center rounded-xl border border-rose-500/20 bg-zinc-950/80 shadow-inner transition-all hover:bg-rose-950/30"
                                 >
                                   <strong className="flex items-center gap-2 text-xs font-black uppercase tracking-tight text-rose-500 [text-shadow:1px_1px_0px_black,-1px_-1px_0px_black,1px_-1px_0px_black,-1px_1px_0px_black]">
                                     🔒 Requer Rank VIP
@@ -4242,44 +4287,20 @@ function App() {
                               ) : (
                                 <button
                                   onClick={() => abrirConfirmacao(jogo)}
-                                  className={`flex w-full flex-col items-center justify-center rounded-2xl px-4 py-3.5 text-white shadow-lg transition-all ${
+                                  className={`flex h-[76px] w-full flex-col items-center justify-center rounded-2xl px-4 text-white shadow-lg transition-all ${
                                     temEstoque && !isEmBreve
                                       ? 'bg-blue-600 shadow-blue-500/20 hover:-translate-y-1 hover:bg-blue-500'
                                       : 'bg-amber-600 shadow-amber-500/20 hover:-translate-y-1 hover:bg-amber-500'
                                   }`}
                                 >
-                                  {temEstoque && !isEmBreve ? (
-                                    <>
-                                      {/* Texto de Ação */}
-                                      <span className="text-[10px] font-black uppercase leading-none tracking-wider text-white/90 [text-shadow:1px_1px_0px_black,-1px_-1px_0px_black,1px_-1px_0px_black,-1px_1px_0px_black]">
-                                        🎮 Alugar Agora
-                                      </span>
-
-                                      {/* Lógica do Preço Riscado VIP */}
-                                      {jogo.rank_aplicado > 0 ? (
-                                        <div className="mt-1 flex flex-col items-center leading-none">
-                                          <span className="text-[10px] font-bold text-zinc-300/80 line-through">
-                                            De R${' '}
-                                            {(
-                                              precoExibicao /
-                                              (1 - jogo.rank_aplicado / 100)
-                                            ).toFixed(2)}
-                                          </span>
-                                          <span className="text-base font-black text-emerald-300 [text-shadow:1px_1px_0px_black,-1px_-1px_0px_black,1px_-1px_0px_black,-1px_1px_0px_black]">
-                                            Por R$ {precoExibicao.toFixed(2)}
-                                          </span>
-                                        </div>
-                                      ) : (
-                                        <span className="mt-1 text-base font-black leading-none text-emerald-300 [text-shadow:1px_1px_0px_black,-1px_-1px_0px_black,1px_-1px_0px_black,-1px_1px_0px_black]">
-                                          A partir de R$ {precoExibicao.toFixed(2)}
-                                        </span>
-                                      )}
-                                    </>
-                                  ) : (
-                                    /* Layout para quando o botão virar Fila de Espera */
-                                    <span className="py-1.5 text-xs font-black uppercase tracking-wider [text-shadow:1px_1px_0px_black,-1px_-1px_0px_black,1px_-1px_0px_black,-1px_1px_0px_black]">
-                                      ⏳ Entrar na Fila
-                                    </span>
+                                  {/* Mesmo formato nos dois estados: ação em cima, preço embaixo */}
+                                  <span className="text-[10px] font-black uppercase leading-none tracking-wider text-white/90 [text-shadow:1px_1px_0px_black,-1px_-1px_0px_black,1px_-1px_0px_black,-1px_1px_0px_black]">
+                                    {temEstoque && !isEmBreve
+                                      ? '🎮 Alugar Agora'
+                                      : '⏳ Reservar Vaga'}
+                                  </span>
+                                  {precoDoBotao(
+                                    temEstoque && !isEmBreve ? 'text-emerald-300' : 'text-white',
                                   )}
                                 </button>
                               )}
