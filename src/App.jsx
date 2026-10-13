@@ -306,6 +306,9 @@ function GraficoTendenciaClientes({ dados }) {
   );
 }
 
+// Nome que o cliente vê: título + subtítulo (o backend já manda 'nome_completo').
+const nomeJogo = (j) => j.nome_completo || j.titulo;
+
 function App() {
   // ==========================================================================
   // 1. CONFIGURAÇÕES GLOBAIS E ESTADOS (MEMÓRIA DO REACT)
@@ -437,6 +440,7 @@ function App() {
 
   // Admin: Formulários de Cadastro
   const [novoJogoTitulo, setNovoJogoTitulo] = useState('');
+  const [novoJogoSubtitulo, setNovoJogoSubtitulo] = useState('');
   const [novoJogoPlataforma, setNovoJogoPlataforma] = useState('PS5');
   const [novoJogoPreco, setNovoJogoPreco] = useState('');
   const [novoJogoPreco14, setNovoJogoPreco14] = useState('');
@@ -1321,6 +1325,7 @@ function App() {
       headers: getAuthHeaders(),
       body: JSON.stringify({
         titulo: novoJogoTitulo,
+        subtitulo: novoJogoSubtitulo,
         plataforma: novoJogoPlataforma,
         preco_aluguel: parseFloat(novoJogoPreco),
         preco_aluguel_14: parseFloat(novoJogoPreco14) || 0.0,
@@ -1340,6 +1345,7 @@ function App() {
         mostrarToast('Jogo cadastrado!', 'sucesso');
         carregarDados();
         setNovoJogoTitulo('');
+        setNovoJogoSubtitulo('');
         setNovoJogoPreco('');
         setNovoJogoPreco14('');
         setNovoJogoPrecoSec('');
@@ -1364,6 +1370,7 @@ function App() {
       headers: getAuthHeaders(),
       body: JSON.stringify({
         titulo: modalEdicaoJogo.titulo,
+        subtitulo: modalEdicaoJogo.subtitulo || '',
         plataforma: modalEdicaoJogo.plataforma,
         preco_aluguel: parseFloat(modalEdicaoJogo.preco_aluguel_base),
         preco_aluguel_14: parseFloat(modalEdicaoJogo.preco_aluguel_14_base) || 0.0,
@@ -1915,7 +1922,7 @@ function App() {
 
   // Filtro inteligente da Vitrine
   const filtradosBase = jogos
-    .filter((jogo) => jogo.titulo.toLowerCase().includes(termoBusca.toLowerCase()))
+    .filter((jogo) => nomeJogo(jogo).toLowerCase().includes(termoBusca.toLowerCase()))
     .filter((jogo) => {
       if (filtroPlataforma === 'TODAS') return true;
       if (filtroPlataforma === 'PS5')
@@ -1941,7 +1948,7 @@ function App() {
 
   // Filtros Admin
   const jogosEstoqueFiltrados = jogos.filter((jogo) =>
-    jogo.titulo.toLowerCase().includes(buscaEstoque.toLowerCase()),
+    nomeJogo(jogo).toLowerCase().includes(buscaEstoque.toLowerCase()),
   );
 
   const locacoesAtivasFiltradas = todasLocacoes
@@ -2010,7 +2017,7 @@ function App() {
     });
 
   const jogosCatalogoAdminFiltrados = jogos
-    .filter((j) => j.titulo.toLowerCase().includes(termoBusca.toLowerCase()))
+    .filter((j) => nomeJogo(j).toLowerCase().includes(termoBusca.toLowerCase()))
     .filter((j) => {
       if (filtroStatusCatalogo === 'todos') return true;
       if (filtroStatusCatalogo === 'disponiveis')
@@ -2100,6 +2107,24 @@ function App() {
                   }
                   className={adminInputClass}
                   required
+                />
+                <p className="mt-1 text-[10px] font-medium text-amber-500/80">
+                  ⚠️ Não mude o título de um jogo que já tem aluguéis: o valor arrecadado e os
+                  estornos de fila dependem dele. Para versão/edição, use o subtítulo.
+                </p>
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-bold uppercase tracking-wider text-zinc-500">
+                  Subtítulo / Edição (opcional)
+                </label>
+                <input
+                  type="text"
+                  value={modalEdicaoJogo.subtitulo || ''}
+                  onChange={(e) =>
+                    setModalEdicaoJogo({ ...modalEdicaoJogo, subtitulo: e.target.value })
+                  }
+                  placeholder="Ex: Complete Edition"
+                  className={adminInputClass}
                 />
               </div>
 
@@ -2760,8 +2785,9 @@ function App() {
               🎮 Configurar Acesso
             </h3>
             <p className="mb-6 text-sm leading-relaxed text-zinc-400">
-              Você selecionou <strong className="text-white">{modalConfirmacao.jogo.titulo}</strong>
-              . Como deseja prosseguir?
+              Você selecionou{' '}
+              <strong className="text-white">{nomeJogo(modalConfirmacao.jogo)}</strong>. Como deseja
+              prosseguir?
             </p>
 
             {/* SELEÇÃO DO TIPO DE ACESSO */}
@@ -3348,7 +3374,7 @@ function App() {
               ✕
             </button>
             <h3 className="mb-4 pr-8 text-xl font-black leading-tight tracking-tight text-white">
-              {modalDescricao.titulo}
+              {nomeJogo(modalDescricao)}
             </h3>
             <div className="custom-scrollbar max-h-[60vh] overflow-y-auto pr-2">
               <p className="whitespace-pre-wrap text-sm font-medium leading-relaxed text-zinc-300">
@@ -3823,7 +3849,7 @@ function App() {
                             {novidade.url_imagem ? (
                               <img
                                 src={novidade.url_imagem}
-                                alt={novidade.titulo}
+                                alt={nomeJogo(novidade)}
                                 className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
                               />
                             ) : (
@@ -3839,7 +3865,7 @@ function App() {
                           </div>
                           <div className="flex flex-1 items-center justify-center p-3 text-center">
                             <h4 className="line-clamp-2 text-xs font-bold leading-tight tracking-tight text-zinc-300 group-hover:text-white">
-                              {novidade.titulo}
+                              {nomeJogo(novidade)}
                             </h4>
                           </div>
                         </div>
@@ -3958,7 +3984,7 @@ function App() {
                       : false;
                     const bloqueadoParaUsuario = isEmBreve && usuarioLogado && !isVeterano;
                     const minhaReservaAtiva = minhasReservas.find(
-                      (res) => res.jogo === jogo.titulo,
+                      (res) => res.jogo === nomeJogo(jogo),
                     );
 
                     // [INFO] Cada vaga tem a própria fila: a data de uma NUNCA pode ser
@@ -3994,7 +4020,7 @@ function App() {
                             {jogo.url_imagem ? (
                               <img
                                 src={jogo.url_imagem}
-                                alt={jogo.titulo}
+                                alt={nomeJogo(jogo)}
                                 className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
                               />
                             ) : (
@@ -4133,7 +4159,7 @@ function App() {
                         {/* 2. ÁREA DE INFORMAÇÕES DE TEXTO */}
                         <div className="flex flex-1 flex-col px-6 pb-6 pt-5">
                           <h3 className="mb-2 text-lg font-black leading-tight tracking-tight text-white transition-colors group-hover:text-blue-400">
-                            {jogo.titulo}
+                            {nomeJogo(jogo)}
                           </h3>
                           <div className="mb-6">
                             <p
@@ -5406,6 +5432,17 @@ function App() {
                                   ✨ Buscar
                                 </button>
                               </div>
+                              <input
+                                type="text"
+                                placeholder="Subtítulo / edição (opcional) — ex: & The Delicious Last Course"
+                                value={novoJogoSubtitulo}
+                                onChange={(e) => setNovoJogoSubtitulo(e.target.value)}
+                                className={adminInputClass}
+                              />
+                              <p className="-mt-2 text-[10px] font-medium text-zinc-500">
+                                O título é o nome oficial do jogo (usado na busca do HowLongToBeat e
+                                no valor arrecadado). O cliente vê os dois juntos.
+                              </p>
 
                               <div className="flex flex-col gap-4 md:flex-row">
                                 <div className="w-full">
@@ -5592,7 +5629,7 @@ function App() {
                                 <option value="">Selecione o Jogo...</option>
                                 {jogosEstoqueFiltrados.map((j) => (
                                   <option key={j.id} value={j.id}>
-                                    {j.titulo}
+                                    {nomeJogo(j)}
                                   </option>
                                 ))}
                               </select>
@@ -5754,7 +5791,7 @@ function App() {
                                         borda="border-l-blue-500"
                                         celulas={[
                                           <span className="text-sm font-black tracking-tight text-white">
-                                            {jogo.titulo}
+                                            {nomeJogo(jogo)}
                                           </span>,
                                           <span className="font-bold text-zinc-300">
                                             R$ {jogo.preco_aluguel_base.toFixed(2)}
