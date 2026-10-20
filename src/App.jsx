@@ -810,12 +810,48 @@ function App() {
             }
           });
       })
+      .then(() =>
+        fetch(`${API_BASE}/usuarios/${usuarioLogado.id}/status-whatsapp`, {
+          headers: getAuthHeaders(),
+        })
+          .then((res) => (res.ok ? res.json() : null))
+          .then((dados) => {
+            if (!dados) return;
+            setUsuarioLogado((prev) => {
+              if (
+                !prev ||
+                (prev.whatsapp_verificado === dados.whatsapp_verificado &&
+                  prev.telefone === dados.telefone)
+              )
+                return prev;
+              const atualizado = {
+                ...prev,
+                whatsapp_verificado: dados.whatsapp_verificado,
+                telefone: dados.telefone,
+              };
+              localStorage.setItem('usuario_locadora', JSON.stringify(atualizado));
+              return atualizado;
+            });
+          }),
+      )
       .catch(() => console.error('Falha silenciosa na sincronização.'));
   };
 
   // ==========================================================================
   // 5. REGRAS DE NEGÓCIO: ALUGUEL E FILA (TOP-DOWN SELLING)
   // ==========================================================================
+
+  // A verificação de WhatsApp vence (ver expirar_verificacoes_whatsapp no backend):
+  // se o servidor diz que não está mais verificado, a sessão guardada aqui precisa
+  // concordar, senão Meus Acessos continua mostrando "verificado".
+  const marcarWhatsappNaoVerificado = () => {
+    setUsuarioLogado((prev) => {
+      if (!prev) return prev;
+      const atualizado = { ...prev, whatsapp_verificado: false };
+      localStorage.setItem('usuario_locadora', JSON.stringify(atualizado));
+      return atualizado;
+    });
+  };
 
   const abrirConfirmacao = (jogo) => {
     if (!usuarioLogado) {
@@ -917,6 +953,7 @@ function App() {
         mostrarToast(data.mensagem, 'sucesso');
         carregarDados();
       } else if (data.detail === 'whatsapp_nao_verificado') {
+        marcarWhatsappNaoVerificado();
         setModalWhatsappBloqueado(true);
       } else {
         mostrarToast(data.detail, 'erro');
@@ -940,6 +977,7 @@ function App() {
         mostrarToast(data.mensagem, 'sucesso');
         carregarDados();
       } else if (data.detail === 'whatsapp_nao_verificado') {
+        marcarWhatsappNaoVerificado();
         setModalWhatsappBloqueado(true);
       } else {
         mostrarToast(data.detail, 'erro');
@@ -4440,7 +4478,8 @@ function App() {
                         <p className="text-sm font-medium leading-relaxed text-zinc-300">
                           Por segurança, só liberamos aluguéis para clientes com um WhatsApp real
                           confirmado. Confira seu número acima e clique em "Salvar e Verificar" para
-                          enviar a mensagem de confirmação.
+                          enviar a mensagem de confirmação. A confirmação é renovada de tempos em
+                          tempos (por exemplo, depois de 60 dias sem alugar).
                         </p>
                       </div>
                     </div>
@@ -4477,7 +4516,11 @@ function App() {
                       </div>
                     );
                   }
-                  if (notif.tipo === 'BROADCAST' || notif.tipo === 'BOAS_VINDAS') {
+                  if (
+                    notif.tipo === 'BROADCAST' ||
+                    notif.tipo === 'BOAS_VINDAS' ||
+                    notif.tipo === 'VERIFICACAO'
+                  ) {
                     return (
                       <div
                         key={notif.id}
