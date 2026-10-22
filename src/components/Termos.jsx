@@ -85,16 +85,18 @@ export default function Termos() {
           <p>
             Ao término do período de locação, o usuário perde o direito de acesso ao jogo. É{' '}
             <strong>obrigação exclusiva do usuário</strong> acessar as configurações do seu console
-            e <strong className="text-rose-400">DESATIVAR</strong> o Compartilhamento de Console
-            antes de excluir o perfil do videogame (seja a locação Primária ou Secundária ativada
-            indevidamente).
+            e <strong className="text-rose-400">APAGAR a conta da locadora</strong> (PS5:
+            Configurações &gt; Usuários e Contas &gt; Excluir usuários), seja a locação Primária ou
+            Secundária, e <strong>enviar à locadora, pelo WhatsApp, um vídeo curto</strong>{' '}
+            mostrando a exclusão da conta até a confirmação. O vídeo é a comprovação da devolução.
           </p>
           <div className="mt-4 rounded-xl border border-rose-500/30 bg-rose-950/20 p-4">
             <strong className="mb-1 block text-rose-400">Cláusula de Multa Contratual:</strong>
             <p className="text-sm text-zinc-300">
-              A não desativação da conta prende a licença da loja no console do usuário, bloqueando
-              o acesso e impedindo que o próximo cliente da fila jogue. Caso isso ocorra, ou caso o
-              cliente da vaga secundária tente ativar a conta como principal, o sistema aplicará uma{' '}
+              A não exclusão da conta (ou o não envio do vídeo) prende a licença da loja no console
+              do usuário, bloqueando o acesso e impedindo que o próximo cliente da fila jogue. Caso
+              isso ocorra, ou caso o cliente da vaga secundária tente ativar a conta como principal,
+              o sistema aplicará uma{' '}
               <strong className="text-white">Multa Administrativa Automática de R$ 50,00</strong>. O
               saldo do usuário ficará negativo e a conta da plataforma será suspensa até a
               regularização do débito.

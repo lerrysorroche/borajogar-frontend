@@ -1,3 +1,5 @@
+import { PassosApagarConta, VideoTutorialApagarConta } from './DevolucaoConta';
+
 export default function Faq({ configSistema }) {
   return (
     <div className="animate-fade-in mx-auto max-w-4xl py-8">
@@ -279,27 +281,36 @@ export default function Faq({ configSistema }) {
         <details className="group rounded-3xl border border-zinc-800 bg-zinc-900 shadow-xl transition-transform duration-300 hover:-translate-y-1 [&_summary::-webkit-details-marker]:hidden">
           <summary className="flex cursor-pointer items-center justify-between p-6 text-rose-400 transition-colors hover:text-rose-300 md:p-8">
             <span className="text-base font-bold tracking-tight md:text-lg">
-              🚨 O que acontece se eu esquecer de desativar a conta do console?
+              🚨 Como devolvo o jogo? (apagar a conta do console + vídeo)
             </span>
             <span className="text-lg text-rose-500 transition duration-300 group-open:-rotate-180">
               ▼
             </span>
           </summary>
           <div className="border-t border-rose-800/50 px-6 pb-6 pt-6 text-xs leading-relaxed text-zinc-400 md:px-8 md:pb-8 md:text-sm">
-            Essa é a nossa regra mais rigorosa! Se você alugou uma Vaga Primária e o seu tempo
-            acabar, e você deixar a conta ativada como "Principal" no seu console, isso bloqueia o
-            jogo e impede que o próximo cliente da fila consiga jogar. O mesmo vale para a Vaga
-            Secundária, caso você tente ativá-la proibitivamente.
+            Ao fim do aluguel (ou quando você quiser devolver antes, para ganhar Cashback), a conta
+            da locadora precisa sair do seu console. Para termos <strong>certeza absoluta</strong>{' '}
+            de que isso foi feito, você apaga a conta e nos manda um vídeo:
+            <div className="mt-5 rounded-2xl border border-zinc-800 bg-black/40 p-5">
+              <PassosApagarConta />
+            </div>
+            <div className="mt-5">
+              <p className="mb-2 text-xs font-bold uppercase tracking-wider text-emerald-400">
+                ▶️ Vídeo tutorial (27 segundos)
+              </p>
+              <VideoTutorialApagarConta />
+            </div>
             <br />
-            <br />
-            Neste caso, nosso sistema aplica automaticamente uma{' '}
+            Essa é a nossa regra mais rigorosa! Se a conta não for apagada do console, ela prende a
+            licença da loja e impede que o próximo cliente da fila consiga jogar. Nesse caso, nosso
+            sistema aplica uma{' '}
             <strong className="text-rose-400">MULTA ADMINISTRATIVA DE R$ 50,00</strong> direto na
             sua carteira digital, além de cancelar qualquer Cashback Premium que você pudesse ter
             ganho.
             <br />
             <br />
-            Nós vamos entrar em contato com você por WhatsApp para exigir a remoção. Caso não seja
-            feita a desativação, nós acionaremos a Sony para forçar a queda e o seu IP será{' '}
+            Nós vamos entrar em contato com você por WhatsApp para exigir a remoção. Caso a conta
+            não seja apagada, nós acionaremos a Sony para forçar a queda e o seu IP será{' '}
             <strong className="text-white">BANIDO PERMANENTEMENTE</strong> da locadora, impedindo
             novos aluguéis.
           </div>
