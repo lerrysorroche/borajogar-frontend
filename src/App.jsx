@@ -10,6 +10,7 @@ import Privacidade from './components/Privacidade';
 import Faq from './components/Faq';
 import Footer from './components/Footer';
 import Auth from './components/Auth';
+import { PassosApagarConta, VideoTutorialApagarConta } from './components/DevolucaoConta';
 import {
   IconeControle,
   IconeEstrela,
@@ -985,8 +986,8 @@ function App() {
     });
   };
 
-  const abrirModalDevolucao = (locacaoId, dataFim, tipoSlot) =>
-    setModalDevolucao({ locacaoId, dataFim, tipoSlot });
+  const abrirModalDevolucao = (locacaoId, dataFim, tipoSlot, jogo) =>
+    setModalDevolucao({ locacaoId, dataFim, tipoSlot, jogo });
 
   const confirmarDevolucao = () => {
     if (!modalDevolucao) return;
@@ -1001,7 +1002,7 @@ function App() {
       const data = await res.json();
       if (res.ok) {
         mostrarToast(
-          'Devolução iniciada! A recompensa cairá na sua carteira após a nossa verificação.',
+          'Devolução iniciada! Se ainda não enviou, mande agora o vídeo da exclusão da conta no WhatsApp da locadora. A recompensa cai na sua carteira depois que conferirmos o vídeo.',
           'sucesso',
         );
         carregarDados();
@@ -1658,7 +1659,7 @@ function App() {
     if (!idUsuario) return;
     if (
       window.confirm(
-        `Deseja aplicar uma multa de R$ 50,00 em ${nomeUsuario} por não desativar o console? O saldo dele ficará negativo e o cashback será cancelado.`,
+        `Deseja aplicar uma multa de R$ 50,00 em ${nomeUsuario} por não apagar a conta do console (vídeo não enviado)? O saldo dele ficará negativo e o cashback será cancelado.`,
       )
     ) {
       fetch(`${API_BASE}/admin/multar`, {
@@ -1846,7 +1847,7 @@ function App() {
     if (!telefone) return;
     let numeroLimpo = telefone.replace(/\D/g, '');
     if (!numeroLimpo.startsWith('55')) numeroLimpo = '55' + numeroLimpo;
-    const mensagem = `Olá, ${nome}! Aqui é da locadora *BORA JOGAR!* 🎮\n\nSeu tempo com o jogo *${jogo}* terminou, mas notamos que a conta ainda está ativada como "Principal" no seu console.\n\nComo fazer a desativação:\n\nNo PS5: Vá em Configurações > Usuários e Contas > Outros > Compartilhamento do console e jogo offline e desative.\n\nNo PS4: Vá em Configurações > Gerenciamento da conta > Ativar como seu PS4 principal e desative.\n\nMe avise aqui assim que desativar!`;
+    const mensagem = `Olá, ${nome}! Aqui é da locadora *BORA JOGAR!* 🎮\n\nSeu tempo com o jogo *${jogo}* terminou, mas ainda não recebemos o vídeo da exclusão da conta no seu console.\n\nComo fazer:\n\nNo PS5: Configurações > Usuários e Contas > Excluir usuários > escolha a conta da locadora > Sim.\n\nNo PS4: Configurações > Configurações de login > Gerenciamento de usuários > Excluir usuário > escolha a conta da locadora.\n\nGrave um vídeo curto da TV mostrando esse caminho até apertar Sim e me envie aqui!`;
     window.open(`https://wa.me/${numeroLimpo}?text=${encodeURIComponent(mensagem)}`, '_blank');
   };
   const avisarLiberacao = (nomeCliente, jogoNome) => {
@@ -3191,53 +3192,43 @@ function App() {
                     direto na sua carteira!
                   </p>
 
-                  {/* RENDERIZAÇÃO CONDICIONAL: Mostra telas diferentes para Primária e Secundária */}
-                  {modalDevolucao.tipoSlot === 'PRIMARIA' ? (
-                    <>
-                      <div className="mb-6 space-y-4 rounded-2xl border border-zinc-800 bg-black/50 p-5">
-                        <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-500">
-                          Como desativar a conta PRIMÁRIA:
-                        </h4>
-                        <div className="space-y-3 text-sm text-zinc-300">
-                          <p>
-                            <strong className="text-white">🎮 No PS5:</strong> Vá em Configurações
-                            &gt; Usuários e Contas &gt; Outros &gt; Compartilhamento do console...
-                            &gt; <strong className="text-rose-400">Desativar</strong>.
-                          </p>
-                          <div className="h-px w-full bg-zinc-800"></div>
-                          <p>
-                            <strong className="text-white">🎮 No PS4:</strong> Vá em Configurações
-                            &gt; Gerenciamento da conta &gt;{' '}
-                            <strong className="text-rose-400">Desativar</strong> como seu PS4
-                            principal.
-                          </p>
-                        </div>
-                      </div>
+                  <div className="mb-5 space-y-4 rounded-2xl border border-zinc-800 bg-black/50 p-5">
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-500">
+                      Como devolver a conta (vaga{' '}
+                      {modalDevolucao.tipoSlot === 'PRIMARIA' ? 'primária' : 'secundária'}):
+                    </h4>
+                    <PassosApagarConta />
+                  </div>
 
-                      <div className="mb-8 rounded-2xl border border-rose-500/30 bg-rose-950/30 p-5 text-center">
-                        <span className="mb-2 block text-3xl">🛑</span>
-                        <h4 className="mb-1 text-sm font-black uppercase text-rose-400">
-                          Você já desativou a conta no console?
-                        </h4>
-                        <p className="text-xs text-zinc-400">
-                          Se você confirmar sem ter desativado, o sistema aplicará uma multa na sua
-                          carteira em vez da recompensa.
-                        </p>
-                      </div>
-                    </>
-                  ) : (
-                    <div className="mb-8 rounded-2xl border border-fuchsia-500/30 bg-fuchsia-950/30 p-5 text-center">
-                      <span className="mb-2 block text-3xl">🎮</span>
-                      <h4 className="mb-1 text-sm font-black uppercase text-fuchsia-400">
-                        Devolução de Vaga Secundária
-                      </h4>
-                      <p className="text-xs text-zinc-300">
-                        Por padrão, a conta não deveria estar ativada; mas se estiver, faça a
-                        desativação antes de devolver a conta para ganhar o seu Cashback e subir o
-                        seu Rank VIP. Se tiver alguma dúvida, veja o Tutorial antes de devolver.
-                      </p>
+                  <details className="group mb-5 rounded-2xl border border-emerald-500/30 bg-emerald-950/20 [&_summary::-webkit-details-marker]:hidden">
+                    <summary className="flex cursor-pointer select-none items-center justify-between gap-3 p-4 text-xs font-black uppercase tracking-wider text-emerald-400">
+                      <span>▶️ Ver vídeo tutorial (27 segundos)</span>
+                      <span className="transition duration-300 group-open:-rotate-180">▼</span>
+                    </summary>
+                    <div className="px-4 pb-4">
+                      <VideoTutorialApagarConta />
                     </div>
-                  )}
+                  </details>
+
+                  <a
+                    href={`https://wa.me/${NUMERO_WHATSAPP_SUPORTE}?text=${encodeURIComponent(`Olá! Sou ${usuarioLogado?.nome || 'cliente'} e estou devolvendo o jogo ${modalDevolucao.jogo || ''}. Segue o vídeo da exclusão da conta da locadora no meu console.`)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mb-5 flex w-full items-center justify-center gap-2 rounded-xl border border-emerald-500/40 bg-emerald-900/30 py-3 text-xs font-bold uppercase tracking-wider text-emerald-300 transition-colors hover:bg-emerald-600 hover:text-white"
+                  >
+                    📱 Abrir WhatsApp para enviar o vídeo
+                  </a>
+
+                  <div className="mb-8 rounded-2xl border border-rose-500/30 bg-rose-950/30 p-5 text-center">
+                    <span className="mb-2 block text-3xl">🛑</span>
+                    <h4 className="mb-1 text-sm font-black uppercase text-rose-400">
+                      Você já apagou a conta do console?
+                    </h4>
+                    <p className="text-xs text-zinc-400">
+                      Sem a conta apagada e o vídeo enviado, não liberamos a recompensa: aplicamos a
+                      multa de R$ 50,00 e o Cashback é cancelado.
+                    </p>
+                  </div>
 
                   <div className="flex flex-col gap-3 sm:flex-row">
                     <button
@@ -3250,9 +3241,7 @@ function App() {
                       onClick={confirmarDevolucao}
                       className="flex-1 rounded-xl bg-emerald-600 py-3.5 text-xs font-bold uppercase tracking-wide text-white shadow-lg shadow-emerald-600/20 transition-colors hover:bg-emerald-500"
                     >
-                      {modalDevolucao.tipoSlot === 'PRIMARIA'
-                        ? '✅ Sim, já desativei e quero devolver'
-                        : '✅ Quero devolver a conta agora'}
+                      ✅ Já apaguei a conta e vou enviar o vídeo
                     </button>
                   </div>
                 </>
@@ -3278,13 +3267,15 @@ function App() {
                 <strong className="text-white">Conta da Locadora</strong>.
               </p>
               <p className="rounded-xl border border-amber-900/50 bg-zinc-950 p-4 text-amber-200">
-                Para ganhar <strong>Cashback</strong> e subir seu <strong>Rank VIP</strong>, você{' '}
-                <strong>DEVE</strong> desativar a conta no seu PlayStation <strong>ANTES</strong> de
-                devolver o jogo e o seu tempo de aluguel acabar.
+                Para ganhar <strong>Cashback</strong> e subir seu <strong>Rank VIP</strong>, ao
+                devolver o jogo você <strong>DEVE</strong> apagar a conta da locadora do seu
+                PlayStation e <strong>enviar um vídeo</strong> mostrando isso no WhatsApp, antes de
+                o seu tempo de aluguel acabar.
               </p>
               <p className="text-xs text-zinc-400">
-                Esquecer de desativar resultará em multa de R$ 50,00, perda do Cashback e o corte do
-                seu Rank atual pela metade.
+                Esquecer de apagar a conta resultará em multa de R$ 50,00, perda do Cashback e o
+                corte do seu Rank atual pela metade. O passo a passo (com vídeo) aparece no botão
+                Devolver.
               </p>
             </div>
             <button
@@ -4633,10 +4624,10 @@ function App() {
                                     Evite Bloqueio e Multa de R$ 50,00
                                   </h4>
                                   <p className="text-xs font-medium leading-relaxed text-zinc-300">
-                                    É <strong>obrigatório</strong> desativar o "Compartilhamento de
-                                    Console" ou "PS4 Principal" na sua conta ANTES do tempo de
-                                    aluguel expirar. O descumprimento gera uma multa automática e
-                                    deixa seu saldo negativo.
+                                    É <strong>obrigatório</strong> apagar a conta da locadora do seu
+                                    console e enviar um vídeo disso no WhatsApp ANTES do tempo de
+                                    aluguel expirar. O descumprimento gera multa e deixa seu saldo
+                                    negativo. O passo a passo, com vídeo, está no botão Devolver.
                                   </p>
                                 </div>
                               </div>
@@ -4740,6 +4731,7 @@ function App() {
                                             item.locacao_id,
                                             item.data_fim,
                                             item.tipo_slot,
+                                            item.jogo,
                                           )
                                         }
                                         className="animate-fade-in flex w-full items-center justify-center gap-2 rounded-2xl border border-fuchsia-400/50 bg-gradient-to-r from-fuchsia-600 to-purple-600 py-4 text-xs font-bold uppercase tracking-wider text-white shadow-[0_0_15px_rgba(192,38,211,0.4)] transition-all hover:scale-[1.02] hover:shadow-[0_0_25px_rgba(192,38,211,0.6)]"
@@ -4828,9 +4820,10 @@ function App() {
                                                 . (Se não estiver habilitado)
                                               </li>
                                               <li className="mt-3 flex items-center gap-3 rounded-xl border border-rose-500/20 bg-rose-950/30 p-3.5 font-bold text-rose-400">
-                                                <span className="text-lg">⚠️</span> É aqui também,
-                                                que no final do seu aluguel, você vai DESABILITAR o
-                                                compartilhamento.
+                                                <span className="text-lg">⚠️</span> No final do seu
+                                                aluguel você vai APAGAR a conta da locadora do
+                                                console e enviar um vídeo no WhatsApp. Clique em
+                                                Devolver para ver o passo a passo.
                                               </li>
                                             </ul>
                                           </li>

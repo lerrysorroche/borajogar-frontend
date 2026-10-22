@@ -114,8 +114,8 @@ export default function Privacidade() {
           <p>
             Você tem o direito de solicitar a exclusão da sua conta e de todos os seus dados de
             nossos servidores a qualquer momento. A exclusão será processada em até 72 horas, desde
-            que não existam locações ativas, pendências de desativação em consoles ou saldos
-            negativos (multas ativas) em aberto.
+            que não existam locações ativas, pendências de devolução (conta da locadora ainda no
+            console) ou saldos negativos (multas ativas) em aberto.
           </p>
         </section>
       </div>
