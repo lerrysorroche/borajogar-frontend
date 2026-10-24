@@ -10,6 +10,8 @@ import Privacidade from './components/Privacidade';
 import Faq from './components/Faq';
 import Footer from './components/Footer';
 import Auth from './components/Auth';
+import { TemaDecor, TemaFaixa, TemaRodape, TemaLogoAdorno } from './components/TemaDecor';
+import { TEMAS, TEMAS_VALIDOS, CALENDARIO_TEMAS, faviconDoTema } from './temas';
 import { PassosApagarConta, VideoTutorialApagarConta } from './components/DevolucaoConta';
 import {
   IconeControle,
@@ -351,6 +353,15 @@ function App() {
   const [carregandoHistoricoJogo, setCarregandoHistoricoJogo] = useState(false);
   const [modalWhatsappBloqueado, setModalWhatsappBloqueado] = useState(false);
   const [indiceBanner, setIndiceBanner] = useState(0);
+  // Pré-visualização de tema via ?tema=halloween|natal|ano_novo|normal (não salva nada)
+  const [temaPreview] = useState(() => {
+    try {
+      const t = new URLSearchParams(window.location.search).get('tema');
+      return TEMAS_VALIDOS.includes(t) ? t : null;
+    } catch {
+      return null;
+    }
+  });
 
   // --- Estados da Verificação de WhatsApp ---
   const [telefoneEditavel, setTelefoneEditavel] = useState('');
@@ -565,6 +576,21 @@ function App() {
       carregarDados();
     }
   }, [statusHltb?.rodando]);
+
+  // Ícone da aba do navegador acompanha o tema (volta ao padrão no tema Normal).
+  useEffect(() => {
+    const link = document.querySelector('link[rel="icon"]');
+    if (!link) return;
+    if (!link.dataset.original) link.dataset.original = link.getAttribute('href');
+    const t = TEMAS_VALIDOS.includes(configSistema.tema_ativo)
+      ? configSistema.tema_ativo
+      : 'normal';
+    const ativo = temaPreview || t;
+    link.setAttribute(
+      'href',
+      ativo === 'normal' ? link.dataset.original : faviconDoTema(TEMAS[ativo].emoji),
+    );
+  }, [configSistema.tema_ativo, temaPreview]);
 
   // Efeito do Banner Rotativo Automático
   useEffect(() => {
@@ -1333,6 +1359,25 @@ function App() {
   // ==========================================================================
   // 7. FUNÇÕES ADMINISTRATIVAS (PAINEL ADMIN)
   // ==========================================================================
+
+  // Escolha do tema sazonal no Painel Admin: salva na hora e recarrega para o
+  // backend devolver o tema já resolvido (manual ou calendário).
+  const salvarTemaSazonal = (novoValor) => {
+    const novaConfig = { ...configSistema, tema_manual: novoValor };
+    setConfigSistema(novaConfig);
+    fetch(`${API_BASE}/admin/configuracoes`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(novaConfig),
+    }).then((res) => {
+      if (res.ok) {
+        mostrarToast('🎨 Tema do site salvo!', 'sucesso');
+        carregarDados();
+      } else {
+        mostrarToast('Erro ao salvar o tema.', 'erro');
+      }
+    });
+  };
 
   const salvarConfiguracoesDireto = (novaConfig, msgSucesso) => {
     fetch(`${API_BASE}/admin/configuracoes`, {
@@ -2109,8 +2154,22 @@ function App() {
   // ==========================================================================
   // 9. RENDERIZAÇÃO DO COMPONENTE PRINCIPAL
   // ==========================================================================
+  // Tema sazonal: o backend já resolve (escolha manual do Admin ou calendário).
+  // "?tema=natal" na URL força o tema só para pré-visualizar, sem salvar nada.
+  const temaConfig = TEMAS_VALIDOS.includes(configSistema.tema_ativo)
+    ? configSistema.tema_ativo
+    : 'normal';
+  const temaAtivo = temaPreview || temaConfig;
+  // O Painel Admin nunca recebe tema: é ferramenta de trabalho.
+  const temaAplicado = abaAtual === 'admin' ? 'normal' : temaAtivo;
+  const emojiLoja = TEMAS[temaAplicado].emoji;
+
   return (
-    <div className="relative min-h-screen overflow-x-hidden bg-zinc-950 pb-10 font-sans text-zinc-300 antialiased">
+    <div
+      data-tema={temaAplicado}
+      className="relative isolate min-h-screen overflow-x-hidden bg-zinc-950 pb-10 font-sans text-zinc-300 antialiased"
+    >
+      <TemaDecor tema={temaAplicado} />
       {toast.visivel && (
         <div
           className={`animate-fade-in fixed right-6 top-6 z-[150] flex max-w-sm items-center gap-3 rounded-xl border px-5 py-4 shadow-2xl transition-all duration-300 ${toast.tipo === 'sucesso' ? 'border-emerald-500/50 bg-emerald-950/90 text-emerald-100' : toast.tipo === 'erro' ? 'border-rose-500/50 bg-rose-950/90 text-rose-100' : 'border-amber-500/50 bg-amber-950/90 text-amber-100'} backdrop-blur-md`}
@@ -3441,10 +3500,13 @@ function App() {
               <div className="flex h-16 items-center justify-between">
                 <div className="flex items-center gap-8">
                   <span
-                    className="cursor-pointer bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-xl font-black tracking-tighter text-transparent"
+                    className="flex cursor-pointer items-center"
                     onClick={() => setAbaAtual('vitrine')}
                   >
-                    BORA JOGAR!
+                    <TemaLogoAdorno tema={temaAplicado} />
+                    <span className="bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-xl font-black tracking-tighter text-transparent">
+                      BORA JOGAR!
+                    </span>
                   </span>
 
                   <div className="hidden space-x-2 md:flex">
@@ -3452,7 +3514,7 @@ function App() {
                       onClick={() => setAbaAtual('vitrine')}
                       className={`${navBtnClass} ${abaAtual === 'vitrine' ? 'bg-blue-600 text-white shadow-md shadow-blue-600/20' : 'text-zinc-400 hover:bg-zinc-800 hover:text-white'}`}
                     >
-                      🎮 Loja
+                      {emojiLoja} Loja
                     </button>
                     <button
                       onClick={() => setAbaAtual('faq')}
@@ -3631,7 +3693,7 @@ function App() {
                     }}
                     className={`rounded-xl p-4 text-left text-sm font-bold uppercase tracking-wider shadow-md transition-all ${abaAtual === 'vitrine' ? 'bg-blue-600 text-white shadow-blue-600/20' : 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700 hover:text-white'}`}
                   >
-                    🎮 Loja
+                    {emojiLoja} Loja
                   </button>
                   <button
                     onClick={() => {
@@ -3679,6 +3741,7 @@ function App() {
           <main className="mx-auto max-w-7xl px-4 pb-12 pt-24 md:px-8 md:pt-28">
             {abaAtual === 'vitrine' && (
               <div className="animate-fade-in pb-12">
+                <TemaFaixa tema={temaAplicado} />
                 {/* HERO BANNER */}
                 <div
                   className="relative mb-8 flex min-h-[480px] w-full items-center overflow-hidden rounded-3xl border border-zinc-800 shadow-2xl transition-all duration-700 md:min-h-[600px]"
@@ -6692,6 +6755,78 @@ function App() {
 
                     {secaoAdmin === 'vitrine' && (
                       <div className="animate-fade-in flex flex-col gap-8">
+                        {/* 🎨 BLOCO TEMA SAZONAL (Halloween, Natal, Ano Novo) */}
+                        <div className="overflow-hidden rounded-3xl border border-l-4 border-zinc-800 border-l-fuchsia-500 bg-zinc-900/80 shadow-2xl shadow-fuchsia-500/10">
+                          <div className="flex items-center justify-between p-6 md:p-8">
+                            <span className="flex items-center gap-3 text-lg font-black tracking-tight text-fuchsia-400">
+                              🎨 Tema do Site (Datas Comemorativas)
+                            </span>
+                          </div>
+                          <div className="border-t border-zinc-800/50 px-6 pb-6 pt-8 md:px-8 md:pb-8">
+                            <p className="mb-4 text-xs font-medium text-zinc-400">
+                              Troca as cores, o fundo, os ícones e os enfeites do site para a data
+                              comemorativa. No modo{' '}
+                              <strong className="text-white">Automático</strong> o tema liga e
+                              desliga sozinho nas datas abaixo; escolher um tema à mão ignora o
+                              calendário até você voltar para Automático. O Painel Admin nunca
+                              recebe tema.
+                            </p>
+                            <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center">
+                              <select
+                                value={configSistema.tema_manual || 'auto'}
+                                onChange={(e) => salvarTemaSazonal(e.target.value)}
+                                className="w-full cursor-pointer rounded-xl border border-fuchsia-500/30 bg-zinc-950 px-4 py-3 text-sm font-bold text-zinc-200 outline-none transition-colors hover:border-fuchsia-400 focus:ring-2 focus:ring-fuchsia-500 sm:w-72"
+                              >
+                                <option value="auto">🗓️ Automático (segue o calendário)</option>
+                                <option value="normal">🎮 Normal (sem tema)</option>
+                                <option value="halloween">🎃 Halloween</option>
+                                <option value="natal">🎄 Natal</option>
+                                <option value="ano_novo">🎆 Ano Novo</option>
+                              </select>
+                              <span className="text-xs font-bold text-zinc-400">
+                                No ar agora:{' '}
+                                <strong className="text-fuchsia-300">
+                                  {
+                                    TEMAS[
+                                      TEMAS_VALIDOS.includes(configSistema.tema_ativo)
+                                        ? configSistema.tema_ativo
+                                        : 'normal'
+                                    ].emoji
+                                  }{' '}
+                                  {
+                                    TEMAS[
+                                      TEMAS_VALIDOS.includes(configSistema.tema_ativo)
+                                        ? configSistema.tema_ativo
+                                        : 'normal'
+                                    ].nome
+                                  }
+                                </strong>
+                              </span>
+                            </div>
+                            <div className="grid gap-3 sm:grid-cols-3">
+                              {CALENDARIO_TEMAS.map((c) => (
+                                <a
+                                  key={c.tema}
+                                  href={`/?tema=${c.tema}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="rounded-2xl border border-zinc-800 bg-zinc-950 p-4 transition-colors hover:border-fuchsia-500/50"
+                                >
+                                  <p className="text-sm font-black text-white">
+                                    {TEMAS[c.tema].emoji} {TEMAS[c.tema].nome}
+                                  </p>
+                                  <p className="mt-0.5 text-[11px] font-medium text-zinc-400">
+                                    Automático: {c.periodo}
+                                  </p>
+                                  <p className="mt-2 text-[10px] font-bold uppercase tracking-wider text-fuchsia-400">
+                                    Pré-visualizar ↗
+                                  </p>
+                                </a>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+
                         {/* 🖼️ BLOCO CONFIGURAÇÕES DA VITRINE E BANNERS */}
                         <div className="overflow-hidden rounded-3xl border border-l-4 border-zinc-800 border-l-orange-500 bg-zinc-900/80 shadow-2xl shadow-orange-500/10">
                           <div className="flex items-center justify-between p-6 md:p-8">
@@ -6997,6 +7132,7 @@ function App() {
             </div>
           </main>
 
+          <TemaRodape tema={temaAplicado} />
           <Footer setAbaAtual={setAbaAtual} />
         </>
       )}
