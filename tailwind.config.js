@@ -1,3 +1,14 @@
+// Temas sazonais (Halloween, Natal, Ano Novo): as escalas blue, purple e zinc leem
+// variáveis CSS definidas em src/temas.css, e cada tema só troca esses valores.
+// Todas as classes existentes (bg-blue-600, text-zinc-400/50...) seguem iguais.
+const escalaVar = (nome) =>
+  Object.fromEntries(
+    ['50', '100', '200', '300', '400', '500', '600', '700', '800', '900', '950'].map((tom) => [
+      tom,
+      `rgb(var(--${nome}-${tom}) / <alpha-value>)`,
+    ]),
+  );
+
 /** @type {import('tailwindcss').Config} */
 export default {
   content: [
@@ -6,6 +17,11 @@ export default {
   ],
   theme: {
     extend: {
+      colors: {
+        blue: escalaVar('blue'),
+        purple: escalaVar('purple'),
+        zinc: escalaVar('zinc'),
+      },
       // 🚀 Fonte Space Mono
       fontFamily: {
         'mono-tech': ['"Space Mono"', 'monospace'],

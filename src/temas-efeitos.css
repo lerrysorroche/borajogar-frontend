@@ -1,0 +1,63 @@
+/* Animações dos temas sazonais (ver components/TemaDecor.jsx).
+   Só transform/opacity, para ficarem leves no celular. */
+
+@keyframes tema-voo {
+  0% { transform: translate3d(-14vw, 0, 0) scale(1); }
+  25% { transform: translate3d(22vw, 24px, 0) scale(1.08, 0.9); }
+  50% { transform: translate3d(52vw, -16px, 0) scale(1); }
+  75% { transform: translate3d(80vw, 22px, 0) scale(1.08, 0.9); }
+  100% { transform: translate3d(112vw, 0, 0) scale(1); }
+}
+
+@keyframes tema-queda {
+  0% { transform: translate3d(0, -6vh, 0); }
+  100% { transform: translate3d(var(--vento, 0px), 106vh, 0); }
+}
+
+@keyframes tema-queda-giro {
+  0% { transform: translate3d(0, -6vh, 0) rotate(0deg); }
+  100% { transform: translate3d(var(--vento, 0px), 106vh, 0) rotate(var(--giro, 540deg)); }
+}
+
+@keyframes tema-pisca {
+  0%, 100% { opacity: 1; filter: brightness(1.2); }
+  50% { opacity: 0.35; filter: brightness(0.7); }
+}
+
+@keyframes tema-balancar {
+  0%, 100% { transform: rotate(-6deg); }
+  50% { transform: rotate(6deg); }
+}
+
+@keyframes tema-bruxuleio {
+  0%, 100% { opacity: 1; }
+  45% { opacity: 0.55; }
+  60% { opacity: 0.95; }
+}
+
+@keyframes tema-estouro {
+  0% { transform: scale(0.2); opacity: 0; }
+  20% { opacity: 1; }
+  70% { transform: scale(1); opacity: 0.9; }
+  100% { transform: scale(1.12); opacity: 0; }
+}
+
+.tema-morcego { animation: tema-voo 30s linear infinite; will-change: transform; }
+.tema-neve { animation: tema-queda 12s linear infinite; will-change: transform; }
+.tema-confete { animation: tema-queda-giro 11s linear infinite; will-change: transform; }
+.tema-luz { animation: tema-pisca 1.8s ease-in-out infinite; }
+.tema-balanco { animation: tema-balancar 3.6s ease-in-out infinite; }
+.tema-janela { animation: tema-bruxuleio 3.2s ease-in-out infinite; }
+.tema-fogos { animation: tema-estouro 3.4s ease-out infinite; opacity: 0; }
+
+@media (prefers-reduced-motion: reduce) {
+  .tema-anim,
+  .tema-balanco {
+    animation: none !important;
+  }
+  .tema-neve,
+  .tema-confete,
+  .tema-morcego {
+    display: none;
+  }
+}
