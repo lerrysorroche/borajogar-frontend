@@ -1697,17 +1697,17 @@ function App() {
     }
   };
 
-  const aplicarMultaCliente = (idUsuario, nomeUsuario) => {
+  const aplicarMultaCliente = (idUsuario, nomeUsuario, locacaoId) => {
     if (!idUsuario) return;
     if (
       window.confirm(
-        `Deseja aplicar uma multa de R$ 50,00 em ${nomeUsuario} por não apagar a conta do console (vídeo não enviado)? O saldo dele ficará negativo e o cashback será cancelado.`,
+        `Deseja aplicar uma multa de R$ 50,00 em ${nomeUsuario} por não apagar a conta do console (vídeo não enviado)? O saldo dele ficará negativo, o Rank cai pela metade e o cashback desta devolução será cancelado.`,
       )
     ) {
       fetch(`${API_BASE}/admin/multar`, {
         method: 'POST',
         headers: getAuthHeaders(),
-        body: JSON.stringify({ utilizador_id: idUsuario, valor: 50.0 }),
+        body: JSON.stringify({ utilizador_id: idUsuario, valor: 50.0, locacao_id: locacaoId }),
       }).then(async (res) => {
         const data = await res.json();
         if (res.ok) {
@@ -1885,8 +1885,28 @@ function App() {
       }
     });
   };
-  const cobrarNoWhatsApp = (nome, telefone, jogo) => {
+  const cobrarNoWhatsApp = (nome, telefone, jogo, locacaoId) => {
     if (!telefone) return;
+    // Cobrar = a devolução não veio certa: o cliente perde o cashback e o Rank
+    // dessa devolução. O cancelamento é gravado em segundo plano; o WhatsApp abre
+    // logo abaixo, no mesmo clique (sem esperar o servidor), senão o navegador
+    // bloqueia a janela.
+    if (locacaoId) {
+      fetch(`${API_BASE}/admin/locacoes/${locacaoId}/cobranca`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+      })
+        .then((res) => (res.ok ? res.json() : Promise.reject()))
+        .then((data) => {
+          if (data.cancelado)
+            mostrarToast(
+              `Cobrança registrada: ${nome} perdeu o cashback e o Rank desta devolução.`,
+              'aviso',
+            );
+          carregarDados();
+        })
+        .catch(() => mostrarToast('Não consegui registrar a cobrança no sistema.', 'erro'));
+    }
     let numeroLimpo = telefone.replace(/\D/g, '');
     if (!numeroLimpo.startsWith('55')) numeroLimpo = '55' + numeroLimpo;
     const mensagem = `Olá, ${nome}! Aqui é da locadora *BORA JOGAR!* 🎮\n\nSeu tempo com o jogo *${jogo}* terminou, mas ainda não recebemos o vídeo da exclusão da conta no seu console.\n\nComo fazer:\n\nNo PS5: Configurações > Usuários e Contas > Excluir usuários > escolha a conta da locadora > Sim.\n\nNo PS4: Configurações > Configurações de login > Gerenciamento de usuários > Excluir usuário > escolha a conta da locadora.\n\nGrave um vídeo curto da TV mostrando esse caminho até apertar Sim e me envie aqui!`;
@@ -6622,6 +6642,13 @@ function App() {
                                           <span className="font-bold text-emerald-400">
                                             💸 R$ {conta.cashback_pendente.toFixed(2)}
                                           </span>
+                                        ) : conta.status_beneficio === 'CANCELADO' ? (
+                                          <span
+                                            className="font-bold text-rose-400"
+                                            title="Sem cashback e sem Rank nesta devolução (prazo vencido, cobrança, multa ou revogação)"
+                                          >
+                                            ❌ Perdido
+                                          </span>
                                         ) : (
                                           <span className="text-zinc-600">—</span>
                                         ),
@@ -6648,6 +6675,7 @@ function App() {
                                                 conta.ultimo_cliente_nome,
                                                 conta.ultimo_cliente_telefone,
                                                 conta.jogo,
+                                                conta.ultima_locacao_id,
                                               )
                                             }
                                             className="flex items-center justify-center gap-2 rounded-lg border border-emerald-500/30 bg-emerald-900/40 px-4 py-2 text-[10px] font-bold uppercase tracking-wider text-emerald-400 shadow transition-colors hover:bg-emerald-600 hover:text-white"
@@ -6661,6 +6689,7 @@ function App() {
                                               aplicarMultaCliente(
                                                 conta.ultimo_cliente_id,
                                                 conta.ultimo_cliente_nome,
+                                                conta.ultima_locacao_id,
                                               )
                                             }
                                             className="flex items-center justify-center gap-2 rounded-lg border border-rose-500/30 bg-rose-900/40 px-4 py-2 text-[10px] font-bold uppercase tracking-wider text-rose-400 shadow transition-colors hover:bg-rose-600 hover:text-white"
