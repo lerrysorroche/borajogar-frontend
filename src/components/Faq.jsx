@@ -272,9 +272,47 @@ export default function Faq({ configSistema }) {
                   Cashback Diário. No entanto, se você devolver o jogo antes do tempo acabar, você
                   ainda é recompensado com a taxa fixa de{' '}
                   <strong className="text-emerald-400">R$ {valorBase.toFixed(2)}</strong>.
+                  <br />
+                  <br />
+                  <em className="text-zinc-500">
+                    O Cashback de uma devolução nunca passa de metade do valor pago no aluguel.
+                  </em>
                 </>
               );
             })()}
+          </div>
+        </details>
+
+        <details className="group rounded-3xl border border-zinc-800 bg-zinc-900 shadow-xl transition-transform duration-300 hover:-translate-y-1 [&_summary::-webkit-details-marker]:hidden">
+          <summary className="flex cursor-pointer items-center justify-between p-6 text-sky-300 transition-colors hover:text-sky-200 md:p-8">
+            <span className="text-base font-bold tracking-tight md:text-lg">
+              🏆 O que é o Aluguel Platina?
+            </span>
+            <span className="text-lg text-sky-400 transition duration-300 group-open:-rotate-180">
+              ▼
+            </span>
+          </summary>
+          <div className="border-t border-zinc-800/50 px-6 pb-6 pt-6 text-xs leading-relaxed text-zinc-400 md:px-8 md:pb-8 md:text-sm">
+            O tempo acabou e você não conseguiu zerar o jogo ou pegar a platina? Alugar o{' '}
+            <strong className="text-white">mesmo jogo</strong> de novo sai mais barato:
+            <ul className="mt-4 space-y-2">
+              <li>
+                <strong className="text-sky-300">2ª locação:</strong> 20% de desconto.
+              </li>
+              <li>
+                <strong className="text-sky-300">3ª locação em diante:</strong> 40% de desconto.
+              </li>
+            </ul>
+            <br />O desconto vale por <strong className="text-white">3 meses</strong> depois que
+            você devolve o jogo. Passou desse prazo sem alugar de novo, o preço volta ao normal e a
+            contagem recomeça. Ele aparece sozinho no card do jogo (selo{' '}
+            <strong className="text-sky-300">Platina</strong>) quando você está logado.
+            <br />
+            <br />
+            Ele se soma ao desconto do seu Rank, com um limite de{' '}
+            <strong className="text-white">40% no total</strong>. Não vale para jogos em lançamento
+            (nos primeiros 90 dias). Na devolução antecipada, o Cashback fica limitado a metade do
+            valor pago no aluguel.
           </div>
         </details>
 
