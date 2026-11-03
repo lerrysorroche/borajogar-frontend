@@ -303,7 +303,7 @@ export default function Faq({ configSistema }) {
                 <strong className="text-sky-300">3ª locação em diante:</strong> 40% de desconto.
               </li>
             </ul>
-            <br />O desconto vale por <strong className="text-white">3 meses</strong> depois que
+            <br />O desconto vale por <strong className="text-white">6 meses</strong> depois que
             você devolve o jogo. Passou desse prazo sem alugar de novo, o preço volta ao normal e a
             contagem recomeça. Ele aparece sozinho no card do jogo (selo{' '}
             <strong className="text-sky-300">Platina</strong>) quando você está logado.
@@ -311,7 +311,7 @@ export default function Faq({ configSistema }) {
             <br />
             Ele se soma ao desconto do seu Rank, com um limite de{' '}
             <strong className="text-white">40% no total</strong>. Não vale para jogos em lançamento
-            (nos primeiros 90 dias). Na devolução antecipada, o Cashback fica limitado a metade do
+            (nos primeiros 60 dias). Na devolução antecipada, o Cashback fica limitado a metade do
             valor pago no aluguel.
           </div>
         </details>
