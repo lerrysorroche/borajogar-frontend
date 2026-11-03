@@ -721,12 +721,9 @@ function App() {
 
   const carregarDados = () => {
     // 1. Vitrine (AGORA COM INTELIGÊNCIA VIP)
-    let urlJogos = `${API_BASE}/jogos`;
-    if (usuarioLogado && usuarioLogado.id) {
-      urlJogos += `?usuario_id=${usuarioLogado.id}`;
-    }
-
-    fetch(urlJogos, { cache: 'no-store' })
+    // O preço personalizado (Rank + Aluguel Platina) vem do login (token), não de
+    // um id na URL: o Platina revela quais jogos o cliente já alugou.
+    fetch(`${API_BASE}/jogos`, { cache: 'no-store', headers: getAuthHeaders() })
       .then(async (res) => {
         if (!res.ok) {
           const erroText = await res.text();
@@ -1012,8 +1009,8 @@ function App() {
     });
   };
 
-  const abrirModalDevolucao = (locacaoId, dataFim, tipoSlot, jogo) =>
-    setModalDevolucao({ locacaoId, dataFim, tipoSlot, jogo });
+  const abrirModalDevolucao = (locacaoId, dataFim, tipoSlot, jogo, valorPago) =>
+    setModalDevolucao({ locacaoId, dataFim, tipoSlot, jogo, valorPago });
 
   const confirmarDevolucao = () => {
     if (!modalDevolucao) return;
@@ -3236,10 +3233,16 @@ function App() {
               const valorBase = configSistema?.valor_por_dia || 2.0;
 
               // [INFO] Lógica visual atualizada: R$ 1,00 por dia antecipado.
-              const valorRecompensa =
+              const valorSemLimite =
                 modalDevolucao.tipoSlot === 'SECUNDARIA'
                   ? valorBase
                   : valorBase + diasAntecipados * 1.0;
+              // Mesmo teto do backend (platina.py): no máximo metade do valor pago.
+              // Aluguéis antigos não têm valor_pago gravado e ficam sem teto.
+              const valorRecompensa =
+                modalDevolucao.valorPago != null
+                  ? Math.min(valorSemLimite, modalDevolucao.valorPago * 0.5)
+                  : valorSemLimite;
 
               return (
                 <>
@@ -3795,7 +3798,7 @@ function App() {
                 </div>
 
                 {/* ZONA DE DIFERENCIAIS */}
-                <div className="mb-12 grid grid-cols-1 gap-6 md:grid-cols-3">
+                <div className="mb-12 grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
                   <div
                     onClick={() => {
                       setAbaAtual('faq');
@@ -3861,6 +3864,30 @@ function App() {
                         </h3>
                         <p className="text-[11px] font-medium leading-relaxed text-zinc-400">
                           24h no ar, sem parar. Pagou, já recebe os dados de acesso na mesma hora.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div
+                    onClick={() => {
+                      setAbaAtual('faq');
+                      window.scrollTo(0, 0);
+                    }}
+                    className="group relative flex h-full cursor-pointer flex-col justify-center overflow-hidden rounded-3xl border border-sky-300/30 bg-gradient-to-br from-slate-400/20 to-sky-900/10 p-4 shadow-lg shadow-sky-300/5 transition-all duration-300 hover:-translate-y-1 hover:border-sky-300/60 hover:shadow-[0_0_25px_rgba(186,230,253,0.2)] md:p-5"
+                  >
+                    <div className="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-sky-200 opacity-20 blur-3xl transition-transform duration-500 group-hover:scale-150"></div>
+                    <div className="relative z-10 flex items-center gap-5">
+                      <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-tr from-slate-400 to-sky-200 shadow-lg shadow-sky-300/30 transition-transform duration-300 group-hover:rotate-6 group-hover:scale-110">
+                        <IconeTrofeuPlatina className="h-9 w-9" />
+                      </div>
+                      <div className="flex flex-1 flex-col">
+                        <h3 className="mb-0.5 text-sm font-black uppercase tracking-tight text-white md:text-base">
+                          Aluguel Platina
+                        </h3>
+                        <p className="text-[11px] font-medium leading-relaxed text-zinc-400">
+                          Não deu tempo de zerar ou platinar? Alugue o mesmo jogo de novo com 20%
+                          off, e 40% a partir da 3ª vez.
                         </p>
                       </div>
                     </div>
@@ -4070,6 +4097,11 @@ function App() {
                     const precoExibicao = temPrimariaAtiva
                       ? jogo.preco_aluguel
                       : jogo.preco_secundaria;
+                    const precoBaseExibicao = temPrimariaAtiva
+                      ? jogo.preco_aluguel_base
+                      : jogo.preco_secundaria_base;
+                    // Desconto total do cliente neste jogo (Rank + Aluguel Platina, teto 40%)
+                    const descontoTotal = jogo.desconto_total ?? jogo.rank_aplicado ?? 0;
 
                     const isVeterano = usuarioLogado
                       ? usuarioLogado.is_admin || totalAlugueis >= 1
@@ -4138,12 +4170,12 @@ function App() {
                     ].filter(Boolean);
 
                     // Bloco de preço do botão principal (igual para Alugar e Reservar):
-                    // com desconto de Rank mostra "De / Por", sem desconto "A partir de".
+                    // com desconto (Rank e/ou Platina) mostra "De / Por", sem desconto "A partir de".
                     const precoDoBotao = (corPreco) =>
-                      jogo.rank_aplicado > 0 ? (
+                      descontoTotal > 0 && precoBaseExibicao > precoExibicao ? (
                         <div className="mt-1 flex flex-col items-center leading-none">
                           <span className="text-[10px] font-bold text-white/70 line-through">
-                            De R$ {(precoExibicao / (1 - jogo.rank_aplicado / 100)).toFixed(2)}
+                            De R$ {Number(precoBaseExibicao).toFixed(2)}
                           </span>
                           <span
                             className={`text-base font-black ${corPreco} [text-shadow:1px_1px_0px_black,-1px_-1px_0px_black,1px_-1px_0px_black,-1px_1px_0px_black]`}
@@ -4182,14 +4214,37 @@ function App() {
 
                             {/* CANTO SUPERIOR DIREITO: NOVA BADGE VIP */}
                             {/* Motivo: Feedback visual de que o desconto VIP está ativo neste jogo. */}
-                            {jogo.rank_aplicado > 0 && !isEmBreve && (
-                              <div className="pointer-events-none absolute right-4 top-4 z-20">
-                                <span className="flex items-center gap-1 rounded-lg border border-amber-400/50 bg-amber-500/90 px-3 py-1.5 text-[10px] font-black uppercase tracking-wider text-white shadow-lg backdrop-blur-md">
-                                  <span className="animate-pulse">⭐</span> VIP -
-                                  {jogo.rank_aplicado}%
-                                </span>
-                              </div>
-                            )}
+                            {!isEmBreve &&
+                              (jogo.rank_aplicado > 0 || jogo.platina_desconto > 0) && (
+                                <div className="pointer-events-none absolute right-4 top-4 z-20 flex flex-col items-end gap-1.5">
+                                  {jogo.rank_aplicado > 0 && (
+                                    <span className="flex items-center gap-1 rounded-lg border border-amber-400/50 bg-amber-500/90 px-3 py-1.5 text-[10px] font-black uppercase tracking-wider text-white shadow-lg backdrop-blur-md">
+                                      <span className="animate-pulse">⭐</span> VIP -
+                                      {jogo.rank_aplicado}%
+                                    </span>
+                                  )}
+                                  {jogo.platina_desconto > 0 && (
+                                    <span
+                                      title={
+                                        jogo.platina_valido_ate
+                                          ? `Aluguel Platina válido até ${new Date(jogo.platina_valido_ate + 'T00:00:00').toLocaleDateString('pt-BR')}`
+                                          : 'Aluguel Platina'
+                                      }
+                                      className="flex items-center gap-1 rounded-lg border border-sky-200/60 bg-gradient-to-r from-slate-300 to-sky-300 px-3 py-1.5 text-[10px] font-black uppercase tracking-wider text-slate-900 shadow-lg backdrop-blur-md"
+                                    >
+                                      <IconeTrofeuPlatina className="h-3.5 w-3.5" /> Platina -
+                                      {jogo.platina_desconto}%
+                                    </span>
+                                  )}
+                                  {jogo.rank_aplicado > 0 &&
+                                    jogo.platina_desconto > 0 &&
+                                    descontoTotal < jogo.rank_aplicado + jogo.platina_desconto && (
+                                      <span className="rounded-md bg-black/70 px-2 py-0.5 text-[9px] font-bold text-white">
+                                        Total -{descontoTotal}%
+                                      </span>
+                                    )}
+                                </div>
+                              )}
 
                             {/* CANTO SUPERIOR ESQUERDO: Grupo de Status da Conta */}
                             <div className="pointer-events-none absolute left-4 top-4 z-20 flex flex-col items-start gap-1.5">
@@ -4795,6 +4850,7 @@ function App() {
                                             item.data_fim,
                                             item.tipo_slot,
                                             item.jogo,
+                                            item.valor_pago,
                                           )
                                         }
                                         className="animate-fade-in flex w-full items-center justify-center gap-2 rounded-2xl border border-fuchsia-400/50 bg-gradient-to-r from-fuchsia-600 to-purple-600 py-4 text-xs font-bold uppercase tracking-wider text-white shadow-[0_0_15px_rgba(192,38,211,0.4)] transition-all hover:scale-[1.02] hover:shadow-[0_0_25px_rgba(192,38,211,0.6)]"
