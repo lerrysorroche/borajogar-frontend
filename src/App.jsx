@@ -4098,10 +4098,11 @@ function App() {
                       ? dataLanc.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })
                       : '';
 
-                    // [INFO] Lógica inteligente: Mostra "Lançamento" apenas se a data for menor ou igual a 90 dias (3 meses)
+                    // [INFO] Mostra "Lançamento" só nos primeiros 60 dias (2 meses). Depois disso o jogo
+                    // entra no Aluguel Platina (mesmo prazo de platina.DIAS_LANCAMENTO no backend).
                     const isLancamento =
                       dataLanc && !isEmBreve
-                        ? (new Date() - dataLanc) / (1000 * 60 * 60 * 24) <= 90
+                        ? (new Date() - dataLanc) / (1000 * 60 * 60 * 24) <= 60
                         : jogo.prioridade_vitrine === 2; // Mantém como fallback
 
                     // [INFO] Lógica de Vagas Desativadas
